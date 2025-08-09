@@ -1,5 +1,5 @@
 @echo off
-REM Navigate to project folder
+REM Navigate to your project folder
 cd /d "C:\Users\Kakasha\alien tutor"
 
 REM Add all changes
@@ -13,8 +13,7 @@ for /f "tokens=1-5 delims=.:/ " %%d in ("%date% %time%") do (
 REM Commit changes
 git commit -m "%commitMsg%"
 
-REM Push to GitHub
-git push origin main
+REM Force push to overwrite GitHub with local version
+git push origin main --force
 
-REM Pause to show any messages
 pause
