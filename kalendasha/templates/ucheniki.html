@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="text-align: center; margin-bottom: 30px;">
+  <h2>Список учеников</h2>
+  <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">
+    База данных всех учеников с возможностью управления и создания виджетов
+  </p>
+</div>
+
+<!-- Вместо большой зеленой кнопки -->
+<div style="margin-bottom: 30px; text-align: right;">
+  <span title="Добавить ученика" class="icon-action icon-add-student" 
+        onclick="window.location.href='{{ url_for('add_student') }}'">
+    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="16"/>
+      <line x1="8" y1="12" x2="16" y2="12"/>
+    </svg>
+  </span>
+</div>
+
+<div style="overflow-x: auto;">
+  <table class="students-table" border="1" cellpadding="8" cellspacing="0" style="margin: 0; width: 100%;">
+    <thead>
+      <tr>
+        <th>Имя Фамилия</th>
+        <th>Класс</th>
+        <th>Город</th>
+        <th>Часовой пояс</th>
+        <th>ФИО родителя/опекуна</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for student in students %}
+      <tr>
+        <td class="student-name">{{ student.name }}</td>
+        <td>{{ student.class or '-' }}</td>
+        <td>{{ student.city or '-' }}</td>
+        <td>{{ student.timezone or '-' }}</td>
+        <td>{{ student.parent_name or '-' }}</td>
+        <td style="text-align: center;">
+          <div style="display: flex; gap: 32px; justify-content: center; align-items: center;">
+            <!-- Редактировать -->
+            <a href="{{ url_for('edit_student', index=loop.index0) }}" 
+               title="Редактировать данные ученика"
+               class="icon-action icon-edit">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z"/></svg>
+            </a>
+            
+            <!-- Удалить -->
+            <span title="Удалить ученика и все его данные" class="icon-action icon-delete" onclick="if(confirm('УДАЛЕНИЕ УЧЕНИКА {{ student.name }}\n\nЭто действие удалит:\n✓ Ученика из списка\n✓ ВСЕ его уроки из расписания\n✓ ВСЕ его уроки из шаблона недели\n✓ ВСЮ финансовую статистику\n✓ ВСЕ платежи\n✓ ВСЕ балансы\n\nДАННЫЕ НЕЛЬЗЯ ВОССТАНОВИТЬ!\n\nВы точно хотите удалить?')) { this.closest('tr').querySelector('form').submit(); }" style="cursor:pointer;">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              <form action="{{ url_for('delete_student', index=loop.index0) }}" method="POST" style="display:none;"></form>
+            </span>
+          </div>
+        </td>
+      </tr>
+    {% else %}
+      <tr>
+        <td colspan="6" style="text-align: center; color: var(--text-muted); font-style: italic; padding: 40px;">
+          Пока нет учеников
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Пояснения к кнопкам-эмодзи -->
+<div class="info-panel" style="margin-top: 30px;">
+  <h4>Действия с учениками</h4>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; color: var(--text-primary);">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="display: inline-flex; align-items: center; color: var(--text-primary); width: 32px; height: 32px;">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z"/></svg>
+      </span>
+      <span><strong>Редактировать</strong> - изменить данные ученика</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="display: inline-flex; align-items: center; color: var(--text-primary); width: 32px; height: 32px;">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+      </span>
+      <span><strong>Удалить</strong> - полное удаление ученика и всех данных</span>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

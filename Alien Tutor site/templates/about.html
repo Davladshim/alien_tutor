@@ -1,0 +1,642 @@
+{% extends "base.html" %}
+
+{% block title %}О преподавателе - Alien Tutor{% endblock %}
+
+{% block styles %}
+<style>
+    /* ===== СТИЛИ ДЛЯ ЛЕНДИНГА "О ПРЕПОДАВАТЕЛЕ" ===== */
+    
+    /* Герой-секция */
+    .hero-section {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-content {
+        max-width: 1000px;
+        margin: 0 auto;
+        z-index: 2;
+        position: relative;
+    }
+
+    .hero-title {
+        font-size: 4rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 50%, #7c3aed 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 0 30px rgba(94, 217, 215, 0.3);
+        animation: titleGlow 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes titleGlow {
+        from { filter: brightness(1); }
+        to { filter: brightness(1.2); }
+    }
+
+    .hero-subtitle {
+        font-size: 1.8rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+        font-weight: 300;
+    }
+
+    .hero-description {
+        font-size: 1.2rem;
+        line-height: 1.8;
+        margin-bottom: 3rem;
+        opacity: 0.8;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .cta-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
+        color: white;
+        padding: 1.2rem 3rem;
+        border-radius: 50px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.4s ease;
+        box-shadow: 0 10px 30px rgba(94, 217, 215, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cta-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .cta-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(94, 217, 215, 0.6);
+    }
+
+    .cta-button:hover::before {
+        left: 100%;
+    }
+
+    /* Секция преимуществ */
+    .features-section {
+        padding: 5rem 2rem;
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        position: relative;
+    }
+
+    .section-title {
+        font-size: 3rem;
+        text-align: center;
+        margin-bottom: 4rem;
+        background: linear-gradient(135deg, #5ED9D7 0%, #7c3aed 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .feature-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 2.5rem;
+        text-align: center;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .theme-dark .feature-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(217, 246, 244, 0.15);
+    }
+
+    .theme-light .feature-card {
+        background: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(44, 62, 80, 0.15);
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #5ED9D7, #00d4ff, #7c3aed);
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(94, 217, 215, 0.3);
+        border-color: rgba(94, 217, 215, 0.5);
+    }
+
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .feature-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: #5ED9D7;
+    }
+
+    .feature-description {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        opacity: 0.8;
+    }
+
+    /* Секция "Обо мне" */
+    .about-section {
+        padding: 5rem 2rem;
+        position: relative;
+    }
+
+    .about-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 4rem;
+        align-items: center;
+    }
+
+    .about-image {
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .about-image::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(135deg, #5ED9D7, #00d4ff, #7c3aed);
+        border-radius: 20px;
+        z-index: -1;
+        animation: borderRotate 4s linear infinite;
+    }
+
+    @keyframes borderRotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .about-image img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 18px;
+    }
+
+    .about-content h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .about-content p {
+        font-size: 1.2rem;
+        line-height: 1.8;
+        margin-bottom: 1.5rem;
+        opacity: 0.9;
+    }
+
+    .achievements-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 2rem;
+    }
+
+    .achievements-list li {
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .achievements-list li::before {
+        content: '✓';
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
+        color: white;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 30px;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+</style>
+{% endblock %}
+
+<style>
+    /* Секция методики */
+    .methodology-section {
+        padding: 5rem 2rem;
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+    }
+
+    .methodology-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .methodology-steps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .step-card {
+        text-align: center;
+        padding: 2rem;
+        position: relative;
+    }
+
+    .step-number {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 10px 30px rgba(94, 217, 215, 0.4);
+    }
+
+    .step-title {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        color: #5ED9D7;
+    }
+
+    .step-description {
+        font-size: 1rem;
+        line-height: 1.6;
+        opacity: 0.8;
+    }
+
+    /* Соединительные линии между шагами */
+    .step-card:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 30px;
+        right: -1rem;
+        width: 2rem;
+        height: 2px;
+        background: linear-gradient(90deg, #5ED9D7, transparent);
+        opacity: 0.5;
+    }
+
+    /* Секция отзывов */
+    .testimonials-section {
+        padding: 5rem 2rem;
+        position: relative;
+    }
+
+    .testimonials-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .testimonials-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .testimonial-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        position: relative;
+        transition: all 0.4s ease;
+    }
+
+    .theme-dark .testimonial-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(217, 246, 244, 0.15);
+    }
+
+    .theme-light .testimonial-card {
+        background: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(44, 62, 80, 0.15);
+    }
+
+    .testimonial-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(94, 217, 215, 0.3);
+    }
+
+    .testimonial-text {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        margin-bottom: 1.5rem;
+        font-style: italic;
+        opacity: 0.9;
+    }
+
+    .testimonial-author {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .author-avatar {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+    .author-info {
+        flex: 1;
+    }
+
+    .author-name {
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+        color: #5ED9D7;
+    }
+
+    .author-role {
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+
+    /* Секция тарифов */
+    .pricing-section {
+        padding: 5rem 2rem;
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+    }
+
+    .pricing-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .pricing-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 2.5rem;
+        text-align: center;
+        position: relative;
+        transition: all 0.4s ease;
+    }
+
+    .theme-dark .pricing-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(217, 246, 244, 0.15);
+    }
+
+    .theme-light .pricing-card {
+        background: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(44, 62, 80, 0.15);
+    }
+
+    .pricing-card.featured {
+        border: 2px solid #5ED9D7;
+        transform: scale(1.05);
+        box-shadow: 0 20px 40px rgba(94, 217, 215, 0.3);
+    }
+
+    .pricing-card.featured::before {
+        content: 'Популярный';
+        position: absolute;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .pricing-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(94, 217, 215, 0.4);
+    }
+
+    .pricing-card.featured:hover {
+        transform: scale(1.05) translateY(-10px);
+    }
+
+    .pricing-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: #5ED9D7;
+    }
+
+    .pricing-price {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .pricing-period {
+        font-size: 1rem;
+        opacity: 0.7;
+        margin-bottom: 2rem;
+    }
+
+    .pricing-features {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 2rem;
+    }
+
+    .pricing-features li {
+        padding: 0.8rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 1rem;
+    }
+
+    .pricing-button {
+        display: inline-block;
+        width: 100%;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
+        color: white;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .pricing-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(94, 217, 215, 0.4);
+    }
+
+    /* Секция контактов */
+    .contact-section {
+        padding: 5rem 2rem;
+        position: relative;
+    }
+
+    .contact-container {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .contact-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .contact-item {
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .contact-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(94, 217, 215, 0.3);
+    }
+
+    .contact-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: #5ED9D7;
+    }
+
+    .contact-label {
+        font-size: 0.9rem;
+        opacity: 0.7;
+        margin-bottom: 0.5rem;
+    }
+
+    .contact-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #5ED9D7;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.3rem;
+        }
+        
+        .about-container {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        .methodology-steps {
+            grid-template-columns: 1fr;
+        }
+        
+        .step-card::after {
+            display: none;
+        }
+        
+        .testimonials-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .pricing-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .pricing-card.featured {
+            transform: scale(1);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}

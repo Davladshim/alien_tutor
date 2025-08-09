@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2>История платежей</h2>
+    <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">
+        {% if student_name %}
+            Полная история платежей ученика: {{ student_name }}
+        {% else %}
+            Выберите ученика для просмотра истории платежей
+        {% endif %}
+    </p>
+</div>
+
+{% if not student_name %}
+<!-- Выбор ученика -->
+<div class="card" style="max-width: 500px; margin: 0 auto 30px;">
+    <h3 style="text-align: center; margin-bottom: 20px;">Выберите ученика</h3>
+    <div style="display: grid; gap: 15px;">
+        {% for student in students %}
+        <a href="{{ url_for('payment_history_page', student_name=student.name) }}" 
+           class="btn" style="text-decoration: none; text-align: center; padding: 15px;">
+            {{ student.name }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<!-- История конкретного ученика -->
+<div class="card" style="margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+        <h3 style="margin: 0; color: var(--text-accent);">Ученик: {{ student_name }}</h3>
+        <div style="display: flex; gap: 10px;">
+            <a href="{{ url_for('payment_history_page') }}" class="btn">
+                Выбрать другого ученика
+            </a>
+            <a href="{{ url_for('add_payment_page') }}" class="btn success">
+                Добавить платеж
+            </a>
+        </div>
+    </div>
+    
+    {% if payments %}
+    <div style="overflow-x: auto;">
+        <table border="1" cellpadding="8" cellspacing="0" style="margin: 0; width: 100%;">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Тип операции</th>
+                    <th>Сумма</th>
+                    <th>Описание</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td style="text-align: center;">
+                        {{ payment.date_formatted }}
+                    </td>
+                    <td style="text-align: center;">
+                        {% if payment.type == 'payment' %}
+                            <span style="color: #10b981; font-weight: bold;">Пополнение</span>
+                        {% else %}
+                            <span style="color: #ef4444; font-weight: bold;">Списание</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right; {% if payment.amount > 0 %}color: #10b981;{% else %}color: #ef4444;{% endif %} font-weight: bold;">
+                        {% if payment.amount > 0 %}+{% endif %}{{ payment.amount|round(0)|int }} ₽
+                    </td>
+                    <td>{{ payment.description }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Сводка -->
+    <div style="margin-top: 30px; padding: 20px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-secondary);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; text-align: center;">
+            <div>
+                <div style="font-size: 24px; font-weight: bold; color: #10b981; margin-bottom: 5px;">
+                    {{ total_paid|round(0)|int }} ₽
+                </div>
+                <div style="color: var(--text-muted); font-size: 14px;">Всего пополнено</div>
+            </div>
+            <div>
+                <div style="font-size: 24px; font-weight: bold; color: #ef4444; margin-bottom: 5px;">
+                    {{ total_spent|round(0)|int }} ₽
+                </div>
+                <div style="color: var(--text-muted); font-size: 14px;">Всего потрачено</div>
+            </div>
+            <div>
+                <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px; {% if current_balance > 0 %}color: #10b981;{% elif current_balance < 0 %}color: #ef4444;{% else %}color: var(--text-primary);{% endif %}">
+                    {{ current_balance|round(0)|int }} ₽
+                </div>
+                <div style="color: var(--text-muted); font-size: 14px;">Текущий баланс</div>
+            </div>
+            <div>
+                <div style="font-size: 24px; font-weight: bold; color: var(--text-accent); margin-bottom: 5px;">
+                    {{ lessons_taken }}
+                </div>
+                <div style="color: var(--text-muted); font-size: 14px;">Проведено уроков</div>
+            </div>
+        </div>
+    </div>
+    
+    {% else %}
+    <div class="empty-state">
+        <h3 style="color: var(--text-muted); margin-bottom: 15px;">История платежей пуста</h3>
+        <p style="color: var(--text-muted);">
+            У этого ученика пока нет записей о платежах или списаниях
+        </p>
+        <div style="margin-top: 20px;">
+            <a href="{{ url_for('add_payment_page') }}" class="btn success">
+                Добавить первый платеж
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ url_for('oplata') }}" 
+       style="color: var(--text-accent); text-decoration: none; font-weight: bold; font-size: 16px;">
+        ← Назад к финансовому учету
+    </a>
+</div>
+
+{% endblock %}

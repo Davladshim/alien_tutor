@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2>Добавить ученика</h2>
+    <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">
+        Добавьте нового ученика в систему
+    </p>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <form method="post">
+        <div style="display: grid; gap: 20px;">
+            
+            <!-- Имя ученика -->
+            <div>
+                <label for="name" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Имя и фамилия ученика <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="text" id="name" name="name" required 
+                       placeholder="Например: Иван Петров">
+            </div>
+
+            <!-- Класс -->
+            <div>
+                <label for="class" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Класс
+                </label>
+                <select id="class" name="class" onchange="toggleCustomClass()">
+                    <option value="">Выберите класс</option>
+                    <option value="7 класс">7 класс</option>
+                    <option value="8 класс">8 класс</option>
+                    <option value="9 класс">9 класс</option>
+                    <option value="10 класс">10 класс</option>
+                    <option value="11 класс">11 класс</option>
+                    <option value="Другое">Другое</option>
+                </select>
+            </div>
+
+            <!-- Кастомный класс -->
+            <div id="custom_class_div" style="display: none;">
+                <label for="custom_class" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Введите класс:
+                </label>
+                <input type="text" id="custom_class" name="custom_class" 
+                       placeholder="Например: 6 класс, 1 курс">
+            </div>
+
+            <!-- Стоимость урока -->
+            <div>
+                <label for="lesson_price" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Стоимость одного урока (рублей) <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="number" id="lesson_price" name="lesson_price" required min="0" step="50"
+                       placeholder="Например: 1500">
+                <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">
+                    Эта информация не будет видна ученику
+                </small>
+            </div>
+
+            <!-- Город -->
+            <div>
+                <label for="city" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Город
+                </label>
+                <input type="text" id="city" name="city" 
+                       placeholder="Например: Москва, Санкт-Петербург">
+            </div>
+
+            <!-- Часовой пояс -->
+            <div>
+                <label for="timezone" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Часовой пояс <span style="color: #ef4444;">*</span>
+                </label>
+                <select id="timezone" name="timezone" required>
+                    <option value="">Выберите часовой пояс</option>
+                    <option value="КЛД">КЛД (UTC+2) - Калининград</option>
+                    <option value="МСК" selected>МСК (UTC+3) - Москва, Санкт-Петербург</option>
+                    <option value="МСК+1">МСК+1 (UTC+4) - Самара, Саратов, Ижевск</option>
+                    <option value="ЕКБ">ЕКБ (UTC+5) - Екатеринбург, Пермь, Уфа</option>
+                    <option value="ОМС">ОМС (UTC+6) - Омск</option>
+                    <option value="НСК">НСК (UTC+7) - Новосибирск, Красноярск</option>
+                    <option value="ИРК">ИРК (UTC+8) - Иркутск</option>
+                    <option value="ЯКТ">ЯКТ (UTC+9) - Якутск</option>
+                    <option value="ВЛД">ВЛД (UTC+10) - Владивосток, Хабаровск</option>
+                    <option value="МГД">МГД (UTC+11) - Магадан</option>
+                    <option value="КАМ">КАМ (UTC+12) - Петропавловск-Камчатский</option>
+                    <option value="КРД">КРД (UTC+3) - Краснодар, Ростов-на-Дону</option>
+                    <option value="КЗН">КЗН (UTC+3) - Казань, Нижний Новгород</option>
+                </select>
+                <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">
+                    Выберите часовой пояс ученика для корректного отображения времени занятий
+                </small>
+            </div>
+
+            <!-- ФИО родителя -->
+            <div>
+                <label for="parent_name" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    ФИО родителя/опекуна
+                </label>
+                <input type="text" id="parent_name" name="parent_name" 
+                       placeholder="Например: Петрова Мария Ивановна">
+            </div>
+
+            <!-- Контактная информация -->
+            <div>
+                <label for="contact" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Контактная информация
+                </label>
+                <textarea id="contact" name="contact" 
+                          placeholder="Телефон, email, Telegram и другие способы связи"
+                          style="height: 80px; resize: vertical;"></textarea>
+            </div>
+
+            <!-- Особые заметки -->
+            <div>
+                <label for="notes" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Особые заметки
+                </label>
+                <textarea id="notes" name="notes" 
+                          placeholder="Особенности обучения, предпочтения, цели и т.д."
+                          style="height: 80px; resize: vertical;"></textarea>
+            </div>
+
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button type="submit" class="btn success">
+                Добавить ученика
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleCustomClass() {
+    const classSelect = document.getElementById('class');
+    const customClassDiv = document.getElementById('custom_class_div');
+    const customClassInput = document.getElementById('custom_class');
+    
+    if (classSelect.value === 'Другое') {
+        customClassDiv.style.display = 'block';
+        customClassInput.required = true;
+    } else {
+        customClassDiv.style.display = 'none';
+        customClassInput.required = false;
+        customClassInput.value = '';
+    }
+}
+</script>
+
+<!-- Информационная панель -->
+<div class="info-panel" style="max-width: 600px; margin: 30px auto 0;">
+    <h4>Важная информация</h4>
+    <ul style="color: var(--text-primary); margin: 0; padding-left: 20px; line-height: 1.6;">
+        <li>После добавления ученика автоматически создастся его персональная страница расписания</li>
+        <li>Время занятий будет отображаться в часовом поясе ученика</li>
+        <li>Стоимость урока будет использоваться для расчета оплат и статистики</li>
+        <li>Ссылку на персональное расписание можно встроить в Tilda как виджет</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ url_for('ucheniki') }}" 
+       style="color: var(--text-accent); text-decoration: none; font-weight: bold; font-size: 16px;">
+        ← Назад к списку учеников
+    </a>
+</div>
+
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2>Редактировать урок в шаблоне</h2>
+    <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">
+        Изменение регулярного урока в шаблоне недели
+    </p>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <form method="post">
+        <div style="display: grid; gap: 20px;">
+            
+            <!-- День недели -->
+            <div>
+                <label for="day" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    День недели <span style="color: #ef4444;">*</span>
+                </label>
+                <select id="day" name="day" required>
+                    <option value="">Выберите день недели</option>
+                    <option value="Понедельник" {% if lesson.day == "Понедельник" %}selected{% endif %}>Понедельник</option>
+                    <option value="Вторник" {% if lesson.day == "Вторник" %}selected{% endif %}>Вторник</option>
+                    <option value="Среда" {% if lesson.day == "Среда" %}selected{% endif %}>Среда</option>
+                    <option value="Четверг" {% if lesson.day == "Четверг" %}selected{% endif %}>Четверг</option>
+                    <option value="Пятница" {% if lesson.day == "Пятница" %}selected{% endif %}>Пятница</option>
+                    <option value="Суббота" {% if lesson.day == "Суббота" %}selected{% endif %}>Суббота</option>
+                    <option value="Воскресенье" {% if lesson.day == "Воскресенье" %}selected{% endif %}>Воскресенье</option>
+                </select>
+            </div>
+
+            <!-- Время урока -->
+            <div>
+                <label for="time" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Время урока <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="time" id="time" name="time" required 
+                       value="{{ lesson.time }}">
+            </div>
+
+            <!-- Ученик -->
+            <div>
+                <label for="student" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Ученик <span style="color: #ef4444;">*</span>
+                </label>
+                <select id="student" name="student" required>
+                    <option value="">Выберите ученика</option>
+                    {% for student in students %}
+                        <option value="{{ student.name }}" 
+                                {% if student.name == lesson.student %}selected{% endif %}>
+                            {{ student.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Предмет -->
+            <div>
+                <label for="subject" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Предмет <span style="color: #ef4444;">*</span>
+                </label>
+                <select id="subject" name="subject" required onchange="toggleCustomSubject()">
+                    <option value="">Выберите предмет</option>
+                    <option value="Математика" {% if lesson.subject == "Математика" %}selected{% endif %}>Математика</option>
+                    <option value="Физика" {% if lesson.subject == "Физика" %}selected{% endif %}>Физика</option>
+                    <option value="Химия" {% if lesson.subject == "Химия" %}selected{% endif %}>Химия</option>
+                    <option value="Другое" {% if lesson.subject not in ["Математика", "Физика", "Химия", "Русский язык", "Литература", "История", "Обществознание", "География", "Биология", "Английский язык", "Информатика"] %}selected{% endif %}>Другое</option>
+                </select>
+            </div>
+
+            <!-- Кастомный предмет -->
+            <div id="custom_subject_div" style="display: {% if lesson.subject not in ['Математика', 'Физика', 'Химия', 'Русский язык', 'Литература', 'История', 'Обществознание', 'География', 'Биология', 'Английский язык', 'Информатика'] %}block{% else %}none{% endif %};">
+                <label for="custom_subject" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Введите предмет:
+                </label>
+                <input type="text" id="custom_subject" name="custom_subject" 
+                       value="{% if lesson.subject not in ['Математика', 'Физика', 'Химия'] %}{{ lesson.subject }}{% endif %}"
+                       placeholder="Например: ОГЭ по математике">
+            </div>
+
+            <!-- Длительность урока -->
+            <div>
+                <label for="lesson_duration" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Длительность урока (минут)
+                </label>
+                <input type="number" id="lesson_duration" name="lesson_duration" 
+                       min="10" max="300" step="5"
+                       value="{{ lesson.get('lesson_duration', 60) }}"
+                       placeholder="60">
+                <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">
+                    От 10 до 300 минут. Урок автоматически завершится через указанное время.
+                </small>
+            </div>
+
+            <!-- Период действия -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label for="start_date" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                        Дата начала действия
+                    </label>
+                    <input type="date" id="start_date" name="start_date" 
+                           value="{{ lesson.get('start_date', '') }}">
+                    <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">
+                        Оставьте пустым для немедленного начала
+                    </small>
+                </div>
+                
+                <div>
+                    <label for="end_date" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                        Дата окончания действия
+                    </label>
+                    <input type="date" id="end_date" name="end_date" 
+                           value="{{ lesson.get('end_date', '') }}">
+                    <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">
+                        Оставьте пустым для бессрочного действия
+                    </small>
+                </div>
+            </div>
+
+            <!-- Тип урока -->
+            <div>
+                <label for="lesson_type" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Тип урока
+                </label>
+                <select id="lesson_type" name="lesson_type">
+                    <option value="regular" {% if lesson.get('lesson_type', 'regular') == 'regular' %}selected{% endif %}>Регулярный урок</option>
+                    <option value="trial" {% if lesson.get('lesson_type') == 'trial' %}selected{% endif %}>Пробный урок</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button type="submit" class="btn success">
+                Сохранить изменения
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleCustomSubject() {
+    const subjectSelect = document.getElementById('subject');
+    const customSubjectDiv = document.getElementById('custom_subject_div');
+    const customSubjectInput = document.getElementById('custom_subject');
+    
+    if (subjectSelect.value === 'Другое') {
+        customSubjectDiv.style.display = 'block';
+        customSubjectInput.required = true;
+    } else {
+        customSubjectDiv.style.display = 'none';
+        customSubjectInput.required = false;
+        customSubjectInput.value = '';
+    }
+}
+</script>
+
+<!-- Информационная панель -->
+<div class="info-panel" style="max-width: 600px; margin: 30px auto 0;">
+    <h4>Редактирование урока в шаблоне</h4>
+    <ul style="color: var(--text-primary); margin: 0; padding-left: 20px; line-height: 1.6;">
+        <li>Изменения применяются к шаблону недели</li>
+        <li>Уже созданные уроки в расписании не изменятся</li>
+        <li>Новые уроки будут создаваться с обновленными параметрами</li>
+        <li>Период действия определяет, когда урок активен в шаблоне</li>
+        <li>Длительность урока влияет на автоматическое завершение</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ url_for('shablon_nedeli') }}" 
+       style="color: var(--text-accent); text-decoration: none; font-weight: bold; font-size: 16px;">
+        ← Назад к шаблону недели
+    </a>
+</div>
+
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Вход в систему - Alien Tutor{% endblock %}
+
+{% block content %}
+    
+    <h1>Добро пожаловать</h1>
+    
+    <!-- Сетка кнопок в стекломорфном стиле -->
+    <div class="buttons-grid">
+        <!-- Верхний ряд -->
+        <div class="glass-button-container">
+            <a href="/student" class="glass-button student-btn">
+                <div class="button-title">Личный кабинет ученика</div>
+                <div class="button-subtitle">Войти</div>
+            </a>
+        </div>
+        
+        <div class="glass-button-container">
+            <a href="/parent" class="glass-button parent-btn">
+                <div class="button-title">Личный кабинет родителя</div>
+                <div class="button-subtitle">Войти</div>
+            </a>
+        </div>
+        
+        <!-- Нижний ряд -->
+        <div class="glass-button-container">
+            <a href="/admin" class="glass-button admin-btn">
+                <div class="button-title">Панель администратора</div>
+                <div class="button-subtitle">Войти</div>
+            </a>
+        </div>
+        
+        <div class="glass-button-container">
+            <a href="/about" class="glass-button about-btn">
+                <div class="button-title">О преподавателе</div>
+                <div class="button-subtitle">Инфо</div>
+            </a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block styles %}
+    <!-- Здесь можно добавить специфичные стили для страницы входа -->
+{% endblock %}
+
+{% block scripts %}
+    <!-- Здесь можно добавить специфичные скрипты для страницы входа -->
+{% endblock %}

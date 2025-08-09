@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2>Настройка доступных слотов</h2>
+    <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">
+        Добавление временных слотов для планирования нагрузки
+    </p>
+</div>
+
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <form method="post" action="{{ url_for('setup_slots') }}">
+        
+        <!-- Ползунки переключателей -->
+        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 30px; gap: 60px; flex-wrap: wrap;">
+            
+            <!-- Переключатель количества слотов -->
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="toggle-switch">
+                    <input type="radio" name="add_type" value="single" id="single" checked onchange="toggleAddType()">
+                    <input type="radio" name="add_type" value="group" id="group" onchange="toggleAddType()">
+                    <label for="single" class="toggle-option">Один</label>
+                    <label for="group" class="toggle-option">Несколько</label>
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+
+            <!-- Переключатель типа слотов -->
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="toggle-switch">
+                    <input type="radio" name="time_scope" value="permanent" id="permanent" checked onchange="toggleTimeScope()">
+                    <input type="radio" name="time_scope" value="current_week" id="current_week" onchange="toggleTimeScope()">
+                    <label for="permanent" class="toggle-option">Регул.</label>
+                    <label for="current_week" class="toggle-option">Внепл.</label>
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Форма для одного слота -->
+        <div id="singleSlotForm" style="display: block;">
+            <h3 style="margin-bottom: 20px; color: var(--text-accent);">Добавить один слот</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                <div>
+                    <label for="single_day">День недели:</label>
+                    <select name="single_day" id="single_day" required>
+                        <option value="">Выберите день</option>
+                        <option value="Понедельник">Понедельник</option>
+                        <option value="Вторник">Вторник</option>
+                        <option value="Среда">Среда</option>
+                        <option value="Четверг">Четверг</option>
+                        <option value="Пятница">Пятница</option>
+                        <option value="Суббота">Суббота</option>
+                        <option value="Воскресенье">Воскресенье</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="single_time">Время начала:</label>
+                    <input type="time" name="single_time" id="single_time" required>
+                </div>
+            </div>
+        </div>
+
+        <!-- Форма для группы слотов -->
+        <div id="groupSlotForm" style="display: none;">
+            <h3 style="margin-bottom: 20px; color: var(--text-accent);">Добавить группу слотов</h3>
+            
+            <!-- Кнопки дней недели -->
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; margin-bottom: 15px; font-weight: bold; color: var(--text-primary);">Дни недели:</label>
+                <div class="days-selector">
+                    <input type="checkbox" name="group_days" value="Понедельник" id="day_mon">
+                    <label for="day_mon" class="day-button">Пн</label>
+                    
+                    <input type="checkbox" name="group_days" value="Вторник" id="day_tue">
+                    <label for="day_tue" class="day-button">Вт</label>
+                    
+                    <input type="checkbox" name="group_days" value="Среда" id="day_wed">
+                    <label for="day_wed" class="day-button">Ср</label>
+                    
+                    <input type="checkbox" name="group_days" value="Четверг" id="day_thu">
+                    <label for="day_thu" class="day-button">Чт</label>
+                    
+                    <input type="checkbox" name="group_days" value="Пятница" id="day_fri">
+                    <label for="day_fri" class="day-button">Пт</label>
+                    
+                    <input type="checkbox" name="group_days" value="Суббота" id="day_sat">
+                    <label for="day_sat" class="day-button">Сб</label>
+                    
+                    <input type="checkbox" name="group_days" value="Воскресенье" id="day_sun">
+                    <label for="day_sun" class="day-button">Вс</label>
+                </div>
+            </div>
+
+            <!-- Временной диапазон -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                <div>
+                    <label for="time_start">Время начала:</label>
+                    <input type="time" name="time_start" id="time_start">
+                </div>
+                <div>
+                    <label for="time_end">Время окончания:</label>
+                    <input type="time" name="time_end" id="time_end">
+                </div>
+            </div>
+        </div>
+
+        <!-- Общие настройки слотов -->
+        <div class="info-panel" style="margin-bottom: 25px;">
+            <h4 style="margin-bottom: 15px; color: var(--text-accent);">Настройки слотов</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <div>
+                    <label for="slot_duration">Длительность слота (минуты):</label>
+                    <input type="number" name="slot_duration" id="slot_duration" value="60" min="15" max="300" step="15">
+                    <small style="color: var(--text-muted); font-size: 12px; display: block; margin-top: 5px;">
+                        По умолчанию: 60 минут
+                    </small>
+                </div>
+                <div>
+                    <label for="slot_gap">Промежуток между слотами (минуты):</label>
+                    <input type="number" name="slot_gap" id="slot_gap" value="0" min="0" max="60" step="5">
+                    <small style="color: var(--text-muted); font-size: 12px; display: block; margin-top: 5px;">
+                        По умолчанию: 0 минут (слоты идут подряд)
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button type="submit" class="btn success">
+                Добавить слоты
+            </button>
+        </div>
+    </form>
+</div>
+<!-- Список существующих слотов -->
+{% if slots %}
+<div class="card" style="max-width: 800px; margin: 30px auto;">
+    <h3 style="margin-bottom: 20px; color: var(--text-accent);">Существующие слоты</h3>
+    <div style="overflow-x: auto;">
+        <table border="1" cellpadding="8" cellspacing="0" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>День недели</th>
+                    <th>Время</th>
+                    <th>Длительность</th>
+                    <th>Тип</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for slot in slots %}
+                <tr>
+                    <td>{{ slot.day }}</td>
+                    <td>{{ slot.time }}</td>
+                    <td>{{ slot.duration }} мин</td>
+                    <td>
+                        {% if slot.type == 'permanent' %}
+                            <span style="color: #10b981;">Регулярные</span>
+                        {% else %}
+                            <span style="color: #f59e0b;">Внеплановые</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">
+                        <form method="post" action="{{ url_for('delete_slot', slot_id=loop.index0) }}" style="display: inline;">
+                            <span title="Удалить слот" class="icon-action icon-delete" 
+                                  onclick="if(confirm('Удалить этот слот?')) { this.closest('form').submit(); }" 
+                                  style="cursor: pointer;">
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                                    <line x1="10" y1="11" x2="10" y2="17"/>
+                                    <line x1="14" y1="11" x2="14" y2="17"/>
+                                </svg>
+                            </span>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<script>
+function toggleAddType() {
+    const addType = document.querySelector('input[name="add_type"]:checked').value;
+    const singleForm = document.getElementById('singleSlotForm');
+    const groupForm = document.getElementById('groupSlotForm');
+    
+    if (addType === 'single') {
+        singleForm.style.display = 'block';
+        groupForm.style.display = 'none';
+        
+        // Убираем required с групповых полей
+        document.getElementById('time_start').required = false;
+        document.getElementById('time_end').required = false;
+        
+        // Добавляем required к одиночным полям
+        document.getElementById('single_day').required = true;
+        document.getElementById('single_time').required = true;
+    } else {
+        singleForm.style.display = 'none';
+        groupForm.style.display = 'block';
+        
+        // Убираем required с одиночных полей
+        document.getElementById('single_day').required = false;
+        document.getElementById('single_time').required = false;
+        
+        // Добавляем required к групповым полям
+        document.getElementById('time_start').required = true;
+        document.getElementById('time_end').required = true;
+    }
+}
+
+function toggleTimeScope() {
+    const timeScope = document.querySelector('input[name="time_scope"]:checked').value;
+    // Здесь можно добавить логику, если понадобится
+}
+</script>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ url_for('nagruzka') }}" 
+       style="color: var(--text-accent); text-decoration: none; font-weight: bold; font-size: 16px;">
+        ← Назад к нагрузке
+    </a>
+</div>
+
+{% endblock %}

@@ -1,0 +1,1508 @@
+/* ============================================================================
+   КАЛЕНДАША - ОЧИЩЕННЫЙ СТИЛЬ
+   Часть 1/4: Базовые стили, переменные, переключатель тем
+   ============================================================================ */
+
+/* Сброс стилей */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* CSS Переменные для тем */
+:root {
+    /* ТЕМНАЯ ТЕМА (по умолчанию) */
+    --bg-primary: linear-gradient(135deg, #151A21 0%, #394659 100%);
+    --bg-secondary: rgba(255, 255, 255, 0.1);
+    --bg-card: rgba(255, 255, 255, 0.05);
+    --bg-modal: rgba(255, 255, 255, 0.1);
+    
+    --text-primary: #D9F6F4;
+    --text-secondary: #ffffff;
+    --text-accent: #5ED9D7;
+    --text-muted: rgba(217, 246, 244, 0.8);
+    
+    --border-primary: rgba(255, 255, 255, 0.2);
+    --border-secondary: rgba(255, 255, 255, 0.1);
+    
+    --accent-gradient: linear-gradient(45deg, #00d4ff, #7c3aed);
+    --success-gradient: linear-gradient(45deg, #10b981, #059669);
+    --warning-gradient: linear-gradient(45deg, #f59e0b, #d97706);
+    --danger-gradient: linear-gradient(45deg, #ef4444, #dc2626);
+    
+    /* Цвета уроков - темная тема */
+    --lesson-regular-bg: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(30, 58, 138, 0.4));
+    --lesson-regular-border: #00f0ff;
+    --lesson-regular-text: #E0F6FF;
+    
+    --lesson-unplanned-bg: linear-gradient(135deg, rgba(168, 85, 247, 0.4), rgba(88, 28, 135, 0.4));
+    --lesson-unplanned-border: #b366ff;
+    --lesson-unplanned-text: #F3E8FF;
+    
+    --lesson-trial-bg: linear-gradient(135deg, rgba(16, 185, 129, 0.4), rgba(6, 78, 59, 0.4));
+    --lesson-trial-border: #00d084;
+    --lesson-trial-text: #D1FAE5;
+    
+    --lesson-conflict-bg: linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(127, 29, 29, 0.4));
+    --lesson-conflict-border: #ff4444;
+    --lesson-conflict-text: #FEE2E2;
+    
+    --lesson-cancelled-bg: linear-gradient(135deg, rgba(107, 114, 128, 0.2), rgba(55, 65, 81, 0.2));
+    --lesson-cancelled-border: #6b7280;
+    --lesson-cancelled-text: #F3F4F6;
+}
+
+/* Основные стили body */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+    transition: all 0.5s ease;
+    overflow-x: hidden;
+}
+
+/* Основные контейнеры */
+main {
+    background: var(--bg-secondary);
+    backdrop-filter: blur(10px);
+    margin: 20px auto;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-primary);
+    max-width: 1200px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+/* ============================================================================
+   КАЛЕНДАША - ОЧИЩЕННЫЙ СТИЛЬ
+   Часть 2/4: Заголовки, навигация, кнопки, формы, таблицы
+   ============================================================================ */
+
+/* Заголовки */
+h1, h2, h3 {
+    color: var(--text-accent);
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+h1 {
+    font-size: 2.5rem;
+    text-align: center;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 20px rgba(94, 217, 215, 0.3);
+    margin-bottom: 30px;
+}
+
+h2 {
+    font-size: 1.8rem;
+    text-align: center;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+h3 {
+    font-size: 1.4rem;
+    color: var(--text-primary);
+    margin: 20px 0 15px 0;
+}
+
+/* ШАПКА И НАВИГАЦИЯ */
+header {
+    background: var(--bg-secondary);
+    backdrop-filter: blur(10px);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    border: 1px solid var(--border-primary);
+    position: relative;
+    overflow: hidden;
+}
+
+header h1 {
+    color: var(--text-accent);
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    text-align: center;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    z-index: 1;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+}
+
+nav a {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    background: var(--bg-card);
+    border: 1px solid var(--border-secondary);
+    backdrop-filter: blur(5px);
+    position: relative;
+    overflow: hidden;
+}
+
+nav a:hover {
+    background: var(--accent-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+    border-color: transparent;
+}
+
+/* КНОПКИ */
+button, input[type="submit"] {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    min-width: 120px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+}
+
+button:hover, input[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 212, 255, 0.5);
+}
+
+button:active, input[type="submit"]:active {
+    transform: translateY(0);
+}
+
+/* Кнопка успеха */
+button.success, .btn-success {
+    background: var(--success-gradient);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+button.success:hover, .btn-success:hover {
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+}
+
+/* Кнопка предупреждения */
+button.warning, .btn-warning {
+    background: var(--warning-gradient);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+button.warning:hover, .btn-warning:hover {
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
+}
+
+/* Кнопка удаления */
+button.danger, .btn-danger, button[onclick*="confirm"] {
+    background: var(--danger-gradient);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+button.danger:hover, .btn-danger:hover, button[onclick*="confirm"]:hover {
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
+}
+
+/* ФОРМЫ */
+form {
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-secondary);
+    border-radius: 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: var(--bg-card);
+    backdrop-filter: blur(5px);
+    color: var(--text-primary);
+}
+
+/* Исправленные placeholder'ы */
+input::placeholder, textarea::placeholder {
+    color: rgba(217, 246, 244, 0.6);
+    opacity: 1;
+}
+
+/* Выпадающие списки */
+select {
+    color: #D9F6F4;
+    background: rgba(44, 62, 80, 0.9);
+    border: 1px solid var(--border-secondary);
+}
+
+select option {
+    color: #D9F6F4;
+    background: #2C3E50;
+}
+
+/* ССЫЛКИ */
+a {
+    color: #00d4ff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent-gradient);
+    transition: width 0.3s ease;
+}
+
+a:hover::after {
+    width: 100%;
+}
+
+a:hover {
+    color: #5ED9D7;
+    text-shadow: 0 0 8px rgba(94, 217, 215, 0.5);
+}
+
+/* Кнопки-ссылки */
+a.btn, a[href*="добавить"] {
+    display: inline-block;
+    background: var(--success-gradient);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+a.btn::after, a[href*="добавить"]::after {
+    display: none;
+}
+
+a.btn:hover, a[href*="добавить"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+    text-shadow: none;
+}
+
+/* ТАБЛИЦЫ */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 20px;
+    background: var(--bg-secondary);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-primary);
+}
+
+th {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 16px;
+    text-align: center;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+th:first-child {
+    border-top-left-radius: 15px;
+}
+
+th:last-child {
+    border-top-right-radius: 15px;
+}
+
+td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-secondary);
+    transition: all 0.3s ease;
+    color: var(--text-primary);
+    backdrop-filter: blur(5px);
+    text-align: center;
+    vertical-align: middle;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:last-child td:first-child {
+    border-bottom-left-radius: 15px;
+}
+
+tr:last-child td:last-child {
+    border-bottom-right-radius: 15px;
+}
+
+/* КОНТЕЙНЕРЫ И КАРТОЧКИ */
+.container, .widget-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+}
+
+.card {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-secondary);
+    position: relative;
+    overflow: hidden;
+}
+/* ============================================================================
+   КАЛЕНДАША - ОЧИЩЕННЫЙ СТИЛЬ
+   Часть 3/4: Календарная сетка, уроки, переключатели, специальные компоненты
+   ============================================================================ */
+
+/* КАЛЕНДАРНАЯ СЕТКА */
+
+
+/* Недельный вид */
+.week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 15px;
+    min-width: 800px;
+}
+
+.week-day-column {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 15px;
+    min-height: 300px;
+    border: 1px solid var(--border-secondary);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.week-day-column:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0, 212, 255, 0.2);
+    border-color: rgba(0, 212, 255, 0.3);
+}
+
+.week-day-column.today {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(124, 58, 237, 0.2));
+    border: 2px solid #00d4ff;
+    box-shadow: 0 0 25px rgba(0, 212, 255, 0.4);
+}
+
+.week-day-header {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.week-day-name {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.week-day-date {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.today-badge {
+    font-size: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+/* Месячный календарь */
+.month-calendar {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 2px;
+}
+
+.month-header {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 12px;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 8px;
+}
+
+.month-day, .day-cell {
+    min-height: 120px;
+    border: 1px solid var(--border-secondary);
+    padding: 10px;
+    border-radius: 8px;
+    background: var(--bg-card);
+    backdrop-filter: blur(5px);
+    vertical-align: top;
+    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.month-day:hover, .day-cell:hover {
+    background: rgba(0, 212, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.2);
+    border-color: rgba(0, 212, 255, 0.3);
+}
+
+.month-day.today, .day-cell.today {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(124, 58, 237, 0.2));
+    border: 2px solid #00d4ff;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+}
+
+.month-day.other-month {
+    background: rgba(107, 114, 128, 0.1);
+    opacity: 0.6;
+}
+
+.month-day-number, .day-number {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.month-day-number.today, .day-number.today {
+    color: #00d4ff;
+    text-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+}
+
+/* УРОКИ - ВСЕ ТИПЫ */
+.lesson-item, .lesson-card, .lesson-slot {
+    padding: 16px 14px 14px 14px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    border-left: 4px solid;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.lesson-item:hover, .lesson-card:hover, .lesson-slot:hover {
+    transform: translateX(5px) translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* РЕГУЛЯРНЫЕ УРОКИ */
+.lesson-regular, .lesson-item:not(.lesson-unplanned):not(.lesson-trial):not(.lesson-conflict):not(.lesson-cancelled) {
+    background: var(--lesson-regular-bg);
+    border-left-color: var(--lesson-regular-border);
+    color: var(--lesson-regular-text);
+}
+
+.lesson-regular:hover {
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.3);
+}
+
+/* ВНЕПЛАНОВЫЕ УРОКИ */
+.lesson-unplanned {
+    background: var(--lesson-unplanned-bg);
+    border-left-color: var(--lesson-unplanned-border);
+    color: var(--lesson-unplanned-text);
+}
+
+.lesson-unplanned:hover {
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.3);
+}
+
+/* ПРОБНЫЕ УРОКИ */
+.lesson-trial {
+    background: var(--lesson-trial-bg);
+    border-left-color: var(--lesson-trial-border);
+    color: var(--lesson-trial-text);
+}
+
+.lesson-trial:hover {
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+}
+
+/* КОНФЛИКТЫ ВРЕМЕНИ */
+.lesson-conflict {
+    background: var(--lesson-conflict-bg);
+    border-left-color: var(--lesson-conflict-border);
+    color: var(--lesson-conflict-text);
+}
+
+.lesson-conflict:hover {
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+/* ОТМЕНЕННЫЕ УРОКИ */
+.lesson-cancelled {
+    background: var(--lesson-cancelled-bg);
+    border-left-color: var(--lesson-cancelled-border);
+    color: var(--lesson-cancelled-text);
+    opacity: 0.7;
+    position: relative;
+}
+
+.lesson-cancelled::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--lesson-cancelled-border);
+    opacity: 0.5;
+}
+
+.lesson-cancelled:hover {
+    box-shadow: 0 6px 20px rgba(107, 114, 128, 0.3);
+}
+
+/* Элементы внутри уроков */
+.lesson-time {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    display: inline-block;
+    min-width: 80px;
+    text-align: center;
+}
+
+.lesson-student {
+    font-weight: bold;
+    margin-bottom: 6px;
+    font-size: 16px;
+}
+
+.lesson-subject {
+    font-size: 15px;
+    margin-bottom: 8px;
+    font-style: normal;
+}
+
+/* Месячный вид - компактные уроки */
+.lesson-card-small {
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    font-size: 10px;
+    line-height: 1.2;
+    border-radius: 6px;
+}
+
+/* ПЕРЕКЛЮЧАТЕЛЬ ВИДОВ */
+.view-toggle {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+
+
+.view-toggle-btn {
+    padding: 12px 20px;
+    margin: 8px;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.view-toggle-btn.active {
+    background: var(--accent-gradient);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.view-toggle-btn span {
+    position: relative;
+    z-index: 1;
+}
+
+/* НАВИГАЦИЯ РАСПИСАНИЯ */
+.schedule-section {
+    background: var(--bg-secondary);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.schedule-nav-btn {
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+}
+
+.schedule-nav-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+}
+
+.schedule-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ИНФОРМАЦИОННЫЕ ПАНЕЛИ */
+.info-panel {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 15px;
+    border-left: 4px solid #00d4ff;
+    margin: 20px 0;
+    border: 1px solid var(--border-secondary);
+    position: relative;
+    overflow: hidden;
+}
+
+.info-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--accent-gradient);
+}
+
+.info-panel.warning {
+    border-left-color: #f59e0b;
+}
+
+.info-panel.warning::before {
+    background: var(--warning-gradient);
+}
+
+.info-panel.success {
+    border-left-color: #10b981;
+}
+
+.info-panel.success::before {
+    background: var(--success-gradient);
+}
+
+.info-panel.danger {
+    border-left-color: #ef4444;
+}
+
+.info-panel.danger::before {
+    background: var(--danger-gradient);
+}
+
+.info-panel h4 {
+    color: var(--text-accent);
+    margin-bottom: 10px;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ЛЕГЕНДА ЦВЕТОВ */
+.color-legend {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 20px;
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-secondary);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.legend-item:hover {
+    background: rgba(0, 212, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border-left: 4px solid;
+    backdrop-filter: blur(5px);
+}
+
+.legend-color.regular {
+    background: var(--lesson-regular-bg);
+    border-left-color: var(--lesson-regular-border);
+}
+
+.legend-color.unplanned {
+    background: var(--lesson-unplanned-bg);
+    border-left-color: var(--lesson-unplanned-border);
+}
+
+.legend-color.trial {
+    background: var(--lesson-trial-bg);
+    border-left-color: var(--lesson-trial-border);
+}
+
+.legend-color.conflict {
+    background: var(--lesson-conflict-bg);
+    border-left-color: var(--lesson-conflict-border);
+}
+
+.legend-color.cancelled {
+    background: var(--lesson-cancelled-bg);
+    border-left-color: var(--lesson-cancelled-border);
+}
+
+/* СОСТОЯНИЕ "НЕТ УРОКОВ" */
+.no-lessons {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+
+.no-lessons h3 {
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.no-lessons p {
+    color: var(--text-muted);
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+/* УСПЕШНЫЕ СООБЩЕНИЯ */
+.success {
+    background: var(--success-gradient);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+/* СООБЩЕНИЯ ОБ ОШИБКАХ */
+.error {
+    background: var(--danger-gradient);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+/* ПУСТЫЕ СОСТОЯНИЯ */
+.empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--text-muted);
+    font-style: italic;
+    background: var(--bg-card);
+    backdrop-filter: blur(5px);
+    border-radius: 15px;
+    border: 1px solid var(--border-secondary);
+}
+/* ============================================================================
+   КАЛЕНДАША - ОЧИЩЕННЫЙ СТИЛЬ
+   Часть 4/4: Иконки, статистика, адаптивность, финальные стили
+   ============================================================================ */
+
+/* ИКОНКИ ДЕЙСТВИЙ */
+.icon-action {
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    transition: color 0.3s, transform 0.3s;
+    text-decoration: none;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.icon-action svg {
+    display: block;
+    width: 28px;
+    height: 28px;
+}
+
+.icon-action:hover, .icon-action:focus {
+    color: #00d4ff;
+    transform: scale(1.2);
+}
+
+.icon-action.icon-delete:hover, .icon-action.icon-delete:focus {
+    color: #ef4444;
+    transform: scale(1.2);
+}
+
+/* СТАТИСТИКА ДЛЯ ОПЛАТЫ */
+.payment-stats-section {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 30px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.3);
+}
+
+.payment-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    z-index: 1;
+    position: relative;
+}
+
+.payment-stats-item {
+    text-align: center;
+    padding: 20px 15px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.payment-stats-item:hover {
+    transform: translateY(-3px);
+    background: rgba(255,255,255,0.25);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.payment-stats-value {
+    font-weight: 800;
+    font-size: 28px;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    color: white;
+}
+
+.payment-stats-label {
+    font-size: 12px;
+    opacity: 0.9;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+/* ЦВЕТА ДЛЯ БАЛАНСОВ */
+.balance-positive {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.balance-negative {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.balance-zero {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.student-name-neutral {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* АНИМАЦИЯ ТАБЛИЦ */
+.students-table tr:hover, .payment-table tr:hover {
+    background: rgba(0, 212, 255, 0.1);
+}
+
+.students-table td, .payment-table td {
+    transition: background 0.3s ease;
+}
+
+.students-table tr:hover td, .payment-table tr:hover td {
+    background: rgba(0, 212, 255, 0.1);
+}
+
+/* СЛОТЫ НАГРУЗКИ */
+.slot-item {
+    padding: 15px 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border-left: 4px solid;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    position: relative;
+    cursor: default;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.slot-free {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 95, 70, 0.2));
+    border-left-color: #10b981;
+    color: var(--text-primary);
+}
+
+.slot-occupied {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(30, 58, 138, 0.2));
+    border-left-color: #00d4ff;
+    color: var(--text-primary);
+}
+
+.slot-time {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 8px;
+    background: var(--accent-gradient);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    min-width: 70px;
+    text-align: center;
+}
+
+.slot-status {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.slot-duration {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.slot-lesson {
+    font-size: 13px;
+    font-style: italic;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-top: 6px;
+}
+
+.slot-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* ЛЕГЕНДА ДЛЯ СЛОТОВ */
+.legend-color.free {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 95, 70, 0.2));
+    border-left-color: #10b981;
+}
+
+.legend-color.occupied {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(30, 58, 138, 0.2));
+    border-left-color: #00d4ff;
+}
+
+/* КНОПКИ ДНЕЙ НЕДЕЛИ */
+.days-selector {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.days-selector input[type="checkbox"] {
+    display: none;
+}
+
+.day-button {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--bg-card);
+    border: 2px solid var(--border-secondary);
+    transition: all 0.3s ease;
+    user-select: none;
+    backdrop-filter: blur(10px);
+}
+
+.day-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+    border-color: rgba(0, 212, 255, 0.3);
+}
+
+.days-selector input[type="checkbox"]:checked + .day-button {
+    background: var(--accent-gradient);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+}
+
+/* ИНФОРМАЦИЯ О ЧАСОВОМ ПОЯСЕ */
+.timezone-info {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    border-radius: 12px;
+    margin-top: 25px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    border: 1px solid var(--border-secondary);
+}
+
+.timezone-info::before {
+    content: "🌍";
+    margin-right: 8px;
+}
+
+/* АНИМАЦИИ */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+main {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.card, .lesson-item {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* АДАПТИВНОСТЬ */
+@media (max-width: 1200px) {
+    main {
+        margin: 15px;
+        padding: 25px;
+    }
+    
+    .payment-stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    main {
+        margin: 10px;
+        padding: 20px;
+        border-radius: 15px;
+    }
+    
+    header {
+        padding: 20px;
+        border-radius: 15px;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    nav {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    nav a {
+        text-align: center;
+        padding: 10px 20px;
+    }
+    
+    .payment-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .payment-stats-value {
+        font-size: 22px;
+    }
+    
+    .payment-stats-label {
+        font-size: 11px;
+    }
+    
+    .week-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        min-width: unset;
+    }
+    
+    .week-day-column {
+        min-height: 200px;
+        padding: 12px;
+    }
+    
+    .month-day, .day-cell {
+        min-height: 100px;
+        padding: 8px;
+    }
+    
+    .lesson-item, .lesson-card {
+        font-size: 11px;
+        padding: 8px 10px;
+    }
+    
+    .schedule-nav-btn {
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+    
+    .color-legend {
+        gap: 12px;
+        padding: 15px;
+    }
+    
+    .legend-item {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+    
+    .theme-switcher {
+        top: 10px;
+        right: 10px;
+        padding: 6px;
+    }
+    
+    .theme-icon {
+        font-size: 16px;
+    }
+    
+    .switch-track {
+        width: 45px;
+        height: 22px;
+    }
+    
+    .switch-thumb {
+        width: 16px;
+        height: 16px;
+        top: 2px;
+    }
+    
+    table {
+        font-size: 12px;
+    }
+    
+    th, td {
+        padding: 10px;
+    }
+    
+    .day-button {
+        width: 40px;
+        height: 40px;
+        font-size: 12px;
+    }
+    
+    .days-selector {
+        gap: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    main {
+        margin: 5px;
+        padding: 15px;
+    }
+    
+    header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .payment-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .payment-stats-value {
+        font-size: 20px;
+    }
+    
+    .payment-stats-item {
+        padding: 15px 10px;
+    }
+    
+    .week-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
+    .week-day-column {
+        min-height: 150px;
+        padding: 10px;
+    }
+    
+    .month-day, .day-cell {
+        min-height: 80px;
+        padding: 5px;
+    }
+    
+    .lesson-item, .lesson-card {
+        font-size: 10px;
+        padding: 6px 8px;
+        margin-bottom: 5px;
+    }
+    
+    .view-toggle-btn {
+        padding: 10px 16px;
+        font-size: 12px;
+    }
+    
+    .schedule-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .color-legend {
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    button, input[type="submit"] {
+        padding: 10px 16px;
+        font-size: 12px;
+        min-width: 100px;
+    }
+}
+
+/* СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ ВИДЖЕТОВ */
+.widget-container {
+    background: var(--bg-secondary);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-primary);
+    max-width: 100%;
+    margin: 0;
+    padding: 20px;
+}
+
+.widget-header {
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.widget-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.widget-subtitle {
+    color: var(--text-muted);
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* ФИНАЛЬНЫЕ ШТРИХИ */
+::selection {
+    background: rgba(0, 212, 255, 0.3);
+    color: white;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-card);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent-gradient);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #5ED9D7, #a855f7);
+}
+
+/* СТИЛИ ДЛЯ ПОЛЗУНКОВ В ФОРМЕ СЛОТОВ */
+.toggle-switch {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--bg-card);
+    border-radius: 25px;
+    padding: 4px;
+    border: 2px solid var(--border-secondary);
+    width: 200px;
+    height: 50px;
+    overflow: hidden;
+}
+
+.toggle-switch input[type="radio"] {
+    display: none;
+}
+
+.toggle-option {
+    flex: 1;
+    text-align: center;
+    padding: 8px 12px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 2;
+    position: relative;
+    margin: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    height: calc(100% - 8px);
+    background: var(--accent-gradient);
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+}
+
+.toggle-switch input[type="radio"]:nth-child(1):checked ~ .toggle-slider {
+    transform: translateX(0);
+}
+
+.toggle-switch input[type="radio"]:nth-child(2):checked ~ .toggle-slider {
+    transform: translateX(100%);
+}
+
+.toggle-switch input[type="radio"]:checked + .toggle-option {
+    color: white;
+    font-weight: 700;
+}

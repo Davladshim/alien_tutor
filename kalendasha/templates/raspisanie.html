@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2>Расписание занятий</h2>
+    <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">
+        Календарь с полным расписанием уроков
+    </p>
+</div>
+
+<!-- Переключатель вида и навигация -->
+<div class="card" style="margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        
+        <!-- Переключатель вида -->
+        <div class="view-toggle-container">
+            <a href="#" onclick="switchView('week')" id="weekToggle"
+               class="view-toggle-btn {% if view_type == 'week' %}active{% endif %}">
+                <span>Неделя</span>
+            </a>
+            <a href="#" onclick="switchView('month')" id="monthToggle"
+               class="view-toggle-btn {% if view_type == 'month' %}active{% endif %}">
+                <span>Месяц</span>
+            </a>
+        </div>
+
+        <!-- Навигация -->
+        {% if view_type == 'week' %}
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <a href="{{ url_for('raspisanie', view_type='week', year=prev_year, period=prev_week) }}" 
+               class="schedule-nav-btn">
+                ← Предыдущая неделя
+            </a>
+            <span style="font-weight: bold; color: var(--text-accent); font-size: 16px;">{{ week_info }}</span>
+            <a href="{{ url_for('raspisanie', view_type='week', year=next_year, period=next_week) }}" 
+               class="schedule-nav-btn">
+                Следующая неделя →
+            </a>
+        </div>
+        {% else %}
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <a href="{{ url_for('raspisanie', view_type='month', year=prev_year, period=prev_month) }}" 
+               class="schedule-nav-btn">
+                ← Предыдущий месяц
+            </a>
+            <span style="font-weight: bold; color: var(--text-accent); font-size: 16px;">{{ month_name }} {{ year }}</span>
+            <a href="{{ url_for('raspisanie', view_type='month', year=next_year, period=next_month) }}" 
+               class="schedule-nav-btn">
+                Следующий месяц →
+            </a>
+        </div>
+        {% endif %}
+        
+        <!-- Кнопки действий -->
+        <div style="display: flex; gap: 20px; align-items: center; justify-content: center;">
+            <!-- Добавить урок -->
+            <span title="Добавить урок" class="icon-action" onclick="window.location.href='{{ url_for('add_slot') }}'">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="16"/>
+                    <line x1="8" y1="12" x2="16" y2="12"/>
+                </svg>
+            </span>
+            
+            <!-- Пробный урок -->
+            <span title="Добавить пробный урок" class="icon-action" onclick="window.location.href='{{ url_for('add_trial_lesson_route') }}'">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="M21 21l-4.35-4.35"/>
+                </svg>
+            </span>
+            
+            <!-- Очистить расписание -->
+            <span title="Очистить все расписание" class="icon-action icon-delete" 
+                  onclick="if(confirm('Это действие удалит ВСЕ занятия! Продолжить?')) { clearSchedule(); }">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                    <line x1="10" y1="11" x2="10" y2="17"/>
+                    <line x1="14" y1="11" x2="14" y2="17"/>
+                </svg>
+            </span>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+// JavaScript код для переключения видов
+function switchView(viewType) {
+    localStorage.setItem('raspisanie_view', viewType);
+    
+    {% if view_type == 'week' %}
+        const currentYear = {{ year }};
+        const currentPeriod = {{ week }};
+    {% else %}
+        const currentYear = {{ year }};
+        const currentPeriod = {{ month }};
+    {% endif %}
+    
+    if (viewType === 'week') {
+        {% if view_type == 'month' %}
+            window.location.href = `/расписание/week`;
+        {% endif %}
+    } else {
+        {% if view_type == 'week' %}
+            window.location.href = `/расписание/month`;
+        {% endif %}
+    }
+}
+
+// Функция очистки расписания
+function clearSchedule() {
+    if (confirm('Очистить все занятия?\n\nЭто действие удалит ВСЕ уроки из расписания.\nДанные нельзя будет восстановить!\n\nВы уверены?')) {
+        // Создаем форму для отправки POST запроса
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/админ/очистить-расписание';
+        form.style.display = 'none';
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Применяем сохраненный вид при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('raspisanie_view');
+    if (savedView) {
+        const weekBtn = document.getElementById('weekToggle');
+        const monthBtn = document.getElementById('monthToggle');
+        
+        if (savedView === 'week') {
+            weekBtn.classList.add('active');
+            monthBtn.classList.remove('active');
+        } else {
+            weekBtn.classList.remove('active');
+            monthBtn.classList.add('active');
+        }
+    }
+});
+</script>
+
+<!-- Легенда -->
+<div class="color-legend">
+    <div class="legend-item">
+        <div class="legend-color regular"></div>
+        <span style="font-size: 14px;">Регулярный урок</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color unplanned"></div>
+        <span style="font-size: 14px;">Внеплановый урок</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color trial"></div>
+        <span style="font-size: 14px;">Пробный урок</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color conflict"></div>
+        <span style="font-size: 14px;">Конфликт времени</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color cancelled"></div>
+        <span style="font-size: 14px;">Отмененный урок</span>
+    </div>
+</div>
+
+{% if view_type == 'week' %}
+    <!-- Недельный вид -->
+    <div class="calendar-grid">
+        <div class="week-grid">
+            
+            <!-- Заголовки дней с датами -->
+            {% for date_info in week_dates %}
+            <div class="week-day-header">
+                <div class="week-day-name">{{ date_info.day_name }}</div>
+                <div class="week-day-date">{{ date_info.date }}</div>
+                {% if date_info.is_today %}
+                    <div class="today-badge">СЕГОДНЯ</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <!-- Содержимое дней -->
+            {% for date_info in week_dates %}
+            <div class="week-day-column {% if date_info.is_today %}today{% endif %}">
+                
+                {% if date_info.lessons %}
+                    <!-- Группируем уроки по времени для выявления конфликтов -->
+                    {% set time_groups = {} %}
+                    {% for lesson in date_info.lessons %}
+                        {% if lesson.time not in time_groups %}
+                            {% set _ = time_groups.update({lesson.time: []}) %}
+                        {% endif %}
+                        {% set _ = time_groups[lesson.time].append(lesson) %}
+                    {% endfor %}
+                    
+                    {% for time, lessons_at_time in time_groups.items() %}
+                        {% for lesson in lessons_at_time %}
+                        {% set lesson_status = lesson.get('status', 'scheduled') %}
+                        {% set has_conflict = lesson.get('has_conflict', False) %}
+                        {% set is_trial = lesson.get('lesson_type') == 'trial' or lesson.subject == 'Пробный урок' %}
+                        {% set is_unplanned = not lesson.get('from_template', False) and lesson.get('date') %}
+                        
+                        <div class="lesson-item 
+                                    {% if lesson_status == 'cancelled' %}lesson-cancelled
+                                    {% elif has_conflict %}lesson-conflict
+                                    {% elif is_trial %}lesson-trial
+                                    {% elif is_unplanned %}lesson-unplanned
+                                    {% else %}lesson-regular{% endif %}"
+                             onclick="window.location.href='/schedule/lesson/{{ lesson.get('id', '') }}/edit'"
+                             style="cursor: pointer;">
+                            
+                            <div class="lesson-time">
+                                {{ lesson.time }}
+                                {% if lesson_status == 'cancelled' %}
+                                    <span style="font-size: 10px; background: rgba(255,255,255,0.3); padding: 1px 4px; border-radius: 2px; margin-left: 5px;">
+                                        ОТМЕНЕН
+                                    </span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="lesson-student">{{ lesson.student }}</div>
+                            <div class="lesson-subject">{{ lesson.subject }}</div>
+                        </div>
+                        {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 50px;">
+                        Нет занятий
+                    </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    <!-- Месячный вид -->
+    <div class="calendar-grid">
+        
+        <!-- Заголовки дней недели -->
+        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 10px;">
+            <div class="month-header">Пн</div>
+            <div class="month-header">Вт</div>
+            <div class="month-header">Ср</div>
+            <div class="month-header">Чт</div>
+            <div class="month-header">Пт</div>
+            <div class="month-header">Сб</div>
+            <div class="month-header">Вс</div>
+        </div>
+
+        <!-- Дни месяца -->
+        {% for week in month_calendar %}
+        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px;">
+            {% for day in week %}
+            <div class="month-day {% if day and day.is_today %}today{% endif %}">
+                {% if day %}
+                    <!-- Номер дня -->
+                    <div class="month-day-number {% if day.is_today %}today{% endif %}">
+                        {{ day.day }}
+                        {% if day.is_today %}
+                            <span style="font-size: 10px; background: #00d4ff; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">
+                                СЕГОДНЯ
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Занятия -->
+                    {% if day.lessons %}
+                        <!-- Группируем уроки по времени для выявления конфликтов -->
+                        {% set time_groups = {} %}
+                        {% for lesson in day.lessons %}
+                            {% if lesson.time not in time_groups %}
+                                {% set _ = time_groups.update({lesson.time: []}) %}
+                            {% endif %}
+                            {% set _ = time_groups[lesson.time].append(lesson) %}
+                        {% endfor %}
+                        
+                        {% for time, lessons_at_time in time_groups.items() %}
+                            {% for lesson in lessons_at_time %}
+                            {% set lesson_status = lesson.get('status', 'scheduled') %}
+                            {% set has_conflict = lesson.get('has_conflict', False) %}
+                            {% set is_trial = lesson.get('lesson_type') == 'trial' or lesson.subject == 'Пробный урок' %}
+                            {% set is_unplanned = not lesson.get('from_template', False) and lesson.get('date') %}
+                            
+                            <div class="lesson-card-small 
+                                        {% if lesson_status == 'cancelled' %}lesson-cancelled
+                                        {% elif has_conflict %}lesson-conflict
+                                        {% elif is_trial %}lesson-trial
+                                        {% elif is_unplanned %}lesson-unplanned
+                                        {% else %}lesson-regular{% endif %}"
+                                 onclick="window.location.href='/schedule/lesson/{{ lesson.get('id', '') }}/edit'"
+                                 style="cursor: pointer;">
+                                
+                                <div class="lesson-time">
+                                    {{ lesson.time }}
+                                    {% if lesson_status == 'cancelled' %}
+                                        <span style="font-size: 9px; background: rgba(255,255,255,0.3); padding: 1px 3px; border-radius: 2px; margin-left: 3px;">
+                                            ОТМЕНЕН
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="lesson-student">{{ lesson.student }}</div>
+                                <div class="lesson-subject">{{ lesson.subject }}</div>
+                            </div>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endif %}
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% endblock %}

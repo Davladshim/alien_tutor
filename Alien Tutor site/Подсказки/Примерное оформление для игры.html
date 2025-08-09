@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Космические Приключения</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .game-header {
+            background: linear-gradient(90deg, #6a4c93, #8a2be2);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .game-world {
+            width: 100%;
+            height: calc(100vh - 60px);
+            position: relative;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #0f0f23 70%, #000 100%);
+        }
+
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #fff, transparent),
+                radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.6), transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+        }
+
+        .player {
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, #32cd32, #228b22);
+            border-radius: 50%;
+            position: absolute;
+            border: 3px solid #7fffd4;
+            box-shadow: 0 0 20px #32cd32;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .ufo {
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(135deg, #ffd700, #ffa500);
+            border-radius: 50%;
+            position: absolute;
+            border: 2px solid #ffff00;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        .ufo.glow {
+            box-shadow: 0 0 35px rgba(255, 215, 0, 1);
+            transform: scale(1.1);
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            border: 2px solid #8a2be2;
+        }
+
+        .modal h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+
+        .question {
+            font-size: 24px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .answer-input {
+            width: 200px;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #8a2be2;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 15px 25px;
+            margin: 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #32cd32, #228b22);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6a4c93, #8a2be2);
+        }
+
+        .stats {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🚀 Космические Математические Приключения</h1>
+        </div>
+        
+        <div class="game-world" id="gameWorld">
+            <div class="stars"></div>
+            
+            <div class="stats">
+                <div>⭐ Очки: <span id="score">0</span></div>
+                <div>🛸 НЛО найдено: <span id="ufosFound">0</span>/3</div>
+            </div>
+            
+            <div class="player" id="player">👽</div>
+            
+            <div class="controls">
+                🎮 Управление: WASD<br>
+                🛸 Действие: ПРОБЕЛ<br>
+                Подойди к НЛО и нажми ПРОБЕЛ!
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="questionModal">
+        <div class="modal-content">
+            <h2>🧮 Космическая Задача</h2>
+            <div class="question" id="questionText"></div>
+            <input type="number" class="answer-input" id="answerInput" placeholder="Введите ответ">
+            <div>
+                <button class="btn btn-primary" onclick="checkAnswer()">Проверить</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Пропустить</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log("Игра загружается...");
+        
+        let player = {
+            x: 100,
+            y: 150,
+            speed: 5
+        };
+        
+        let gameState = {
+            score: 0,
+            ufosFound: 0,
+            totalUfos: 3
+        };
+        
+        let keys = {};
+        let ufos = [];
+        let currentQuestion = null;
+        let currentUfo = null;
+        
+        // Примеры задач
+        let tasks = [
+            { text: "15 + 8 = ?", answer: 23 },
+            { text: "24 - 9 = ?", answer: 15 },
+            { text: "7 × 6 = ?", answer: 42 },
+            { text: "32 ÷ 4 = ?", answer: 8 },
+            { text: "19 + 13 = ?", answer: 32 }
+        ];
+        
+        function init() {
+            console.log("Инициализация игры...");
+            
+            // Создаем НЛО
+            for (let i = 0; i < gameState.totalUfos; i++) {
+                createUfo();
+            }
+            
+            // Обработчики клавиатуры
+            document.addEventListener('keydown', (e) => {
+                keys[e.key.toLowerCase()] = true;
+                
+                if (e.key === ' ') {
+                    e.preventDefault();
+                    checkUfoInteraction();
+                }
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                keys[e.key.toLowerCase()] = false;
+            });
+            
+            // Обработчик Enter в поле ответа
+            document.getElementById('answerInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    checkAnswer();
+                }
+            });
+            
+            updateUI();
+            gameLoop();
+            console.log("Игра запущена!");
+        }
+        
+        function createUfo() {
+            let x, y;
+            do {
+                x = Math.random() * (window.innerWidth - 100) + 50;
+                y = Math.random() * (window.innerHeight - 200) + 100;
+            } while (Math.abs(x - player.x) < 150 && Math.abs(y - player.y) < 150);
+            
+            const element = document.createElement('div');
+            element.className = 'ufo';
+            element.innerHTML = '🛸';
+            element.style.left = x + 'px';
+            element.style.top = y + 'px';
+            
+            const ufo = { x, y, element, found: false };
+            ufos.push(ufo);
+            
+            document.getElementById('gameWorld').appendChild(element);
+        }
+        
+        function updatePlayer() {
+            const playerElement = document.getElementById('player');
+            
+            if (keys['w'] || keys['arrowup']) {
+                player.y = Math.max(80, player.y - player.speed);
+            }
+            if (keys['s'] || keys['arrowdown']) {
+                player.y = Math.min(window.innerHeight - 120, player.y + player.speed);
+            }
+            if (keys['a'] || keys['arrowleft']) {
+                player.x = Math.max(25, player.x - player.speed);
+            }
+            if (keys['d'] || keys['arrowright']) {
+                player.x = Math.min(window.innerWidth - 75, player.x + player.speed);
+            }
+            
+            playerElement.style.left = player.x + 'px';
+            playerElement.style.top = player.y + 'px';
+            
+            // Подсветка НЛО
+            ufos.forEach(ufo => {
+                if (!ufo.found) {
+                    const distance = Math.sqrt(
+                        Math.pow(ufo.x - player.x, 2) + 
+                        Math.pow(ufo.y - player.y, 2)
+                    );
+                    
+                    if (distance < 80) {
+                        ufo.element.classList.add('glow');
+                    } else {
+                        ufo.element.classList.remove('glow');
+                    }
+                }
+            });
+        }
+        
+        function checkUfoInteraction() {
+            for (let ufo of ufos) {
+                if (!ufo.found) {
+                    const distance = Math.sqrt(
+                        Math.pow(ufo.x - player.x, 2) + 
+                        Math.pow(ufo.y - player.y, 2)
+                    );
+                    
+                    if (distance < 80) {
+                        openUfo(ufo);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        function openUfo(ufo) {
+            currentUfo = ufo;
+            currentQuestion = tasks[Math.floor(Math.random() * tasks.length)];
+            
+            document.getElementById('questionText').textContent = currentQuestion.text;
+            document.getElementById('answerInput').value = '';
+            document.getElementById('questionModal').style.display = 'flex';
+            document.getElementById('answerInput').focus();
+        }
+        
+        function checkAnswer() {
+            const userAnswer = parseInt(document.getElementById('answerInput').value);
+            
+            if (userAnswer === currentQuestion.answer) {
+                correctAnswer();
+            } else {
+                wrongAnswer();
+            }
+        }
+        
+        function correctAnswer() {
+            gameState.score += 10;
+            gameState.ufosFound++;
+            
+            currentUfo.found = true;
+            currentUfo.element.style.display = 'none';
+            
+            closeModal();
+            updateUI();
+            
+            if (gameState.ufosFound >= gameState.totalUfos) {
+                setTimeout(() => {
+                    alert(`🎉 Поздравляем! Все НЛО найдены!\nВаши очки: ${gameState.score}`);
+                    location.reload();
+                }, 500);
+            }
+        }
+        
+        function wrongAnswer() {
+            const input = document.getElementById('answerInput');
+            input.style.border = '2px solid #ff4757';
+            
+            setTimeout(() => {
+                input.style.border = '2px solid #8a2be2';
+            }, 1000);
+            
+            input.value = '';
+            input.focus();
+        }
+        
+        function closeModal() {
+            document.getElementById('questionModal').style.display = 'none';
+        }
+        
+        function updateUI() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('ufosFound').textContent = gameState.ufosFound;
+        }
+        
+        function gameLoop() {
+            updatePlayer();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Запуск игры
+        window.addEventListener('load', () => {
+            console.log("Страница загружена, запускаем игру...");
+            init();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2>Добавить пробный урок</h2>
+    <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">
+        Создайте пробный урок для нового потенциального ученика
+    </p>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <form method="POST" action="{{ url_for('add_trial_lesson_route') }}">
+        <div style="display: grid; gap: 20px;">
+            
+            <!-- Основная информация об уроке -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div>
+                    <label for="date" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                        Дата урока <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+                
+                <div>
+                    <label for="time" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                        Время урока <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="time" id="time" name="time" required>
+                </div>
+            </div>
+
+            <!-- Данные ученика -->
+            <div>
+                <label for="student_name" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Имя и фамилия ученика <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="text" id="student_name" name="student_name" required 
+                       placeholder="Например: Анна Смирнова">
+            </div>
+
+            <!-- Предмет -->
+            <div>
+                <label for="subject" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Предмет
+                </label>
+                <select id="subject" name="subject">
+                    <option value="Пробный урок" selected>Пробный урок</option>
+                    <option value="Пробный урок по математике">Пробный урок по математике</option>
+                    <option value="Пробный урок по физике">Пробный урок по физике</option>
+                    <option value="Пробный урок по химии">Пробный урок по химии</option>
+                </select>
+            </div>
+
+            <!-- Контактная информация -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div>
+                    <label for="parent_name" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                        Имя родителя/опекуна
+                    </label>
+                    <input type="text" id="parent_name" name="parent_name" 
+                           placeholder="Например: Елена Викторовна">
+                </div>
+                
+                <div>
+                    <label for="parent_contact" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                        Контакт родителя
+                    </label>
+                    <input type="text" id="parent_contact" name="parent_contact" 
+                           placeholder="Телефон или Telegram">
+                </div>
+            </div>
+
+            <div>
+                <label for="student_contact" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Контакт ученика
+                </label>
+                <input type="text" id="student_contact" name="student_contact" 
+                       placeholder="Телефон, email или Telegram">
+            </div>
+
+            <!-- Длительность урока -->
+            <div class="info-panel">
+                <div>
+                    <label for="lesson_duration" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                        Длительность урока (минуты):
+                    </label>
+                    <input type="number" name="lesson_duration" id="lesson_duration" 
+                           min="10" max="300" value="60" step="5"
+                           style="width: 200px;">
+                    <small style="color: var(--text-muted); font-size: 12px; display: block; margin-top: 8px;">
+                        По умолчанию: 60 минут<br>
+                        Урок автоматически завершится через указанное время после начала
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button type="submit" class="btn success">Создать пробный урок</button>
+        </div>
+    </form>
+</div>
+
+<!-- Информационная панель -->
+<div class="info-panel" style="max-width: 600px; margin: 30px auto 0;">
+    <h4>О пробных уроках:</h4>
+    <ul style="color: var(--text-primary); margin: 0; padding-left: 20px; line-height: 1.6;">
+        <li>Пробные уроки всегда бесплатные и не списывают средства</li>
+        <li>Урок автоматически завершится через указанную длительность</li>
+        <li>Данные потенциального ученика сохраняются для будущего добавления в систему</li>
+        <li>Пробные уроки выделяются зеленым цветом в расписании</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ url_for('raspisanie') }}" 
+       style="color: var(--text-accent); text-decoration: none; font-weight: bold; font-size: 16px;">
+        ← Назад к расписанию
+    </a>
+</div>
+
+{% endblock %}

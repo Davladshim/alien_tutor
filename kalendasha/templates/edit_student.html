@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2>Редактировать ученика</h2>
+    <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">
+        Измените данные ученика
+    </p>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <form method="post">
+        <div style="display: grid; gap: 20px;">
+            
+            <!-- Имя ученика -->
+            <div>
+                <label for="name" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Имя и фамилия ученика <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="text" id="name" name="name" required 
+                       value="{{ student.name }}">
+            </div>
+
+            <!-- Класс -->
+            <div>
+                <label for="class" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Класс
+                </label>
+                <select id="class" name="class" onchange="toggleCustomClass()">
+                    <option value="">Выберите класс</option>
+                    <option value="7 класс" {% if student.class == "7 класс" %}selected{% endif %}>7 класс</option>
+                    <option value="8 класс" {% if student.class == "8 класс" %}selected{% endif %}>8 класс</option>
+                    <option value="9 класс" {% if student.class == "9 класс" %}selected{% endif %}>9 класс</option>
+                    <option value="10 класс" {% if student.class == "10 класс" %}selected{% endif %}>10 класс</option>
+                    <option value="11 класс" {% if student.class == "11 класс" %}selected{% endif %}>11 класс</option>
+                    <option value="Другое" {% if student.class not in ["7 класс", "8 класс", "9 класс", "10 класс", "11 класс"] and student.class %}selected{% endif %}>Другое</option>
+                </select>
+            </div>
+
+            <!-- Кастомный класс -->
+            <div id="custom_class_div" style="{% if student.class not in ['7 класс', '8 класс', '9 класс', '10 класс', '11 класс'] and student.class %}display: block;{% else %}display: none;{% endif %}">
+                <label for="custom_class" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Введите класс:
+                </label>
+                <input type="text" id="custom_class" name="custom_class" 
+                       value="{% if student.class not in ['7 класс', '8 класс', '9 класс', '10 класс', '11 класс'] %}{{ student.class }}{% endif %}">
+            </div>
+
+            <!-- Стоимость урока -->
+            <div>
+                <label for="lesson_price" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Стоимость одного урока (рублей) <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="number" id="lesson_price" name="lesson_price" required min="0" step="50"
+                       value="{{ student.lesson_price or 0 }}">
+                <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">
+                    Эта информация не будет видна ученику
+                </small>
+            </div>
+
+            <!-- Город -->
+            <div>
+                <label for="city" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Город
+                </label>
+                <input type="text" id="city" name="city" 
+                       value="{{ student.city or '' }}">
+            </div>
+
+            <!-- Часовой пояс -->
+            <div>
+                <label for="timezone" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Часовой пояс <span style="color: #ef4444;">*</span>
+                </label>
+                <select id="timezone" name="timezone" required>
+                    <option value="">Выберите часовой пояс</option>
+                    <option value="КЛД" {% if student.timezone == "КЛД" %}selected{% endif %}>КЛД (UTC+2) - Калининград</option>
+                    <option value="МСК" {% if student.timezone == "МСК" %}selected{% endif %}>МСК (UTC+3) - Москва, Санкт-Петербург</option>
+                    <option value="МСК+1" {% if student.timezone == "МСК+1" %}selected{% endif %}>МСК+1 (UTC+4) - Самара, Саратов, Ижевск</option>
+                    <option value="ЕКБ" {% if student.timezone == "ЕКБ" %}selected{% endif %}>ЕКБ (UTC+5) - Екатеринбург, Пермь, Уфа</option>
+                    <option value="ОМС" {% if student.timezone == "ОМС" %}selected{% endif %}>ОМС (UTC+6) - Омск</option>
+                    <option value="НСК" {% if student.timezone == "НСК" %}selected{% endif %}>НСК (UTC+7) - Новосибирск, Красноярск</option>
+                    <option value="ИРК" {% if student.timezone == "ИРК" %}selected{% endif %}>ИРК (UTC+8) - Иркутск</option>
+                    <option value="ЯКТ" {% if student.timezone == "ЯКТ" %}selected{% endif %}>ЯКТ (UTC+9) - Якутск</option>
+                    <option value="ВЛД" {% if student.timezone == "ВЛД" %}selected{% endif %}>ВЛД (UTC+10) - Владивосток, Хабаровск</option>
+                    <option value="МГД" {% if student.timezone == "МГД" %}selected{% endif %}>МГД (UTC+11) - Магадан</option>
+                    <option value="КАМ" {% if student.timezone == "КАМ" %}selected{% endif %}>КАМ (UTC+12) - Петропавловск-Камчатский</option>
+                    <option value="КРД" {% if student.timezone == "КРД" %}selected{% endif %}>КРД (UTC+3) - Краснодар, Ростов-на-Дону</option>
+                    <option value="КЗН" {% if student.timezone == "КЗН" %}selected{% endif %}>КЗН (UTC+3) - Казань, Нижний Новгород</option>
+                </select>
+            </div>
+
+            <!-- ФИО родителя -->
+            <div>
+                <label for="parent_name" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    ФИО родителя/опекуна
+                </label>
+                <input type="text" id="parent_name" name="parent_name" 
+                       value="{{ student.parent_name or '' }}">
+            </div>
+
+            <!-- Контактная информация -->
+            <div>
+                <label for="contact" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Контактная информация
+                </label>
+                <textarea id="contact" name="contact" 
+                          style="height: 80px; resize: vertical;">{{ student.contact or '' }}</textarea>
+            </div>
+
+            <!-- Особые заметки -->
+            <div>
+                <label for="notes" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Особые заметки
+                </label>
+                <textarea id="notes" name="notes" 
+                          style="height: 80px; resize: vertical;">{{ student.notes or '' }}</textarea>
+            </div>
+
+        </div>
+
+        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px; flex-wrap: wrap;">
+            <button type="submit" class="btn success">
+                Сохранить изменения
+            </button>
+            
+            <a href="{{ url_for('ucheniki') }}" class="btn" 
+               style="background: var(--bg-card); color: var(--text-primary); text-decoration: none; display: inline-block;">
+                Отмена
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleCustomClass() {
+    const classSelect = document.getElementById('class');
+    const customClassDiv = document.getElementById('custom_class_div');
+    const customClassInput = document.getElementById('custom_class');
+    
+    if (classSelect.value === 'Другое') {
+        customClassDiv.style.display = 'block';
+        customClassInput.required = true;
+    } else {
+        customClassDiv.style.display = 'none';
+        customClassInput.required = false;
+    }
+}
+</script>
+
+<!-- Информационная панель -->
+<div class="info-panel warning" style="max-width: 600px; margin: 30px auto 0;">
+    <h4>Важно:</h4>
+    <ul style="color: var(--text-primary); margin: 0; padding-left: 20px; line-height: 1.6;">
+        <li>При изменении имени ученика автоматически обновятся все связанные данные</li>
+        <li>Изменение стоимости урока повлияет на расчеты будущих оплат</li>
+        <li>Все существующие занятия и платежи сохранятся</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ url_for('ucheniki') }}" 
+       style="color: var(--text-accent); text-decoration: none; font-weight: bold; font-size: 16px;">
+        ← Назад к списку учеников
+    </a>
+</div>
+
+{% endblock %}

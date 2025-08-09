@@ -1,0 +1,534 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2>Нагрузка</h2>
+</div>
+
+<!-- Панель управления -->
+<div class="card" style="margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-evenly; align-items: center; gap: 20px; padding: 20px;">
+        
+        <!-- Переключатель режима -->
+        <div class="view-toggle-container" style="justify-content: center; align-items: center;">
+            <button class="view-toggle-btn active" onclick="switchMode('regular')" id="regularBtn">
+                <span>Регулярные</span>
+            </button>
+            <button class="view-toggle-btn" onclick="switchMode('unplanned')" id="unplannedBtn">
+                <span>Внеплановые</span>
+            </button>
+        </div>
+
+        <!-- Выбор часового пояса -->
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <span style="font-weight: bold; color: var(--text-primary); font-size: 14px;">Часовой пояс</span>
+            <select id="timezoneSelect" onchange="changeTimezone()" style="padding: 8px 12px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border-secondary); color: var(--text-primary);">
+                <option value="МСК+1" selected>МСК+1 (UTC+4) - Самара, Ижевск</option>
+                <option value="КЛД">КЛД (UTC+2) - Калининград</option>
+                <option value="МСК">МСК (UTC+3) - Москва, СПб</option>
+                <option value="ЕКБ">ЕКБ (UTC+5) - Екатеринбург</option>
+                <option value="ОМС">ОМС (UTC+6) - Омск</option>
+                <option value="НСК">НСК (UTC+7) - Новосибирск</option>
+                <option value="ИРК">ИРК (UTC+8) - Иркутск</option>
+                <option value="ЯКТ">ЯКТ (UTC+9) - Якутск</option>
+                <option value="ВЛД">ВЛД (UTC+10) - Владивосток</option>
+                <option value="МГД">МГД (UTC+11) - Магадан</option>
+                <option value="КАМ">КАМ (UTC+12) - Камчатка</option>
+            </select>
+        </div>
+
+        <!-- Навигация по неделям (только для внеплановых) -->
+        <div id="weekNavigation" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button onclick="navigateWeek(-1)" class="schedule-nav-btn">← Пред. неделя</button>
+                <span id="currentWeekTitle" style="font-weight: bold; color: var(--text-accent); min-width: 150px; text-align: center;">Текущая неделя</span>
+                <button onclick="navigateWeek(1)" class="schedule-nav-btn">След. неделя →</button>
+            </div>
+        </div>
+
+        <!-- Кнопка настройки слотов -->
+        <div>
+            <span title="Настроить слоты" class="icon-action" onclick="window.location.href='{{ url_for('setup_slots') }}'">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="16"/>
+                    <line x1="8" y1="12" x2="16" y2="12"/>
+                </svg>
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Легенда -->
+<div class="color-legend">
+    <div class="legend-item">
+        <div class="legend-color free"></div>
+        <span style="font-size: 14px;">Свободен</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color occupied"></div>
+        <span style="font-size: 14px;">Занят</span>
+    </div>
+</div>
+
+<!-- Основная область отображения -->
+<div class="schedule-section">
+    <div id="loadingIndicator" style="text-align: center; padding: 50px; color: var(--text-muted);">
+        <h3>Загрузка данных...</h3>
+    </div>
+
+    <!-- Недельная сетка БЕЗ ЛИШНЕЙ ПОДЛОЖКИ -->
+    <div id="weeklyGrid" style="display: none;">
+        <div class="week-grid-nagruzka" id="slotsGrid">
+            <!-- Будет заполнено через JavaScript -->
+        </div>
+    </div>
+
+    <!-- Состояние "нет слотов" -->
+    <div id="noSlotsMessage" style="display: none; text-align: center; padding: 60px; color: var(--text-muted);">
+        <h3>Слоты не настроены</h3>
+        <p>Сначала добавьте доступные временные слоты через кнопку настроек</p>
+    </div>
+</div>
+<script>
+// Глобальные переменные
+let currentMode = 'regular'; // 'regular' или 'unplanned'
+let currentTimezone = 'МСК+1';
+let currentYear = new Date().getFullYear();
+let currentWeek = getWeekNumber(new Date());
+let availableSlots = [];
+let templateWeek = [];
+let currentSchedule = [];
+
+// Получение номера недели
+function getWeekNumber(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+// Получение дат недели
+function getWeekDates(year, week) {
+    const jan4 = new Date(year, 0, 4);
+    const firstMonday = new Date(jan4.getTime() - (jan4.getDay() - 1) * 86400000);
+    const targetWeek = new Date(firstMonday.getTime() + (week - 1) * 7 * 86400000);
+    
+    const dates = [];
+    const dayNames = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+    const dayNamesShort = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+    
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(targetWeek.getTime() + i * 86400000);
+        dates.push({
+            dayName: dayNames[i],
+            dayNameShort: dayNamesShort[i],
+            date: date.toISOString().split('T')[0],
+            displayDate: date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }),
+            isToday: date.toDateString() === new Date().toDateString()
+        });
+    }
+    
+    return dates;
+}
+
+// Переключение режима
+function switchMode(mode) {
+    console.log('Переключаем режим на:', mode); // Отладка
+    
+    currentMode = mode;
+    
+    // Убираем класс active у всех кнопок
+    const allBtns = document.querySelectorAll('.view-toggle-btn');
+    console.log('Найдено кнопок:', allBtns.length); // Отладка
+    
+    allBtns.forEach(btn => {
+        btn.classList.remove('active');
+        console.log('Убрали active у кнопки:', btn.id); // Отладка
+    });
+    
+    // Добавляем класс active к нужной кнопке
+    if (mode === 'regular') {
+        const regularBtn = document.getElementById('regularBtn');
+        regularBtn.classList.add('active');
+        console.log('Добавили active к regularBtn'); // Отладка
+    } else {
+        const unplannedBtn = document.getElementById('unplannedBtn');
+        unplannedBtn.classList.add('active');
+        console.log('Добавили active к unplannedBtn'); // Отладка
+    }
+    
+    // Показываем/скрываем навигацию по неделям
+    document.getElementById('weekNavigation').style.display = mode === 'unplanned' ? 'block' : 'none';
+    
+    // Загружаем данные
+    loadData();
+}
+
+// Навигация по неделям
+function navigateWeek(direction) {
+    currentWeek += direction;
+    
+    if (currentWeek < 1) {
+        currentWeek = 52;
+        currentYear--;
+    } else if (currentWeek > 52) {
+        currentWeek = 1;
+        currentYear++;
+    }
+    
+    updateWeekTitle();
+    loadData();
+}
+
+// Обновление заголовка недели
+function updateWeekTitle() {
+    const weekDates = getWeekDates(currentYear, currentWeek);
+    const startDate = weekDates[0].displayDate;
+    const endDate = weekDates[6].displayDate;
+    
+    const title = currentWeek === getWeekNumber(new Date()) && currentYear === new Date().getFullYear() 
+        ? 'Текущая неделя' 
+        : `${startDate} - ${endDate}`;
+    
+    document.getElementById('currentWeekTitle').textContent = title;
+}
+
+// Смена часового пояса
+function changeTimezone() {
+    currentTimezone = document.getElementById('timezoneSelect').value;
+    renderSlots();
+}
+
+// Конвертация времени между часовыми поясами
+function convertTime(timeStr, fromTz, toTz) {
+    // Упрощенная конвертация для российских часовых поясов
+    const timezoneOffsets = {
+        'КЛД': 2, 'МСК': 3, 'МСК+1': 4, 'ЕКБ': 5, 'ОМС': 6, 
+        'НСК': 7, 'ИРК': 8, 'ЯКТ': 9, 'ВЛД': 10, 'МГД': 11, 'КАМ': 12
+    };
+    
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    const fromOffset = timezoneOffsets[fromTz] || 4;
+    const toOffset = timezoneOffsets[toTz] || 4;
+    const diff = toOffset - fromOffset;
+    
+    const newHours = (hours + diff + 24) % 24;
+    return `${newHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+}
+
+// Загрузка данных
+async function loadData() {
+    showLoading(true);
+    
+    try {
+        // Загружаем доступные слоты
+        const slotsResponse = await fetch('/api/available-slots');
+        availableSlots = await slotsResponse.json();
+        
+        if (availableSlots.length === 0) {
+            showNoSlots();
+            return;
+        }
+        
+        if (currentMode === 'regular') {
+            // Загружаем шаблон недели
+            const templateResponse = await fetch('/api/template-week');
+            templateWeek = await templateResponse.json();
+        } else {
+            // Загружаем расписание на конкретную неделю
+            const scheduleResponse = await fetch(`/api/week-schedule/${currentYear}/${currentWeek}`);
+            currentSchedule = await scheduleResponse.json();
+        }
+        
+        renderSlots();
+        
+    } catch (error) {
+        console.error('Ошибка загрузки данных:', error);
+        showError('Не удалось загрузить данные');
+    }
+}
+
+// Отображение загрузки
+function showLoading(show) {
+    document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+    document.getElementById('weeklyGrid').style.display = show ? 'none' : 'block';
+    document.getElementById('noSlotsMessage').style.display = 'none';
+}
+
+// Отображение сообщения "нет слотов"
+function showNoSlots() {
+    document.getElementById('loadingIndicator').style.display = 'none';
+    document.getElementById('weeklyGrid').style.display = 'none';
+    document.getElementById('noSlotsMessage').style.display = 'block';
+}
+
+// Отображение ошибки
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 1000;
+        background: linear-gradient(45deg, #ef4444, #dc2626);
+        color: white; padding: 15px; border-radius: 8px;
+        font-weight: bold; box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    `;
+    errorDiv.innerHTML = `⚠️ ${message}`;
+    document.body.appendChild(errorDiv);
+    
+    setTimeout(() => errorDiv.remove(), 3000);
+    showLoading(false);
+}
+// Отрисовка слотов
+function renderSlots() {
+    showLoading(false);
+    
+    const weekDates = getWeekDates(currentYear, currentWeek);
+    const slotsGrid = document.getElementById('slotsGrid');
+    
+    let html = '';
+    
+    // Создаем столбцы для каждого дня недели
+    weekDates.forEach(dayInfo => {
+        const todayClass = dayInfo.isToday ? 'today' : '';
+        
+        html += `
+            <div class="week-day-column-nagruzka ${todayClass}">
+                <div class="week-day-header-nagruzka">
+                    <div class="week-day-name-nagruzka">${dayInfo.dayNameShort}</div>
+                    <div class="week-day-date-nagruzka">${dayInfo.displayDate}</div>
+                    ${dayInfo.isToday ? '<div class="today-badge-nagruzka">СЕГОДНЯ</div>' : ''}
+                </div>
+        `;
+        
+        // Находим слоты для этого дня
+        const daySlots = availableSlots.filter(slot => {
+            // Для режима "внеплановые" фильтруем только постоянные слоты или слоты текущей недели
+            if (currentMode === 'unplanned') {
+                return slot.day === dayInfo.dayName && 
+                       (slot.type === 'permanent' || 
+                        (slot.type === 'current_week' && slot.week === currentWeek && slot.year === currentYear));
+            }
+            // Для режима "регулярные" показываем только постоянные слоты
+            return slot.day === dayInfo.dayName && slot.type === 'permanent';
+        });
+        
+        // Сортируем слоты по времени
+        daySlots.sort((a, b) => a.time.localeCompare(b.time));
+        
+        if (daySlots.length > 0) {
+            daySlots.forEach(slot => {
+                const convertedTime = convertTime(slot.time, 'МСК+1', currentTimezone);
+                const isOccupied = checkSlotOccupied(slot, dayInfo.date);
+                
+                const statusClass = isOccupied ? 'slot-occupied' : 'slot-free';
+                const statusText = isOccupied ? 'Занят' : 'Свободен';
+
+                html += `
+                    <div class="slot-item ${statusClass}" data-slot-id="${slot.id || Math.random()}">
+                        <div class="slot-time">${convertedTime}</div>
+                        <div class="slot-status">
+                            ${statusText}
+                        </div>
+                        ${slot.duration !== 60 ? `<div class="slot-duration">${slot.duration} мин</div>` : ''}
+                        ${isOccupied ? `<div class="slot-lesson">${getSlotLesson(slot, dayInfo.date)}</div>` : ''}
+                    </div>
+                `;
+            });
+        } else {
+            html += `
+                <div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 50px;">
+                    Нет настроенных слотов
+                </div>
+            `;
+        }
+        
+        html += '</div>';
+    });
+    
+    slotsGrid.innerHTML = html;
+}
+
+// Проверка занятости слота
+function checkSlotOccupied(slot, date) {
+    if (currentMode === 'regular') {
+        // Проверяем шаблон недели
+        return templateWeek.some(lesson => 
+            lesson.day === slot.day && 
+            lesson.time === slot.time
+        );
+    } else {
+        // Проверяем расписание на конкретную дату
+        return currentSchedule.some(lesson => 
+            lesson.date === date && 
+            lesson.time === slot.time
+        );
+    }
+}
+
+// Функция для сокращения названий предметов
+function shortenSubject(subject) {
+    const subjects = {
+        'Математика': 'Матем.',
+        'Физика': 'Физ.',
+        'Химия': 'Хим.',
+        'Пробный урок': 'Проб.'
+    };
+    
+    return subjects[subject] || subject;
+}
+
+// Получение информации о уроке в слоте
+function getSlotLesson(slot, date) {
+    if (currentMode === 'regular') {
+        const lesson = templateWeek.find(l => 
+            l.day === slot.day && l.time === slot.time
+        );
+        return lesson ? `${lesson.student} ${shortenSubject(lesson.subject)}` : '';
+    } else {
+        const lesson = currentSchedule.find(l => 
+            l.date === date && l.time === slot.time
+        );
+        return lesson ? `${lesson.student} ${shortenSubject(lesson.subject)}` : '';
+    }
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // Устанавливаем текущую неделю
+    updateWeekTitle();
+    
+    // Загружаем данные
+    loadData();
+});
+
+// Автообновление каждые 2 минуты
+setInterval(loadData, 120000);
+</script>
+
+<style>
+/* НОВЫЕ СТИЛИ ДЛЯ НАГРУЗКИ - БЕЗ ДВОЙНЫХ ПОДЛОЖЕК */
+.week-grid-nagruzka {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    min-width: 100%;
+}
+
+.week-day-column-nagruzka {
+    background: var(--bg-secondary);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    min-height: 350px;
+    border: 1px solid var(--border-primary);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.week-day-column-nagruzka:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0, 212, 255, 0.2);
+    border-color: rgba(0, 212, 255, 0.3);
+}
+
+.week-day-column-nagruzka.today {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(124, 58, 237, 0.2));
+    border: 2px solid #00d4ff;
+    box-shadow: 0 0 25px rgba(0, 212, 255, 0.4);
+}
+
+.week-day-header-nagruzka {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.week-day-name-nagruzka {
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.week-day-date-nagruzka {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.today-badge-nagruzka {
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    margin-top: 6px;
+    display: inline-block;
+}
+
+@media (max-width: 768px) {
+    .week-grid-nagruzka {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    
+    .week-day-column-nagruzka {
+        min-height: 250px;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .week-grid-nagruzka {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+    
+    .week-day-column-nagruzka {
+        min-height: 200px;
+        padding: 15px;
+    }
+}
+
+/* СПЕЦИАЛЬНЫЕ СТИЛИ СЛОТОВ ТОЛЬКО ДЛЯ НАГРУЗКИ */
+.week-day-column-nagruzka .slot-item {
+    padding: 15px 18px;
+}
+
+.week-day-column-nagruzka .slot-time {
+    background: var(--accent-gradient) !important;
+    color: white !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    margin-bottom: 12px !important;
+    display: inline-block !important;
+    min-width: 63px !important;
+    max-width: 81px !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+}
+
+.week-day-column-nagruzka .slot-status {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+</style>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ url_for('home') }}" 
+       style="color: var(--text-accent); text-decoration: none; font-weight: bold; font-size: 16px;">
+        ← Назад на главную
+    </a>
+</div>
+
+{% endblock %}

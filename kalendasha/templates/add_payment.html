@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2>Добавить платеж</h2>
+    <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">
+        Пополните баланс ученика или семьи
+    </p>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <form method="post" action="{{ url_for('add_payment_page') }}">
+        <div style="display: grid; gap: 20px;">
+            
+            <!-- НОВОЕ: Переключатель типа платежа -->
+            <div>
+                <label style="display: block; margin-bottom: 12px; font-weight: bold; color: var(--text-primary);">
+                    Тип платежа <span style="color: #ef4444;">*</span>
+                </label>
+                <div class="payment-type-toggle">
+                    <label class="payment-type-option">
+                        <input type="radio" name="payment_type" value="student" checked onchange="togglePaymentType()">
+                        <span class="radio-custom"></span>
+                        Ученик
+                    </label>
+                    <label class="payment-type-option">
+                        <input type="radio" name="payment_type" value="family" onchange="togglePaymentType()">
+                        <span class="radio-custom"></span>
+                        Семья
+                    </label>
+                </div>
+                <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">
+                    Выберите, кому пополнить баланс
+                </small>
+            </div>
+            
+            <!-- ОБНОВЛЕНО: Динамический выпадающий список -->
+            <div>
+                <label for="recipient" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    <span id="recipientLabel">Ученик</span> <span style="color: #ef4444;">*</span>
+                </label>
+                <select id="recipient" name="recipient" required>
+                    <option value="">Выберите ученика</option>
+                    <!-- Будет заполнено JavaScript -->
+                </select>
+                <small id="recipientHelp" style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">
+                    Выберите ученика для пополнения баланса
+                </small>
+            </div>
+            
+            <!-- Сумма -->
+            <div>
+                <label for="amount" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Сумма платежа (рублей) <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="number" id="amount" name="amount" required min="0" step="50" 
+                       placeholder="Например: 3000">
+                <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">
+                    Укажите сумму пополнения баланса
+                </small>
+            </div>
+            
+            <!-- Дата -->
+            <div>
+                <label for="payment_date" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Дата платежа
+                </label>
+                <input type="date" id="payment_date" name="payment_date">
+                <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">
+                    По умолчанию - сегодняшняя дата
+                </small>
+            </div>
+            
+            <!-- Комментарий -->
+            <div>
+                <label for="description" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Комментарий к платежу
+                </label>
+                <input type="text" id="description" name="description" 
+                       placeholder="Пополнение баланса">
+                <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">
+                    Необязательное поле для заметок
+                </small>
+            </div>
+            
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button type="submit" class="btn success">
+                Добавить платеж
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- НОВЫЕ СТИЛИ -->
+<style>
+/* Переключатель типов платежа */
+.payment-type-toggle {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 10px;
+}
+
+.payment-type-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.payment-type-option:hover {
+    color: var(--text-accent);
+}
+
+.payment-type-option input[type="radio"] {
+    display: none;
+}
+
+.radio-custom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-secondary);
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.3s ease;
+    background: var(--bg-card);
+}
+
+.radio-custom::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-gradient);
+    transition: all 0.3s ease;
+}
+
+.payment-type-option input[type="radio"]:checked + .radio-custom {
+    border-color: #00d4ff;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+.payment-type-option input[type="radio"]:checked + .radio-custom::before {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* Анимация для динамических изменений */
+#recipient {
+    transition: all 0.3s ease;
+}
+
+#recipientLabel, #recipientHelp {
+    transition: all 0.3s ease;
+}
+</style>
+
+<!-- НОВЫЙ JAVASCRIPT -->
+<script>
+// Данные с сервера
+const studentsData = {{ students|tojson }};
+const familiesData = {{ families|tojson }};
+
+// Автоматически устанавливаем сегодняшнюю дату
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('payment_date').value = today;
+    
+    // Инициализируем список учеников
+    togglePaymentType();
+});
+
+function togglePaymentType() {
+    const paymentType = document.querySelector('input[name="payment_type"]:checked').value;
+    const recipientSelect = document.getElementById('recipient');
+    const recipientLabel = document.getElementById('recipientLabel');
+    const recipientHelp = document.getElementById('recipientHelp');
+    
+    // Очищаем список
+    recipientSelect.innerHTML = '';
+    
+    if (paymentType === 'student') {
+        // Режим "Ученик"
+        recipientLabel.textContent = 'Ученик';
+        recipientHelp.textContent = 'Выберите ученика для пополнения баланса';
+        
+        // Добавляем пустой вариант
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = 'Выберите ученика';
+        recipientSelect.appendChild(emptyOption);
+        
+        // Добавляем всех учеников
+        studentsData.forEach(student => {
+            const option = document.createElement('option');
+            option.value = student.name;
+            option.textContent = student.name;
+            recipientSelect.appendChild(option);
+        });
+        
+    } else {
+        // Режим "Семья"
+        recipientLabel.textContent = 'Семья';
+        recipientHelp.textContent = 'Выберите семью для пополнения общего баланса';
+        
+        // Добавляем пустой вариант
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = 'Выберите семью';
+        recipientSelect.appendChild(emptyOption);
+        
+        // Добавляем семьи (только если есть)
+        if (Object.keys(familiesData).length > 0) {
+            Object.keys(familiesData).forEach(parentName => {
+                const children = familiesData[parentName];
+                const childrenNames = children.map(child => child.name).join(', ');
+                
+                const option = document.createElement('option');
+                option.value = parentName;
+                option.textContent = `${parentName} (${childrenNames})`;
+                recipientSelect.appendChild(option);
+            });
+        } else {
+            // Если семей нет
+            const noFamiliesOption = document.createElement('option');
+            noFamiliesOption.value = '';
+            noFamiliesOption.textContent = 'Семей пока нет';
+            noFamiliesOption.disabled = true;
+            recipientSelect.appendChild(noFamiliesOption);
+            
+            recipientHelp.textContent = 'Семьи создаются автоматически при наличии 2+ детей у одного родителя';
+            recipientHelp.style.color = 'var(--text-muted)';
+        }
+    }
+    
+    // Добавляем анимацию
+    recipientSelect.style.opacity = '0.5';
+    setTimeout(() => {
+        recipientSelect.style.opacity = '1';
+    }, 150);
+}
+</script>
+
+<!-- Информационная панель -->
+<div class="info-panel" style="max-width: 600px; margin: 30px auto 0;">
+    <h4>Информация о платежах</h4>
+    <ul style="color: var(--text-primary); margin: 0; padding-left: 20px; line-height: 1.6;">
+        <li><strong>Ученик:</strong> Платеж зачисляется на индивидуальный баланс</li>
+        <li><strong>Семья:</strong> Платеж зачисляется в общий семейный баланс</li>
+        <li>Средства автоматически списываются при проведении уроков</li>
+        <li>История всех платежей сохраняется в системе</li>
+        <li>Балансы можно посмотреть на странице "Оплата"</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ url_for('oplata') }}" 
+       style="color: var(--text-accent); text-decoration: none; font-weight: bold; font-size: 16px;">
+        ← Назад к финансовому учету
+    </a>
+</div>
+
+{% endblock %}

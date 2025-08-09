@@ -1,0 +1,29 @@
+Kalendasha/
+├── app.py                    
+├── start_kalendasha.bat      
+├── static/
+│   └── style.css            
+├── templates/               
+│   ├── add_payment.html           
+│   ├── add_slot.html           
+│   ├── add_student.html     
+│   ├── add_trial_lesson.html 
+│   ├── base.html       
+│   ├── edit_lesson.html    
+│   ├── edit_student.html   
+│   ├── edit_template_lesson.html       
+│   ├── home.html 
+│   ├── oplata.html
+│   ├── parent_widget_schedule.html
+│   ├── payment_history.html         
+│   ├── raspisanie.html 
+│   ├── shablon_nedeli.html 
+│   ├── student_widget_schedule.html 
+│   └── ucheniki.html   
+└── data/                   
+    ├── students.json       
+    ├── slots.json          
+    ├── template_week.json  
+    ├── payments.json       
+    ├── balances.json       
+    └── trial_students.json

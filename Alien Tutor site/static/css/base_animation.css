@@ -1,0 +1,2000 @@
+/* ===== БАЗОВЫЕ СТИЛИ ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+    transition: all 1s ease;
+}
+
+/* ===== ТЕМЫ ===== */
+
+/* Темная космическая тема - ИДЕАЛЬНАЯ, НЕ ТРОГАЕМ */
+.theme-dark {
+    background: linear-gradient(135deg, #151A21 0%, #394659 100%);
+    color: #D9F6F4;
+}
+
+/* Светлая небесная тема - только фон оставляем */
+.theme-light {
+    background: linear-gradient(135deg, #87CEEB 0%, #E0F6FF 100%);
+    color: #2C3E50;
+}
+
+/* ===== КОНТЕЙНЕР ДЛЯ ФОНОВЫХ ЭЛЕМЕНТОВ ===== */
+.background-container {
+    position: fixed;
+    top: -20%; /* Расширяем вверх для облаков "за экраном" */
+    left: 0;
+    width: 100%;
+    height: 140%; /* Увеличиваем высоту */
+    z-index: -1;
+    overflow: hidden;
+}
+
+/* ===== ЗВЕЗДЫ - ИДЕАЛЬНЫЕ, НЕ ТРОГАЕМ ===== */
+.star {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, #D9F6F4 0%, rgba(217, 246, 244, 0.3) 70%, transparent 100%);
+    box-shadow: 0 0 10px #D9F6F4, 0 0 20px rgba(217, 246, 244, 0.5);
+    opacity: 0;
+    transition: opacity 1s ease, transform 0.3s ease;
+}
+
+.theme-dark .star {
+    opacity: 1;
+}
+
+/* ===== НОВЫЕ SVG ОБЛАКА ===== */
+.svg-cloud {
+    position: absolute;
+    opacity: 0;
+    transition: opacity 1s ease, transform 0.3s ease;
+}
+
+.theme-light .svg-cloud {
+    opacity: 1;
+}
+/* ===== КОНТЕНТ СТРАНИЦЫ ===== */
+.content {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 100px 20px;
+    text-align: center;
+    overflow: visible;
+}
+
+/* ===== ЗАГОЛОВКИ ===== */
+h1 {
+    font-size: 3rem;
+    margin-bottom: 2rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.theme-dark h1 {
+    color: #5ED9D7;
+    text-shadow: 0 0 20px rgba(94, 217, 215, 0.5);
+}
+
+/* ===== ПОДЗАГОЛОВКИ ===== */
+h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+.theme-dark h2 {
+    color: #5ED9D7;
+    text-shadow: 0 0 15px rgba(94, 217, 215, 0.4);
+}
+
+/* ===== ОСНОВНОЙ ТЕКСТ ===== */
+p {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.theme-dark p {
+    color: #D9F6F4;
+}
+
+/* ===== ПЕРЕКЛЮЧАТЕЛЬ ТЕМ - ПОЛЗУНОК ===== */
+.theme-switcher {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.theme-switcher:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.02);
+}
+
+.theme-icon {
+    font-size: 18px;
+    transition: all 0.3s ease;
+    opacity: 0.6;
+}
+
+.theme-icon.active {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.switch-track {
+    width: 50px;
+    height: 25px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 25px;
+    position: relative;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.switch-thumb {
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 2.5px;
+    left: 3px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.theme-light .switch-thumb {
+    transform: translateX(26px);
+    background: #FFD700;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+}
+
+.theme-dark .switch-track {
+    background: rgba(21, 26, 33, 0.6);
+}
+
+.theme-light .switch-track {
+    background: rgba(135, 206, 235, 0.6);
+}
+/* ===== СТЕКЛОМОРФНЫЕ КНОПКИ ===== */
+.buttons-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    max-width: 600px;
+    margin: 3rem auto;
+    padding: 0 1rem;
+}
+
+.glass-button-container {
+    position: relative;
+}
+
+.glass-button {
+    display: block;
+    text-decoration: none;
+    padding: 2rem 1.5rem;
+    border-radius: 20px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    
+    /* Стекломорфизм - прозрачная основа */
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    
+    /* Убираем стандартные стили ссылки */
+    color: inherit;
+}
+
+/* Базовые стили для темной темы */
+.theme-dark .glass-button {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(217, 246, 244, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Базовые стили для светлой темы */
+.theme-light .glass-button {
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(44, 62, 80, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Заголовки кнопок */
+.button-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.button-subtitle {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+/* ЭФФЕКТЫ ПРИ НАВЕДЕНИИ */
+
+/* Кнопка ЛКУ - голубой градиент */
+.student-btn:hover {
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.2) 0%, rgba(94, 217, 215, 0.4) 100%);
+    border-color: rgba(94, 217, 215, 0.6);
+    box-shadow: 0 0 30px rgba(94, 217, 215, 0.3), 0 15px 35px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Кнопка ЛКР - зеленый градиент */
+.parent-btn:hover {
+    background: linear-gradient(135deg, rgba(72, 187, 120, 0.2) 0%, rgba(72, 187, 120, 0.4) 100%);
+    border-color: rgba(72, 187, 120, 0.6);
+    box-shadow: 0 0 30px rgba(72, 187, 120, 0.3), 0 15px 35px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Кнопка Админ - фиолетовый градиент */
+.admin-btn:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(139, 92, 246, 0.4) 100%);
+    border-color: rgba(139, 92, 246, 0.6);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.3), 0 15px 35px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Кнопка О преподе - розово-золотой градиент */
+.about-btn:hover {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(251, 191, 36, 0.4) 100%);
+    border-color: rgba(236, 72, 153, 0.6);
+    box-shadow: 0 0 30px rgba(236, 72, 153, 0.3), 0 15px 35px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Эффект свечения текста при наведении */
+.theme-dark .glass-button:hover .button-title {
+    color: #5ED9D7;
+    text-shadow: 0 0 15px rgba(94, 217, 215, 0.5);
+}
+
+.theme-light .glass-button:hover .button-title {
+    color: #2C3E50; /* Остается темным на светлой теме */
+    text-shadow: 0 0 15px rgba(44, 62, 80, 0.3);
+}
+
+.glass-button:hover .button-subtitle {
+    opacity: 1;
+}
+
+/* Эффект активного нажатия */
+.glass-button:active {
+    transform: translateY(0px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Фиксация высоты кнопок */
+.buttons-grid .glass-button {
+    min-height: 140px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+
+.quick-actions-grid .action-card {
+    min-height: 70px;
+    padding: 1rem 0.75rem;
+}
+
+.quick-actions-grid .action-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.quick-actions-grid .action-card p {
+    font-size: 0.8rem;
+}
+
+/* ===== ЛОГОТИПЫ В ЛЕВОМ УГЛУ ===== */
+.logo-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 999;
+}
+
+.main-logo {
+    max-width: 360px; /* Увеличили в 4 раза (было 120px) */
+    height: auto;
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+    position: absolute; /* Чтобы логотипы лежали в одном месте */
+    top: 0;
+    left: 0;
+}
+
+/* Показываем нужный логотип в зависимости от темы */
+.theme-dark .logo-light {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.theme-light .logo-dark {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.theme-dark .logo-dark {
+    opacity: 0.9;
+}
+
+.theme-light .logo-light {
+    opacity: 0.9;
+}
+
+/* ===== СТИЛИ ДЛЯ ЛИЧНОГО КАБИНЕТА УЧЕНИКА (ЛКУ) ===== */
+
+/* Контейнер дашборда */
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    overflow: visible;
+}
+
+/* Заголовок дашборда */
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.dashboard-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-text {
+    font-size: 1.1rem;
+    opacity: 0.8;
+    margin-bottom: 0;
+}
+
+/* Навигация по вкладкам */
+.tabs-navigation {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.tab-button {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 1rem 2rem;
+    color: inherit;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Стили для темной темы */
+.theme-dark .tab-button {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(217, 246, 244, 0.3);
+    color: #D9F6F4;
+}
+
+/* Стили для светлой темы */
+.theme-light .tab-button {
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(44, 62, 80, 0.2);
+    color: #2C3E50;
+}
+
+/* Активная вкладка */
+.tab-button.active {
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.3) 0%, rgba(94, 217, 215, 0.5) 100%);
+    border-color: rgba(94, 217, 215, 0.8);
+    box-shadow: 0 0 20px rgba(94, 217, 215, 0.4);
+    transform: translateY(-2px);
+}
+
+.theme-dark .tab-button.active {
+    color: #D9F6F4;
+    text-shadow: 0 0 10px rgba(94, 217, 215, 0.6);
+}
+
+.theme-light .tab-button.active {
+    color: #2C3E50;
+}
+
+/* Эффект наведения на неактивные вкладки */
+.tab-button:not(.active):hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Контент вкладок */
+.tabs-content {
+    position: relative;
+    min-height: 500px;
+    overflow: visible;
+}
+
+.tab-content {
+    display: none;
+    animation: fadeInUp 0.4s ease;
+    overflow: visible;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Анимация появления контента */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Секции контента */
+.content-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    overflow: visible;
+}
+
+.theme-dark .content-section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(217, 246, 244, 0.2);
+}
+
+.theme-light .content-section {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(44, 62, 80, 0.15);
+}
+
+/* Заголовки секций */
+.content-section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+/* Сетка быстрых действий */
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 3rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Карточки действий */
+.action-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.theme-dark .action-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(217, 246, 244, 0.2);
+}
+
+.theme-light .action-card {
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(44, 62, 80, 0.15);
+}
+
+.action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    border-color: rgba(94, 217, 215, 0.5);
+}
+
+.action-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.8rem;
+    color: inherit;
+}
+
+.theme-dark .action-card h3 {
+    color: #5ED9D7;
+    text-shadow: 0 0 10px rgba(94, 217, 215, 0.3);
+}
+
+.action-card p {
+    font-size: 1rem;
+    opacity: 0.8;
+    margin-bottom: 0;
+}
+
+/* Заглушки для контента */
+.progress-placeholder,
+.rating-placeholder {
+    text-align: left;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.theme-light .progress-placeholder,
+.theme-light .rating-placeholder {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.progress-placeholder p,
+.rating-placeholder p {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+}
+
+.progress-placeholder ul,
+.rating-placeholder ul {
+    margin-left: 1.5rem;
+    opacity: 0.8;
+}
+
+.progress-placeholder li,
+.rating-placeholder li {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+/* ===== СТИЛИ ДЛЯ ВКЛАДКИ РАСПИСАНИЯ ===== */
+
+.loading-spinner {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted, rgba(217, 246, 244, 0.8));
+}
+
+.loading-spinner p {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.error-message {
+    text-align: center;
+    padding: 3rem;
+    color: #ef4444;
+}
+
+.retry-btn {
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.3) 0%, rgba(94, 217, 215, 0.5) 100%);
+    border: 1px solid rgba(94, 217, 215, 0.6);
+    color: inherit;
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+}
+
+.retry-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(94, 217, 215, 0.3);
+}
+
+.schedule-header-info {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.schedule-header-info h3 {
+    font-size: 1.5rem;
+    color: var(--text-accent, #5ED9D7);
+    margin-bottom: 0.5rem;
+}
+
+.schedule-week-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.schedule-day-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-dark .schedule-day-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(217, 246, 244, 0.2);
+}
+
+.theme-light .schedule-day-card {
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(44, 62, 80, 0.15);
+}
+
+.schedule-day-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    border-color: rgba(94, 217, 215, 0.5);
+}
+
+.schedule-day-card.today {
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.2) 0%, rgba(94, 217, 215, 0.3) 100%);
+    border: 2px solid rgba(94, 217, 215, 0.6);
+    box-shadow: 0 0 20px rgba(94, 217, 215, 0.4);
+}
+
+.schedule-day-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.day-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: var(--text-accent, #5ED9D7);
+}
+
+.day-date {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.today-badge {
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.8) 0%, rgba(94, 217, 215, 1) 100%);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.schedule-lessons {
+    min-height: 150px;
+}
+
+.schedule-lesson-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-light .schedule-lesson-item {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.schedule-lesson-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(94, 217, 215, 0.2);
+    border-color: rgba(94, 217, 215, 0.4);
+}
+
+.schedule-lesson-item .lesson-time {
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.8) 0%, rgba(94, 217, 215, 1) 100%);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    display: inline-block;
+    min-width: 80px;
+    text-align: center;
+}
+
+.schedule-lesson-item .lesson-subject {
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: inherit;
+}
+
+.no-lessons-day {
+    text-align: center;
+    color: var(--text-muted, rgba(217, 246, 244, 0.6));
+    font-style: italic;
+    padding: 2rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* Адаптивность для расписания */
+@media (max-width: 768px) {
+    .schedule-week-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .schedule-day-card {
+        padding: 1rem;
+    }
+    
+    .schedule-lesson-item {
+        padding: 0.8rem;
+    }
+    
+    .schedule-lesson-item .lesson-time {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.6rem;
+    }
+}
+
+/* ===== ЗАГОТОВКА РАСПИСАНИЯ ===== */
+
+/* Статистика ученика */
+.student-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+    padding: 0 1rem;
+}
+
+.stats-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-dark .stats-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(217, 246, 244, 0.2);
+}
+
+.theme-light .stats-card {
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(44, 62, 80, 0.15);
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    border-color: rgba(94, 217, 215, 0.5);
+}
+
+.stats-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.8rem;
+    color: var(--text-accent, #5ED9D7);
+    text-shadow: 0 0 15px rgba(94, 217, 215, 0.3);
+}
+
+.stats-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    font-weight: 500;
+    line-height: 1.3;
+    color: inherit;
+}
+
+/* Контейнер расписания */
+.schedule-container {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+.theme-dark .schedule-container {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(217, 246, 244, 0.15);
+}
+
+.theme-light .schedule-container {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.schedule-container h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+}
+
+/* Элементы управления */
+.schedule-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.nav-btn {
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.8) 0%, rgba(94, 217, 215, 1) 100%);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(94, 217, 215, 0.3);
+}
+
+.nav-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(94, 217, 215, 0.4);
+}
+
+.schedule-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.current-period {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: inherit;
+}
+
+.view-toggle {
+    display: flex;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    padding: 0.3rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.theme-dark .view-toggle {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(217, 246, 244, 0.2);
+}
+
+.theme-light .view-toggle {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(44, 62, 80, 0.15);
+}
+
+.toggle-btn {
+    background: transparent;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: inherit;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.toggle-btn.active {
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.8) 0%, rgba(94, 217, 215, 1) 100%);
+    color: white;
+    opacity: 1;
+    box-shadow: 0 4px 15px rgba(94, 217, 215, 0.3);
+}
+
+.toggle-btn:not(.active):hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Календарная сетка */
+.schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+}
+
+.day-column {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 1.5rem 1.2rem;  /* Немного увеличили горизонтальные отступы внутри */
+    min-height: 300px;
+    min-width: 140px;  /* Добавили минимальную ширину столбика */
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-dark .day-column {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(217, 246, 244, 0.15);
+}
+
+.theme-light .day-column {
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.day-column:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-color: rgba(94, 217, 215, 0.3);
+}
+
+.day-column.today {
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.2) 0%, rgba(94, 217, 215, 0.3) 100%);
+    border: 2px solid rgba(94, 217, 215, 0.6);
+    box-shadow: 0 0 20px rgba(94, 217, 215, 0.4);
+}
+
+/* Заголовок дня */
+.day-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.day-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: var(--text-accent, #5ED9D7);
+}
+
+.day-date {
+    font-size: 1.3rem;
+    font-weight: 700;
+    opacity: 0.9;
+}
+
+.today-badge {
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.8) 0%, rgba(94, 217, 215, 1) 100%);
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Список уроков */
+.lessons-list {
+    min-height: 150px;
+}
+
+.lesson-item-placeholder {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-light .lesson-item-placeholder {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.lesson-item-placeholder:hover {
+    transform: translateX(3px);
+    box-shadow: 0 5px 15px rgba(94, 217, 215, 0.2);
+    border-color: rgba(94, 217, 215, 0.4);
+}
+
+.lesson-time {
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.8) 0%, rgba(94, 217, 215, 1) 100%);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    display: inline-block;
+    min-width: 60px;
+    text-align: center;
+}
+
+.lesson-subject {
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: inherit;
+}
+
+.lesson-placeholder {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+    padding: 2rem 1rem;
+    font-size: 0.85rem;
+}
+
+.theme-light .lesson-placeholder {
+    color: rgba(44, 62, 80, 0.5);
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .student-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .schedule-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .student-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+    
+    .stats-card {
+        padding: 1.5rem 1rem;
+    }
+    
+    .stats-value {
+        font-size: 2rem;
+    }
+    
+    .schedule-controls {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .schedule-info {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .schedule-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+    
+    .day-column {
+        min-height: 200px;
+        padding: 1rem 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .student-stats {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+    }
+    
+    .schedule-grid {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+    }
+    
+    .day-column {
+        min-height: 150px;
+    }
+}
+
+/* ===== ВКЛАДКА УСПЕВАЕМОСТИ ===== */
+
+/* Выбор класса */
+.class-selector {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.class-selector h2 {
+    margin-bottom: 1.5rem;
+}
+
+.class-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.class-btn {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 0.8rem 1.5rem;
+    color: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.theme-dark .class-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(217, 246, 244, 0.2);
+}
+
+.theme-light .class-btn {
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(44, 62, 80, 0.15);
+}
+
+.class-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-color: rgba(94, 217, 215, 0.4);
+}
+
+.class-btn.active {
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.3) 0%, rgba(94, 217, 215, 0.5) 100%);
+    border-color: rgba(94, 217, 215, 0.8);
+    box-shadow: 0 0 20px rgba(94, 217, 215, 0.4);
+    transform: translateY(-2px);
+}
+
+.theme-dark .class-btn.active {
+    color: #D9F6F4;
+    text-shadow: 0 0 10px rgba(94, 217, 215, 0.6);
+}
+
+/* Контейнер диаграмм */
+.charts-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    overflow: visible;
+}
+
+.chart-section {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 4rem;
+    overflow: visible;
+}
+
+.theme-dark .chart-section {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(217, 246, 244, 0.15);
+}
+
+.theme-light .chart-section {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.chart-section h3 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+}
+
+.theme-dark .chart-section h3 {
+    color: #5ED9D7;
+}
+
+.theme-light .chart-section h3 {
+    color: #2C3E50;
+}
+
+.chart-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+    overflow: visible;
+}
+
+/* Столбчатая диаграмма */
+.bar-chart {
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    gap: 8px;
+    height: 250px;
+    width: 100%;
+    padding: 1rem;
+    position: relative;
+}
+
+.bar-chart::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.bar-item {
+    position: relative;
+    background: linear-gradient(to top, #3b82f6, #60a5fa);
+    border-radius: 4px 4px 0 0;
+    width: 30px;
+    min-height: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.bar-item:hover {
+    transform: scaleX(1.2) scaleY(1.05);
+    background: linear-gradient(to top, #2563eb, #3b82f6);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.5);
+}
+
+.bar-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    margin-top: 5px;
+}
+
+.bar-item:hover .bar-tooltip {
+    opacity: 1;
+}
+
+.bar-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Скрытие столбчатой диаграммы для младших классов */
+.bar-chart-section.hidden {
+    display: none;
+}
+
+.charts-container.single-chart {
+    grid-template-columns: 1fr;
+}
+
+.charts-container.single-chart .pie-chart-section {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Круговая диаграмма */
+.pie-chart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    height: 100%;
+}
+
+.pie-chart svg {
+    filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.3));
+    flex-shrink: 0;
+}
+
+.pie-segment {
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+}
+
+.pie-segment:hover {
+    transform: scale(1.08);
+    filter: drop-shadow(0 4px 15px rgba(94, 217, 215, 0.6)) brightness(1.15);
+}
+
+.pie-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 1rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.theme-dark .legend-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(217, 246, 244, 0.1);
+}
+
+.theme-light .legend-item {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.legend-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(3px);
+    border-color: rgba(94, 217, 215, 0.3);
+}
+
+.legend-color {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.pie-chart svg {
+    filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.2));
+}
+
+.pie-segment {
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.25));
+}
+
+.pie-segment:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 2px 6px rgba(94, 217, 215, 0.4)) brightness(1.1);
+}
+
+.pie-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.9rem;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+/* Таблица уроков */
+.lessons-table-section {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 2rem;
+}
+
+.theme-dark .lessons-table-section {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(217, 246, 244, 0.15);
+}
+
+.theme-light .lessons-table-section {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.lessons-table-section h3 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+    color: var(--text-accent, #5ED9D7);
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lessons-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.lessons-table th {
+    background: rgba(94, 217, 215, 0.2);
+    color: inherit;
+    padding: 1rem 0.8rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid rgba(94, 217, 215, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.lessons-table td {
+    padding: 1rem 0.8rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    vertical-align: top;
+    line-height: 1.4;
+    text-align: left;
+}
+
+.lessons-table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.lessons-table tbody tr:hover {
+    background: rgba(94, 217, 215, 0.1);
+}
+
+.score-cell {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.score-cell {
+    color: #10b981; /* Зеленый для хороших оценок */
+}
+
+.lessons-table tbody tr:nth-child(3) .score-cell {
+    color: #f59e0b; /* Оранжевый для средних */
+}
+
+.lessons-table tbody tr:nth-child(4) .score-cell {
+    color: #ef4444; /* Красный для низких */
+}
+
+/* Скрытие колонки баллов для младших классов */
+.score-column.hidden,
+.score-cell.hidden {
+    display: none;
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .charts-container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .chart-section {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .class-buttons {
+        gap: 0.5rem;
+    }
+    
+    .class-btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .chart-section {
+        padding: 1rem;
+    }
+    
+    .chart-wrapper {
+        min-height: 200px;
+    }
+    
+    .bar-chart {
+        height: 180px;
+        gap: 4px;
+    }
+    
+    .bar-item {
+        width: 20px;
+    }
+    
+    .lessons-table {
+        font-size: 0.8rem;
+    }
+    
+    .lessons-table th,
+    .lessons-table td {
+        padding: 0.8rem 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .class-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .class-btn {
+        width: 200px;
+    }
+    
+    .lessons-table th,
+    .lessons-table td {
+        padding: 0.6rem 0.4rem;
+        font-size: 0.75rem;
+    }
+    
+    .bar-chart {
+        gap: 2px;
+    }
+    
+    .bar-item {
+        width: 15px;
+    }
+}
+
+/* Стили для таблицы домашних заданий */
+.homework-table-section {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.theme-dark .homework-table-section {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(217, 246, 244, 0.15);
+}
+
+.theme-light .homework-table-section {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.homework-table-section h3 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+}
+
+.theme-dark .homework-table-section h3 {
+    color: #5ED9D7;
+}
+
+.theme-light .homework-table-section h3 {
+    color: #2C3E50;
+}
+
+.homework-table {
+    margin-top: 0;
+}
+
+/* Двойная столбчатая диаграмма для 7, 8, 10 классов */
+.double-bar-chart {
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    gap: 15px;
+    height: 250px;
+    width: 100%;
+    padding: 1rem;
+    position: relative;
+}
+
+.double-bar-chart::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.double-bar-group {
+    display: flex;
+    gap: 4px;
+    align-items: end;
+    position: relative;
+}
+
+.double-bar-item {
+    position: relative;
+    border-radius: 4px 4px 0 0;
+    width: 20px;
+    min-height: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.double-bar-item.design-bar {
+    background: linear-gradient(to top, #f472b6, #fb7185);
+    box-shadow: 0 2px 8px rgba(244, 114, 182, 0.3);
+}
+
+.double-bar-item.solution-bar {
+    background: linear-gradient(to top, #60a5fa, #93c5fd);
+    box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
+}
+
+.double-bar-item:hover {
+    transform: scaleX(1.2) scaleY(1.05);
+    box-shadow: 0 4px 15px rgba(94, 217, 215, 0.5);
+}
+
+.double-bar-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    margin-top: 5px;
+    z-index: 10;
+}
+
+.double-bar-item:hover .double-bar-tooltip {
+    opacity: 1;
+}
+
+.double-bar-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Футуристичная панель быстрых действий */
+.futuristic-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 3rem 0;
+    position: relative;
+    height: 60px;
+}
+
+/* Центральная панель */
+.central-panel {
+    background: rgba(94, 217, 215, 0.15);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(94, 217, 215, 0.5);
+    border-radius: 20px;
+    padding: 1.2rem 3rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: inherit;
+    box-shadow: 0 0 20px rgba(94, 217, 215, 0.3);
+    animation: panelPulse 3s ease-in-out infinite;
+    z-index: 10;
+    position: relative;
+}
+
+.theme-dark .central-panel {
+    color: #5ED9D7;
+    text-shadow: 0 0 10px rgba(94, 217, 215, 0.5);
+}
+
+.theme-light .central-panel {
+    color: #2C3E50;
+}
+
+/* Соединительные линии */
+.connecting-line-left,
+.connecting-line-right {
+    height: 3px;
+    width: 120px;
+    background: linear-gradient(90deg, transparent, rgba(94, 217, 215, 0.8), rgba(94, 217, 215, 0.8), transparent);
+    box-shadow: 0 0 10px rgba(94, 217, 215, 0.6);
+    animation: linePulse 2s ease-in-out infinite;
+    position: relative;
+}
+
+.connecting-line-left {
+    background: linear-gradient(90deg, transparent, rgba(94, 217, 215, 0.8));
+}
+
+.connecting-line-right {
+    background: linear-gradient(90deg, rgba(94, 217, 215, 0.8), transparent);
+}
+
+/* Иконки в кружочках */
+.panel-icon-left,
+.panel-icon-right {
+    position: relative;
+    cursor: pointer;
+}
+
+.icon-circle {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(94, 217, 215, 0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(94, 217, 215, 0.1);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+    animation: iconPulse 2.5s ease-in-out infinite;
+    box-shadow: 0 0 15px rgba(94, 217, 215, 0.4);
+}
+
+.icon-circle:hover {
+    transform: scale(1.1);
+    border-color: rgba(94, 217, 215, 1);
+    box-shadow: 0 0 25px rgba(94, 217, 215, 0.8);
+}
+
+.action-icon {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2.5;
+    color: #5ED9D7;
+}
+
+/* Тултипы */
+.icon-tooltip {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.tooltip-right {
+    top: 50%;
+    right: 100%;
+    transform: translateY(-50%);
+    margin-right: 15px;
+}
+
+.tooltip-left {
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+    margin-left: 15px;
+}
+
+.panel-icon-left:hover .icon-tooltip,
+.panel-icon-right:hover .icon-tooltip {
+    opacity: 1;
+}
+
+.tooltip-right::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-left-color: rgba(0, 0, 0, 0.9);
+}
+
+.tooltip-left::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-right-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Анимации пульсации */
+@keyframes panelPulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(94, 217, 215, 0.3);
+        border-color: rgba(94, 217, 215, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(94, 217, 215, 0.6);
+        border-color: rgba(94, 217, 215, 0.8);
+    }
+}
+
+@keyframes linePulse {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(94, 217, 215, 0.4);
+        opacity: 0.8;
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(94, 217, 215, 0.8);
+        opacity: 1;
+    }
+}
+
+@keyframes iconPulse {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(94, 217, 215, 0.4);
+        border-color: rgba(94, 217, 215, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(94, 217, 215, 0.7);
+        border-color: rgba(94, 217, 215, 0.9);
+    }
+}
+
+/* Стили для светлой темы */
+.theme-light .central-panel {
+    background: rgba(44, 62, 80, 0.15);
+    border-color: rgba(44, 62, 80, 0.6);
+    box-shadow: 0 0 20px rgba(44, 62, 80, 0.3);
+}
+
+.theme-light .connecting-line-left {
+    background: linear-gradient(90deg, transparent, rgba(44, 62, 80, 0.8));
+    box-shadow: 0 0 10px rgba(44, 62, 80, 0.6);
+}
+
+.theme-light .connecting-line-right {
+    background: linear-gradient(90deg, rgba(44, 62, 80, 0.8), transparent);
+    box-shadow: 0 0 10px rgba(44, 62, 80, 0.6);
+}
+
+.theme-light .icon-circle {
+    border-color: rgba(44, 62, 80, 0.6);
+    background: rgba(44, 62, 80, 0.1);
+    box-shadow: 0 0 15px rgba(44, 62, 80, 0.4);
+}
+
+.theme-light .icon-circle:hover {
+    border-color: rgba(44, 62, 80, 1);
+    box-shadow: 0 0 25px rgba(44, 62, 80, 0.8);
+}
+
+.theme-light .action-icon {
+    color: #2C3E50;
+}
+
+/* Анимации для светлой темы */
+@keyframes panelPulseLightTheme {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(44, 62, 80, 0.3);
+        border-color: rgba(44, 62, 80, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(44, 62, 80, 0.6);
+        border-color: rgba(44, 62, 80, 0.9);
+    }
+}
+
+@keyframes linePulseLightTheme {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(44, 62, 80, 0.4);
+        opacity: 0.8;
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(44, 62, 80, 0.8);
+        opacity: 1;
+    }
+}
+
+@keyframes iconPulseLightTheme {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(44, 62, 80, 0.4);
+        border-color: rgba(44, 62, 80, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(44, 62, 80, 0.7);
+        border-color: rgba(44, 62, 80, 0.9);
+    }
+}
+
+.theme-light .central-panel {
+    animation: panelPulseLightTheme 3s ease-in-out infinite;
+}
+
+.theme-light .connecting-line-left,
+.theme-light .connecting-line-right {
+    animation: linePulseLightTheme 2s ease-in-out infinite;
+}
+
+.theme-light .icon-circle {
+    animation: iconPulseLightTheme 2.5s ease-in-out infinite;
+}

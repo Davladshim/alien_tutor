@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2>Добавить новое занятие</h2>
+    <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">
+        Добавьте разовое занятие в основное расписание
+    </p>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <form method="POST" action="{{ url_for('add_slot') }}">
+        <div style="display: grid; gap: 20px;">
+            
+            <div>
+                <label for="specific_date">Дата занятия:</label>
+                <input type="date" id="specific_date" name="specific_date" required>
+                <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">
+                    Выберите конкретную дату для разового занятия
+                </small>
+            </div>
+
+            <div>
+                <label for="time">Время:</label>
+                <input type="time" id="time" name="time" required>
+            </div>
+
+            <div>
+                <label for="student_name">Ученик:</label>
+                <select name="student_name" id="student_name" required>
+                    <option value="">Выберите ученика</option>
+                    {% for student in students %}
+                        <option value="{{ student.name }}">{{ student.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="subject">Предмет:</label>
+                <select name="subject" id="subject" required onchange="toggleCustomSubject()">
+                    <option value="">Выберите предмет</option>
+                    <option value="Математика">Математика</option>
+                    <option value="Физика">Физика</option>
+                    <option value="Химия">Химия</option>
+                    <option value="Другое">Другое</option>
+                </select>
+            </div>
+
+            <div id="custom_subject_div" style="display: none;">
+                <label for="custom_subject">Введите название предмета:</label>
+                <input type="text" id="custom_subject" name="custom_subject" placeholder="Например: Биология, История">
+            </div>
+            
+            <!-- Длительность урока -->
+            <div class="info-panel">
+                <div>
+                    <label for="lesson_duration" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                        Длительность урока (минуты):
+                    </label>
+                    <input type="number" name="lesson_duration" id="lesson_duration" 
+                           min="10" max="300" value="60" step="5"
+                           style="width: 200px;">
+                    <small style="color: var(--text-muted); font-size: 12px; display: block; margin-top: 8px;">
+                        По умолчанию: 60 минут<br>
+                        Урок автоматически завершится через указанное время после начала
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button type="submit" class="btn success">Сохранить занятие</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleCustomSubject() {
+    const subjectSelect = document.getElementById('subject');
+    const customSubjectDiv = document.getElementById('custom_subject_div');
+    const customSubjectInput = document.getElementById('custom_subject');
+    
+    if (subjectSelect.value === 'Другое') {
+        customSubjectDiv.style.display = 'block';
+        customSubjectInput.required = true;
+    } else {
+        customSubjectDiv.style.display = 'none';
+        customSubjectInput.required = false;
+        customSubjectInput.value = '';
+    }
+}
+</script>
+
+<div class="info-panel" style="margin-top: 30px;">
+    <h4>Подсказка:</h4>
+    <ul style="color: var(--text-primary); margin: 0; padding-left: 20px; line-height: 1.6;">
+        <li>Это добавление разового занятия на конкретную дату</li>
+        <li>Урок автоматически завершится через указанную длительность</li>
+        <li>После завершения средства автоматически спишутся с баланса ученика</li>
+        <li>Если вам нужно создать повторяющееся расписание, используйте <a href="{{ url_for('shablon_nedeli') }}" style="color: var(--text-accent); font-weight: bold;">шаблон недели</a></li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ url_for('raspisanie') }}" style="margin-right: 20px;">Назад к расписанию</a>
+    <a href="{{ url_for('shablon_nedeli') }}">Шаблон недели</a>
+</div>
+
+{% endblock %}

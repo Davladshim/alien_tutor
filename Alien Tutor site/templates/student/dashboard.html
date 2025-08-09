@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет ученика - Alien Tutor{% endblock %}
+
+{% block styles %}
+
+{% endblock %}
+
+{% block content %}
+    <div class="dashboard-container">
+        <!-- Заголовок страницы -->
+        <div class="dashboard-header">
+            <h1>Личный кабинет ученика</h1>
+            <p class="welcome-text">Добро пожаловать в твой космический учебный центр!</p>
+        </div>
+
+        <!-- Навигация по вкладкам -->
+        <div class="tabs-navigation">
+            <button class="tab-button active" data-tab="schedule">
+                <span class="tab-text">Расписание</span>
+            </button>
+            <button class="tab-button" data-tab="progress">
+                <span class="tab-text">Успеваемость</span>
+            </button>
+            <button class="tab-button" data-tab="game">
+                <span class="tab-text">Игра</span>
+            </button>
+        </div>
+
+        <!-- Контент вкладок -->
+        <div class="tabs-content">
+
+            <!-- Вкладка: Расписание -->
+            <div class="tab-content active" id="schedule-tab">
+                <!-- Футуристичная панель быстрых действий -->
+                <div class="futuristic-panel">
+                    <div class="panel-icon-left">
+                        <div class="icon-circle">
+                            <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <div class="icon-tooltip tooltip-right">Подключиться к уроку</div>
+                    </div>
+                    
+                    <div class="connecting-line-left"></div>
+                    
+                    <div class="central-panel">
+                        <span>Быстрые действия</span>
+                    </div>
+                    
+                    <div class="connecting-line-right"></div>
+                    
+                    <div class="panel-icon-right">
+                        <div class="icon-circle">
+                            <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="3" y="4" width="18" height="12" rx="1" ry="1"></rect>
+                                <line x1="7" y1="8" x2="17" y2="8"></line>
+                                <line x1="7" y1="12" x2="13" y2="12"></line>
+                                <path d="M8 21l-2-5h12l-2 5"></path>
+                            </svg>
+                        </div>
+                        <div class="icon-tooltip tooltip-left">Интерактивная доска</div>
+                    </div>
+                </div>
+                
+                <!-- Статистика ученика -->
+                <div class="student-stats">
+                    <div class="stats-card">
+                        <div class="stats-value">0</div>
+                        <div class="stats-label">Запланировано в месяце</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-value">0</div>
+                        <div class="stats-label">Отменено уроков</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-value">0</div>
+                        <div class="stats-label">Запас уроков</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-value">0</div>
+                        <div class="stats-label">Проведено уроков</div>
+                    </div>
+                </div>
+
+                <!-- Календарь с навигацией -->
+                <div class="schedule-container">
+                    <h2>Расписание занятий</h2>
+                    
+                    <!-- Навигация и переключатель -->
+                    <div class="schedule-controls">
+                        <button class="nav-btn">← Назад</button>
+                        
+                        <div class="schedule-info">
+                            <span class="current-period">Неделя 6, 2025</span>
+                            <div class="view-toggle">
+                                <button class="toggle-btn active">Неделя</button>
+                                <button class="toggle-btn">Месяц</button>
+                            </div>
+                        </div>
+                        
+                        <button class="nav-btn">Вперед →</button>
+                    </div>
+
+                    <!-- Календарная сетка -->
+                    <div class="schedule-grid">
+                        <div class="day-column">
+                            <div class="day-header">
+                                <div class="day-name">Понедельник</div>
+                                <div class="day-date">10</div>
+                            </div>
+                            <div class="lessons-list">
+                                <div class="lesson-placeholder">Нет занятий</div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">
+                                <div class="day-name">Вторник</div>
+                                <div class="day-date">11</div>
+                            </div>
+                            <div class="lessons-list">
+                                <div class="lesson-item-placeholder">
+                                    <div class="lesson-time">15:00</div>
+                                    <div class="lesson-subject">Математика</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column today">
+                            <div class="day-header">
+                                <div class="day-name">Среда</div>
+                                <div class="day-date">12</div>
+                                <div class="today-badge">Сегодня</div>
+                            </div>
+                            <div class="lessons-list">
+                                <div class="lesson-placeholder">Нет занятий</div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">
+                                <div class="day-name">Четверг</div>
+                                <div class="day-date">13</div>
+                            </div>
+                            <div class="lessons-list">
+                                <div class="lesson-item-placeholder">
+                                    <div class="lesson-time">16:30</div>
+                                    <div class="lesson-subject">Физика</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">
+                                <div class="day-name">Пятница</div>
+                                <div class="day-date">14</div>
+                            </div>
+                            <div class="lessons-list">
+                                <div class="lesson-placeholder">Нет занятий</div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">
+                                <div class="day-name">Суббота</div>
+                                <div class="day-date">15</div>
+                            </div>
+                            <div class="lessons-list">
+                                <div class="lesson-placeholder">Нет занятий</div>
+                            </div>
+                        </div>
+                        
+                        <div class="day-column">
+                            <div class="day-header">
+                                <div class="day-name">Воскресенье</div>
+                                <div class="day-date">16</div>
+                            </div>
+                            <div class="lessons-list">
+                                <div class="lesson-placeholder">Нет занятий</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вкладка: Успеваемость -->
+            <div class="tab-content" id="progress-tab">
+                <!-- Выбор класса (для демо) -->
+                <div class="class-selector">
+                    <h2>Успеваемость</h2>
+                    <div class="class-buttons">
+                        <button class="class-btn active" data-class="9">9 класс</button>
+                        <button class="class-btn" data-class="11">11 класс</button>
+                        <button class="class-btn" data-class="8">8 класс</button>
+                        <button class="class-btn" data-class="7">7 класс</button>
+                    </div>
+                </div>
+
+                <!-- Диаграммы -->
+                <div class="charts-container">
+                    <!-- Столбчатая диаграмма (только 9-11 классы) -->
+                    <div class="chart-section bar-chart-section">
+                        <h3>Баллы за пробники ОГЭ/ЕГЭ</h3>
+                        <div class="chart-wrapper">
+                            <div class="bar-chart" id="barChart">
+                                <!-- Будет заполнено JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Круговая диаграмма (все классы) -->
+                    <div class="chart-section pie-chart-section">
+                        <h3>Понимание тем</h3>
+                        <div class="chart-wrapper">
+                            <div class="pie-chart" id="pieChart">
+                                <svg viewBox="0 0 200 200" width="200" height="200">
+                                    <!-- Круг будет отрисован JavaScript -->
+                                </svg>
+                                <div class="pie-legend">
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background: #10b981;"></span>
+                                        <span>Тема разобрана полностью</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background: #f59e0b;"></span>
+                                        <span>Есть вопросы по теме</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background: #ef4444;"></span>
+                                        <span>Тему нужно закрепить</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Таблица уроков -->
+                <div class="lessons-table-section">
+                    <h3>История проведенных уроков</h3>
+                    <div class="table-wrapper">
+                        <table class="lessons-table">
+                            <thead>
+                                <tr>
+                                    <th>Дата урока</th>
+                                    <th>Пройденная тема</th>
+                                    <th>Краткий вывод</th>
+                                    <th class="score-column">Баллы за пробник</th>
+                                    <th>Развернутый вывод</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lessonsTableBody">
+                                <!-- Новые уроки добавляются сверху -->
+                                <tr>
+                                    <td>05.02.2025</td>
+                                    <td>Квадратные уравнения</td>
+                                    <td>Тема разобрана полностью</td>
+                                    <td class="score-cell">85</td>
+                                    <td>Ученик отлично понял принцип решения через дискриминант. Небольшие ошибки в вычислениях.</td>
+                                </tr>
+                                <tr>
+                                    <td>03.02.2025</td>
+                                    <td>Функции и графики</td>
+                                    <td>Есть вопросы по теме</td>
+                                    <td class="score-cell">72</td>
+                                    <td>Базовые понятия усвоены, но путается в построении графиков сложных функций.</td>
+                                </tr>
+                                <tr>
+                                    <td>01.02.2025</td>
+                                    <td>Системы уравнений</td>
+                                    <td>Тему нужно закрепить</td>
+                                    <td class="score-cell">58</td>
+                                    <td>Метод подстановки понятен, но алгебраический метод вызывает затруднения.</td>
+                                </tr>
+                                <tr>
+                                    <td>29.01.2025</td>
+                                    <td>Неравенства</td>
+                                    <td>Тема разобрана полностью</td>
+                                    <td class="score-cell">92</td>
+                                    <td>Превосходное понимание темы. Быстро решает как простые, так и сложные неравенства.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Новая таблица домашних заданий -->
+                <div class="homework-table-section">
+                    <h3>История домашних заданий</h3>
+                    <div class="table-wrapper">
+                        <table class="lessons-table homework-table">
+                            <thead id="homeworkTableHeader">
+                                <!-- Заголовки будут меняться в зависимости от класса -->
+                            </thead>
+                            <tbody id="homeworkTableBody">
+                                <!-- Содержимое будет заполняться JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вкладка: Игра -->
+            <div class="tab-content" id="game-tab">
+                <div class="content-section">
+                    <h2>🎮 Космический лабиринт</h2>
+                    
+                    <div style="text-align: center; margin: 2rem 0;">
+                        <a href="/game" target="_blank" class="glass-button game-launch-btn" style="display: inline-block; max-width: 300px; text-decoration: none;">
+                            <div class="button-title">🚀 Запустить игру</div>
+                            <div class="button-subtitle">Начать космическое приключение</div>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="content-section">
+                    <h2>🏆 Твой рейтинг</h2>
+                    <div class="rating-placeholder">
+                        <p>Здесь будет отображаться:</p>
+                        <ul>
+                            <li>Твоя позиция в общем рейтинге</li>
+                            <li>Количество очков за игру</li>
+                            <li>Достижения и значки</li>
+                            <li>Прогресс по решенным задачам</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

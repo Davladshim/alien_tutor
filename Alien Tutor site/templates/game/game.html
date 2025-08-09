@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Космическая игра - Alien Tutor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/game.css') }}">
+</head>
+<body>
+    <!-- Тонкая строка статистики -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-icon">💎</span>
+            <span class="stat-label">Баллы:</span>
+            <span class="stat-value" id="dailyScore">0</span>
+        </div>
+        
+        <div class="stat-item">
+            <span class="stat-icon">⭐</span>
+            <span class="stat-label">Звезды:</span>
+            <span class="stat-value" id="starsFound">0/5</span>
+        </div>
+        
+        <div class="stat-item" id="pocketItem">
+            <span class="stat-icon" id="pocketIcon">👽</span>
+            <span class="stat-label">Карман:</span>
+            <span class="stat-value" id="pocketStatus">Пусто</span>
+        </div>
+    </div>
+
+    <!-- Игровое поле на всю оставшуюся страницу -->
+    <div class="game-area">
+        <div class="maze-container" id="mazeContainer">
+            <div class="maze-placeholder">
+                <div class="placeholder-icon">🚀</div>
+                <div class="placeholder-text">Лабиринт загружается...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для задач -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⭐ Космическая задача</h2>
+                <button class="modal-close" onclick="closeTaskModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="task-text" id="taskText">
+                    Сколько будет 5 + 3?
+                </div>
+                <div class="answer-section">
+                    <input type="text" id="taskAnswer" placeholder="Введи ответ..." autocomplete="off">
+                    <div class="answer-buttons">
+                        <button class="answer-btn submit" onclick="checkAnswer()">Ответить</button>
+                        <button class="answer-btn skip" onclick="skipTask()">Пропустить</button>
+                    </div>
+                </div>
+                <div class="task-attempts" id="taskAttempts">
+                    Попыток осталось: <span id="attemptsLeft">7</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>

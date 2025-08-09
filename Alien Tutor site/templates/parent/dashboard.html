@@ -1,0 +1,906 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет родителя - Alien Tutor{% endblock %}
+
+{% block styles %}
+<style>
+    /* ===== ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ ЛКР ===== */
+    
+    /* Переключатель детей (для семей) */
+    .children-switcher {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+    }
+
+    .theme-dark .children-switcher {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(217, 246, 244, 0.15);
+    }
+
+    .theme-light .children-switcher {
+        background: rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(44, 62, 80, 0.1);
+    }
+
+    .children-label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-accent, #5ED9D7);
+        margin-right: 10px;
+    }
+
+    .children-toggle-group {
+        display: flex;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .child-toggle-btn {
+        background: transparent;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        color: inherit;
+        opacity: 0.7;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .child-toggle-btn.active {
+        background: linear-gradient(135deg, rgba(94, 217, 215, 0.3) 0%, rgba(94, 217, 215, 0.5) 100%);
+        color: inherit;
+        opacity: 1;
+        box-shadow: 0 4px 15px rgba(94, 217, 215, 0.3);
+    }
+
+    .theme-dark .child-toggle-btn.active {
+        color: #D9F6F4;
+        text-shadow: 0 0 10px rgba(94, 217, 215, 0.6);
+    }
+
+    .child-toggle-btn:not(.active):hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Цветовые индикаторы для детей */
+    .child-toggle-btn::before {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 30px;
+        height: 3px;
+        border-radius: 2px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .child-toggle-btn.active::before {
+        opacity: 1;
+    }
+
+    .child-toggle-btn[data-child="0"]::before {
+        background: #00d4ff;
+    }
+
+    .child-toggle-btn[data-child="1"]::before {
+        background: #a855f7;
+    }
+
+    .child-toggle-btn[data-child="2"]::before {
+        background: #10b981;
+    }
+
+    /* Финансовая информация */
+    .financial-section {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .theme-dark .financial-section {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(217, 246, 244, 0.15);
+    }
+
+    .theme-light .financial-section {
+        background: rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(44, 62, 80, 0.1);
+    }
+
+    .financial-section::before {
+        content: '💰';
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 2rem;
+        opacity: 0.3;
+    }
+
+    .financial-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: var(--text-accent, #5ED9D7);
+    }
+
+    .financial-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .financial-card {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .theme-dark .financial-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(217, 246, 244, 0.2);
+    }
+
+    .theme-light .financial-card {
+        background: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(44, 62, 80, 0.15);
+    }
+
+    .financial-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        border-color: rgba(94, 217, 215, 0.5);
+    }
+
+    .financial-value {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        color: var(--text-accent, #5ED9D7);
+        text-shadow: 0 0 15px rgba(94, 217, 215, 0.3);
+    }
+
+    .financial-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        font-weight: 500;
+        color: inherit;
+    }
+
+    /* Специальные стили для задолженности */
+    .financial-card.debt {
+        background: rgba(239, 68, 68, 0.1);
+        border: 2px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .financial-card.debt .financial-value {
+        color: #ef4444;
+    }
+
+    /* Специальные стили для запаса */
+    .financial-card.stock {
+        background: rgba(16, 185, 129, 0.1);
+        border: 2px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .financial-card.stock .financial-value {
+        color: #10b981;
+    }
+
+    /* Модификация существующих стилей для ЛКР */
+    .parent-dashboard-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .parent-dashboard-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .parent-info {
+        font-size: 1.1rem;
+        opacity: 0.8;
+        margin-bottom: 0;
+    }
+
+    /* Скрываем элементы ЛКУ, которые не нужны в ЛКР */
+    .futuristic-panel,
+    .action-card,
+    #game-tab {
+        display: none !important;
+    }
+
+    /* Адаптация навигации по вкладкам для ЛКР */
+    .parent-tabs-navigation {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    /* Виджет расписания (встраиваемый) */
+    .schedule-widget-container {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        min-height: 400px;
+        position: relative;
+    }
+
+    .theme-dark .schedule-widget-container {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(217, 246, 244, 0.15);
+    }
+
+    .theme-light .schedule-widget-container {
+        background: rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(44, 62, 80, 0.1);
+    }
+
+    .widget-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 300px;
+        color: var(--text-muted, rgba(217, 246, 244, 0.8));
+    }
+
+    .widget-loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid rgba(94, 217, 215, 0.2);
+        border-top: 3px solid #5ED9D7;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+{% block content %}
+    <div class="dashboard-container">
+        <!-- Заголовок страницы -->
+        <div class="parent-dashboard-header">
+            <h1>Личный кабинет родителя</h1>
+            <p class="parent-info">Добро пожаловать, Иван Иванович</p>
+        </div>
+
+        <!-- Переключатель детей (только для семей с несколькими детьми) -->
+        <div class="children-switcher" id="childrenSwitcher" style="display: none;">
+            <span class="children-label">Выберите ребенка:</span>
+            <div class="children-toggle-group">
+                <button class="child-toggle-btn active" data-child="0" onclick="switchChild(0)">
+                    Мария
+                </button>
+                <button class="child-toggle-btn" data-child="1" onclick="switchChild(1)">
+                    Александр
+                </button>
+                <button class="child-toggle-btn" data-child="2" onclick="switchChild(2)">
+                    Елизавета
+                </button>
+            </div>
+        </div>
+
+        <!-- Навигация по вкладкам -->
+        <div class="tabs-navigation parent-tabs-navigation">
+            <button class="tab-button active" data-tab="main">
+                <span class="tab-text">Главная</span>
+            </button>
+            <button class="tab-button" data-tab="progress">
+                <span class="tab-text">Успеваемость</span>
+            </button>
+        </div>
+
+        <!-- Контент вкладок -->
+        <div class="tabs-content">
+
+            <!-- Вкладка: Главная (Расписание + Финансы) -->
+            <div class="tab-content active" id="main-tab">
+                
+                <!-- Финансовая информация -->
+                <div class="financial-section">
+                    <h2 class="financial-title">Финансовая информация</h2>
+                    <div class="financial-grid">
+                        <div class="financial-card">
+                            <div class="financial-value">12</div>
+                            <div class="financial-label">Запланировано уроков</div>
+                        </div>
+                        <div class="financial-card stock">
+                            <div class="financial-value">5</div>
+                            <div class="financial-label">Запас уроков</div>
+                        </div>
+                        <div class="financial-card debt">
+                            <div class="financial-value">2</div>
+                            <div class="financial-label">Ожидают оплаты</div>
+                        </div>
+                        <div class="financial-card">
+                            <div class="financial-value">1500₽</div>
+                            <div class="financial-label">Стоимость урока</div>
+                        </div>
+                        <div class="financial-card">
+                            <div class="financial-value">25</div>
+                            <div class="financial-label">Проведено уроков</div>
+                        </div>
+                        <div class="financial-card">
+                            <div class="financial-value">3</div>
+                            <div class="financial-label">Отменено уроков</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Виджет расписания -->
+                <div class="schedule-widget-container">
+                    <h2 style="text-align: center; margin-bottom: 1.5rem; color: var(--text-accent, #5ED9D7);">
+                        Расписание занятий
+                    </h2>
+                    
+                    <!-- Заглушка для виджета -->
+                    <div class="widget-loading">
+                        <div class="widget-loading-spinner"></div>
+                        <p>Загрузка расписания...</p>
+                        <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 1rem;">
+                            Здесь будет отображаться виджет расписания из календаря
+                        </p>
+                    </div>
+                    
+                    <!-- Временное расписание для демонстрации -->
+                    <div class="schedule-demo" style="display: none;">
+                        <div class="schedule-container">
+                            <div class="schedule-controls">
+                                <button class="nav-btn">← Назад</button>
+                                <div class="schedule-info">
+                                    <span class="current-period">Неделя 6, 2025</span>
+                                </div>
+                                <button class="nav-btn">Вперед →</button>
+                            </div>
+                            
+                            <div class="schedule-grid" style="margin-top: 2rem;">
+                                <div class="day-column">
+                                    <div class="day-header">
+                                        <div class="day-name">Понедельник</div>
+                                        <div class="day-date">10</div>
+                                    </div>
+                                    <div class="lessons-list">
+                                        <div class="lesson-placeholder">Нет занятий</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="day-column">
+                                    <div class="day-header">
+                                        <div class="day-name">Вторник</div>
+                                        <div class="day-date">11</div>
+                                    </div>
+                                    <div class="lessons-list">
+                                        <div class="lesson-item-placeholder">
+                                            <div class="lesson-time">15:00</div>
+                                            <div class="lesson-subject">Математика - Мария</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="day-column today">
+                                    <div class="day-header">
+                                        <div class="day-name">Среда</div>
+                                        <div class="day-date">12</div>
+                                        <div class="today-badge">Сегодня</div>
+                                    </div>
+                                    <div class="lessons-list">
+                                        <div class="lesson-item-placeholder">
+                                            <div class="lesson-time">16:00</div>
+                                            <div class="lesson-subject">Физика - Александр</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="day-column">
+                                    <div class="day-header">
+                                        <div class="day-name">Четверг</div>
+                                        <div class="day-date">13</div>
+                                    </div>
+                                    <div class="lessons-list">
+                                        <div class="lesson-placeholder">Нет занятий</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="day-column">
+                                    <div class="day-header">
+                                        <div class="day-name">Пятница</div>
+                                        <div class="day-date">14</div>
+                                    </div>
+                                    <div class="lessons-list">
+                                        <div class="lesson-item-placeholder">
+                                            <div class="lesson-time">14:30</div>
+                                            <div class="lesson-subject">Математика - Елизавета</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="day-column">
+                                    <div class="day-header">
+                                        <div class="day-name">Суббота</div>
+                                        <div class="day-date">15</div>
+                                    </div>
+                                    <div class="lessons-list">
+                                        <div class="lesson-placeholder">Нет занятий</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="day-column">
+                                    <div class="day-header">
+                                        <div class="day-name">Воскресенье</div>
+                                        <div class="day-date">16</div>
+                                    </div>
+                                    <div class="lessons-list">
+                                        <div class="lesson-placeholder">Нет занятий</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+<!-- Вкладка: Успеваемость -->
+            <div class="tab-content" id="progress-tab">
+                <!-- Контент успеваемости для текущего ребенка -->
+                <div class="child-progress-content" id="childProgress">
+                    
+                    <!-- Заголовок с именем ребенка -->
+                    <div class="content-section" style="text-align: center; margin-bottom: 2rem;">
+                        <h2>Успеваемость: <span id="currentChildName">Мария</span></h2>
+                        <p style="opacity: 0.8;">9 класс</p>
+                    </div>
+
+                    <!-- Диаграммы (копия из ЛКУ, но без управления классами) -->
+                    <div class="charts-container">
+                        <!-- Столбчатая диаграмма -->
+                        <div class="chart-section bar-chart-section">
+                            <h3>Баллы за пробники ОГЭ</h3>
+                            <div class="chart-wrapper">
+                                <div class="bar-chart" id="parentBarChart">
+                                    <!-- Будет заполнено JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Круговая диаграмма -->
+                        <div class="chart-section pie-chart-section">
+                            <h3>Понимание тем</h3>
+                            <div class="chart-wrapper">
+                                <div class="pie-chart" id="parentPieChart">
+                                    <svg viewBox="0 0 200 200" width="200" height="200">
+                                        <!-- Круг будет отрисован JavaScript -->
+                                    </svg>
+                                    <div class="pie-legend">
+                                        <div class="legend-item">
+                                            <span class="legend-color" style="background: #5ED9D7;"></span>
+                                            <span>Тема разобрана полностью</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <span class="legend-color" style="background: #f472b6;"></span>
+                                            <span>Есть вопросы по теме</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <span class="legend-color" style="background: #60a5fa;"></span>
+                                            <span>Тему нужно закрепить</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Таблица уроков -->
+                    <div class="lessons-table-section">
+                        <h3>История проведенных уроков</h3>
+                        <div class="table-wrapper">
+                            <table class="lessons-table">
+                                <thead>
+                                    <tr>
+                                        <th>Дата урока</th>
+                                        <th>Пройденная тема</th>
+                                        <th>Краткий вывод</th>
+                                        <th class="score-column">Баллы за пробник</th>
+                                        <th>Развернутый вывод преподавателя</th>
+                                        <th>Домашнее задание</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="parentLessonsTableBody">
+                                    <!-- Данные для Марии (по умолчанию) -->
+                                    <tr>
+                                        <td>05.02.2025</td>
+                                        <td>Квадратные уравнения</td>
+                                        <td>Тема разобрана полностью</td>
+                                        <td class="score-cell">85</td>
+                                        <td>Мария отлично усвоила материал, быстро решает стандартные задачи.</td>
+                                        <td>Задачи №15-20 из сборника ОГЭ</td>
+                                    </tr>
+                                    <tr>
+                                        <td>03.02.2025</td>
+                                        <td>Функции и графики</td>
+                                        <td>Есть вопросы по теме</td>
+                                        <td class="score-cell">72</td>
+                                        <td>Базовые графики строит хорошо, но нужна практика с параболами.</td>
+                                        <td>Построить графики функций из приложения</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Таблица домашних заданий -->
+                    <div class="homework-table-section">
+                        <h3>История домашних заданий</h3>
+                        <div class="table-wrapper">
+                            <table class="lessons-table homework-table">
+                                <thead id="parentHomeworkTableHeader">
+                                    <tr>
+                                        <th>Дата домашнего задания</th>
+                                        <th>Первичные баллы за пробник</th>
+                                        <th>Вторичные баллы за пробник</th>
+                                        <th>Количество решенных заданий</th>
+                                        <th>Оценка за пробник</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="parentHomeworkTableBody">
+                                    <tr>
+                                        <td>06.02.2025</td>
+                                        <td class="score-cell">45</td>
+                                        <td class="score-cell">89</td>
+                                        <td>18/20</td>
+                                        <td class="score-cell">5</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script>
+        // ===== ДАННЫЕ ДЛЯ РАЗНЫХ ДЕТЕЙ (МАКЕТ) =====
+        const childrenData = {
+            0: { // Мария
+                name: 'Мария',
+                class: '9 класс',
+                examScores: [
+                    { date: '29.01', score: 92 },
+                    { date: '01.02', score: 85 },
+                    { date: '03.02', score: 72 },
+                    { date: '05.02', score: 85 }
+                ],
+                topicProgress: { fully: 65, questions: 20, needWork: 15 },
+                lessons: [
+                    {
+                        date: '05.02.2025',
+                        topic: 'Квадратные уравнения',
+                        conclusion: 'Тема разобрана полностью',
+                        score: 85,
+                        fullConclusion: 'Мария отлично усвоила материал, быстро решает стандартные задачи.',
+                        homework: 'Задачи №15-20 из сборника ОГЭ'
+                    },
+                    {
+                        date: '03.02.2025',
+                        topic: 'Функции и графики',
+                        conclusion: 'Есть вопросы по теме',
+                        score: 72,
+                        fullConclusion: 'Базовые графики строит хорошо, но нужна практика с параболами.',
+                        homework: 'Построить графики функций из приложения'
+                    }
+                ]
+            },
+            1: { // Александр
+                name: 'Александр',
+                class: '7 класс',
+                examScores: null, // У 7 класса нет пробников
+                topicProgress: { fully: 55, questions: 30, needWork: 15 },
+                lessons: [
+                    {
+                        date: '04.02.2025',
+                        topic: 'Пропорции',
+                        conclusion: 'Тема разобрана полностью',
+                        score: null,
+                        fullConclusion: 'Александр хорошо понимает принцип пропорций, решает задачи самостоятельно.',
+                        homework: 'Задачи на пропорции №8-12'
+                    }
+                ]
+            },
+            2: { // Елизавета
+                name: 'Елизавета',
+                class: '11 класс',
+                examScores: [
+                    { date: '28.01', score: 76 },
+                    { date: '30.01', score: 82 },
+                    { date: '02.02', score: 89 },
+                    { date: '06.02', score: 91 }
+                ],
+                topicProgress: { fully: 70, questions: 20, needWork: 10 },
+                lessons: [
+                    {
+                        date: '06.02.2025',
+                        topic: 'Тригонометрия',
+                        conclusion: 'Тема разобрана полностью',
+                        score: 91,
+                        fullConclusion: 'Елизавета отлично справляется со сложными тригонометрическими уравнениями.',
+                        homework: 'Задания из ЕГЭ №13'
+                    }
+                ]
+            }
+        };
+
+        let currentChildIndex = 0;
+        let hasMultipleChildren = true; // Для демо показываем переключатель
+
+        // ===== ИНИЦИАЛИЗАЦИЯ ЛКР =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Показываем переключатель детей если их несколько
+            if (hasMultipleChildren) {
+                document.getElementById('childrenSwitcher').style.display = 'flex';
+            }
+            
+            // Инициализация диаграмм для первого ребенка
+            updateChildProgress(0);
+            
+            // Показываем демо-расписание через 2 секунды (имитация загрузки)
+            setTimeout(() => {
+                document.querySelector('.widget-loading').style.display = 'none';
+                document.querySelector('.schedule-demo').style.display = 'block';
+            }, 2000);
+        });
+// ===== ПЕРЕКЛЮЧЕНИЕ МЕЖДУ ДЕТЬМИ =====
+        function switchChild(childIndex) {
+            currentChildIndex = childIndex;
+            
+            // Обновляем активную кнопку
+            document.querySelectorAll('.child-toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.child-toggle-btn[data-child="${childIndex}"]`).classList.add('active');
+            
+            // Обновляем данные успеваемости
+            updateChildProgress(childIndex);
+            
+            // Обновляем финансовую информацию (в реальности будет из БД)
+            updateFinancialInfo(childIndex);
+        }
+
+        // ===== ОБНОВЛЕНИЕ ДАННЫХ УСПЕВАЕМОСТИ =====
+        function updateChildProgress(childIndex) {
+            const childData = childrenData[childIndex];
+            
+            // Обновляем имя и класс
+            document.getElementById('currentChildName').textContent = childData.name;
+            const classInfo = document.querySelector('#progress-tab .content-section p');
+            if (classInfo) {
+                classInfo.textContent = childData.class;
+            }
+            
+            // Обновляем диаграммы
+            if (childData.examScores) {
+                renderParentBarChart(childData.examScores);
+                document.querySelector('.bar-chart-section').style.display = 'block';
+                document.querySelector('.bar-chart-section h3').textContent = 
+                    childData.class.includes('9') ? 'Баллы за пробники ОГЭ' : 'Баллы за пробники ЕГЭ';
+            } else {
+                document.querySelector('.bar-chart-section').style.display = 'none';
+            }
+            
+            renderParentPieChart(childData.topicProgress);
+            
+            // Обновляем таблицу уроков
+            updateLessonsTable(childData.lessons);
+        }
+
+        // ===== ОТРИСОВКА СТОЛБЧАТОЙ ДИАГРАММЫ ДЛЯ ЛКР =====
+        function renderParentBarChart(scores) {
+            const barChart = document.getElementById('parentBarChart');
+            
+            if (!barChart) return;
+            
+            barChart.innerHTML = '';
+            barChart.className = 'bar-chart';
+            
+            const maxScore = 100;
+            const chartHeight = 220;
+            
+            scores.forEach(scoreData => {
+                const barItem = document.createElement('div');
+                barItem.className = 'bar-item';
+                
+                const height = Math.max(20, (scoreData.score / 100) * chartHeight);
+                barItem.style.height = height + 'px';
+                
+                const tooltip = document.createElement('div');
+                tooltip.className = 'bar-tooltip';
+                tooltip.textContent = `${scoreData.date}: ${scoreData.score} баллов`;
+                
+                barItem.appendChild(tooltip);
+                barChart.appendChild(barItem);
+            });
+        }
+
+        // ===== ОТРИСОВКА КРУГОВОЙ ДИАГРАММЫ ДЛЯ ЛКР =====
+        function renderParentPieChart(progress) {
+            const pieChart = document.querySelector('#parentPieChart svg');
+            
+            if (!pieChart) return;
+            
+            pieChart.innerHTML = '';
+            
+            const total = progress.fully + progress.questions + progress.needWork;
+            const center = 100;
+            const radius = 85;
+            
+            const colors = ['#5ED9D7', '#f472b6', '#60a5fa'];
+            const values = [progress.fully, progress.questions, progress.needWork];
+            
+            let currentAngle = -90;
+            
+            // Создаем градиенты
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            
+            colors.forEach((color, index) => {
+                const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
+                gradient.setAttribute('id', `parent-gradient-${index}`);
+                gradient.setAttribute('cx', '30%');
+                gradient.setAttribute('cy', '30%');
+                
+                const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                stop1.setAttribute('offset', '0%');
+                stop1.setAttribute('stop-color', lightenColor(color, 20));
+                
+                const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                stop2.setAttribute('offset', '100%');
+                stop2.setAttribute('stop-color', darkenColor(color, 15));
+                
+                gradient.appendChild(stop1);
+                gradient.appendChild(stop2);
+                defs.appendChild(gradient);
+            });
+            
+            pieChart.appendChild(defs);
+            
+            values.forEach((value, index) => {
+                if (value > 0) {
+                    const percentage = value / total;
+                    const angle = percentage * 360;
+                    
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    
+                    const startAngle = (currentAngle * Math.PI) / 180;
+                    const endAngle = ((currentAngle + angle) * Math.PI) / 180;
+                    
+                    const x1 = center + radius * Math.cos(startAngle);
+                    const y1 = center + radius * Math.sin(startAngle);
+                    const x2 = center + radius * Math.cos(endAngle);
+                    const y2 = center + radius * Math.sin(endAngle);
+                    
+                    const largeArc = angle > 180 ? 1 : 0;
+                    
+                    const pathData = [
+                        `M ${center} ${center}`,
+                        `L ${x1} ${y1}`,
+                        `A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2}`,
+                        'Z'
+                    ].join(' ');
+                    
+                    path.setAttribute('d', pathData);
+                    path.setAttribute('fill', `url(#parent-gradient-${index})`);
+                    path.setAttribute('stroke', '#ffffff');
+                    path.setAttribute('stroke-width', '2');
+                    path.setAttribute('class', 'pie-segment');
+                    
+                    pieChart.appendChild(path);
+                    
+                    currentAngle += angle;
+                }
+            });
+        }
+
+        // ===== ОБНОВЛЕНИЕ ТАБЛИЦЫ УРОКОВ =====
+        function updateLessonsTable(lessons) {
+            const tableBody = document.getElementById('parentLessonsTableBody');
+            
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            lessons.forEach(lesson => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${lesson.date}</td>
+                    <td>${lesson.topic}</td>
+                    <td>${lesson.conclusion}</td>
+                    <td class="score-cell">${lesson.score || '-'}</td>
+                    <td>${lesson.fullConclusion}</td>
+                    <td>${lesson.homework}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // ===== ОБНОВЛЕНИЕ ФИНАНСОВОЙ ИНФОРМАЦИИ =====
+        function updateFinancialInfo(childIndex) {
+            // В реальном приложении эти данные будут из БД
+            const financialData = {
+                0: { planned: 12, stock: 5, debt: 2, price: 1500, completed: 25, cancelled: 3 },
+                1: { planned: 10, stock: 3, debt: 0, price: 1300, completed: 20, cancelled: 2 },
+                2: { planned: 15, stock: 7, debt: 1, price: 1700, completed: 30, cancelled: 1 }
+            };
+            
+            const data = financialData[childIndex];
+            
+            // Обновляем значения в карточках
+            const cards = document.querySelectorAll('.financial-card');
+            if (cards[0]) cards[0].querySelector('.financial-value').textContent = data.planned;
+            if (cards[1]) cards[1].querySelector('.financial-value').textContent = data.stock;
+            if (cards[2]) cards[2].querySelector('.financial-value').textContent = data.debt;
+            if (cards[3]) cards[3].querySelector('.financial-value').textContent = data.price + '₽';
+            if (cards[4]) cards[4].querySelector('.financial-value').textContent = data.completed;
+            if (cards[5]) cards[5].querySelector('.financial-value').textContent = data.cancelled;
+        }
+
+        // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ЦВЕТОВ =====
+        function lightenColor(color, percent) {
+            const num = parseInt(color.replace("#", ""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+        }
+
+        function darkenColor(color, percent) {
+            const num = parseInt(color.replace("#", ""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) - amt;
+            const G = (num >> 8 & 0x00FF) - amt;
+            const B = (num & 0x0000FF) - amt;
+            return "#" + (0x1000000 + (R > 255 ? 255 : R < 0 ? 0 : R) * 0x10000 +
+                (G > 255 ? 255 : G < 0 ? 0 : G) * 0x100 +
+                (B > 255 ? 255 : B < 0 ? 0 : B)).toString(16).slice(1);
+        }
+    </script>
+{% endblock %}

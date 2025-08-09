@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Alien Tutor{% endblock %}</title>
+    
+    <!-- Подключаем стили анимации -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base_animation.css') }}">
+    
+    <!-- Дополнительные стили для конкретных страниц -->
+    {% block styles %}{% endblock %}
+</head>
+<body class="theme-dark"> 
+        <!-- Логотипы для разных тем -->
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='images/logo dark theme.png') }}" alt="Alien Tutor" class="main-logo logo-dark">
+        <img src="{{ url_for('static', filename='images/logo light theme.png') }}" alt="Alien Tutor" class="main-logo logo-light">
+    </div>
+    
+    <!-- Переключатель тем -->
+    <div class="theme-switcher" onclick="toggleTheme()">
+        <span class="theme-icon moon active">🌑</span>
+        <div class="switch-track">
+            <div class="switch-thumb"></div>
+        </div>
+        <span class="theme-icon sun">☀️</span>
+    </div>
+
+    <!-- Контейнер для фоновых элементов (звезды и облака) -->
+    <div class="background-container" id="backgroundContainer">
+        <!-- Звезды и облака будут добавлены через JavaScript -->
+    </div>
+
+    <!-- Основной контент страницы -->
+    <div class="content">
+        {% block content %}
+        <!-- Здесь будет содержимое конкретных страниц -->
+        {% endblock %}
+    </div>
+
+    <!-- Подключаем JavaScript анимации -->
+    <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
+    
+    <!-- Дополнительные скрипты для конкретных страниц -->
+    {% block scripts %}{% endblock %}
+</body>
+</html>

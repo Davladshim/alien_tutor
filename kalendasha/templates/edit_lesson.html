@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if error %}
+<!-- Сообщение об ошибке -->
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2>Ошибка</h2>
+    <p style="color: #ef4444; font-size: 16px; margin-top: 10px;">
+        {{ error }}
+    </p>
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('raspisanie') }}" 
+           style="color: var(--text-accent); text-decoration: none; font-weight: bold; font-size: 16px;">
+            ← Назад к расписанию
+        </a>
+    </div>
+</div>
+{% else %}
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2>Редактировать урок</h2>
+    <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">
+        Изменение параметров урока в расписании
+    </p>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <form method="post">
+        <input type="hidden" name="action" value="save">
+        <div style="display: grid; gap: 20px;">
+            
+            <!-- Дата урока -->
+            <div>
+                <label for="date" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Дата урока <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="date" id="date" name="date" required 
+                       value="{{ lesson.date }}">
+            </div>
+
+            <!-- Время урока -->
+            <div>
+                <label for="time" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Время урока <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="time" id="time" name="time" required 
+                       value="{{ lesson.time }}">
+            </div>
+
+            <!-- Ученик -->
+            <div>
+                <label for="student" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Ученик <span style="color: #ef4444;">*</span>
+                </label>
+                <select id="student" name="student" required>
+                    <option value="">Выберите ученика</option>
+                    {% for student in students %}
+                        <option value="{{ student.name }}" 
+                                {% if student.name == lesson.student %}selected{% endif %}>
+                            {{ student.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Предмет -->
+            <div>
+                <label for="subject" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Предмет <span style="color: #ef4444;">*</span>
+                </label>
+                <select id="subject" name="subject" required onchange="toggleCustomSubject()">
+                    <option value="">Выберите предмет</option>
+                    <option value="Математика" {% if lesson.subject == "Математика" %}selected{% endif %}>Математика</option>
+                    <option value="Физика" {% if lesson.subject == "Физика" %}selected{% endif %}>Физика</option>
+                    <option value="Химия" {% if lesson.subject == "Химия" %}selected{% endif %}>Химия</option>
+                    <option value="Русский язык" {% if lesson.subject == "Русский язык" %}selected{% endif %}>Русский язык</option>
+                    <option value="Литература" {% if lesson.subject == "Литература" %}selected{% endif %}>Литература</option>
+                    <option value="История" {% if lesson.subject == "История" %}selected{% endif %}>История</option>
+                    <option value="Обществознание" {% if lesson.subject == "Обществознание" %}selected{% endif %}>Обществознание</option>
+                    <option value="География" {% if lesson.subject == "География" %}selected{% endif %}>География</option>
+                    <option value="Биология" {% if lesson.subject == "Биология" %}selected{% endif %}>Биология</option>
+                    <option value="Английский язык" {% if lesson.subject == "Английский язык" %}selected{% endif %}>Английский язык</option>
+                    <option value="Информатика" {% if lesson.subject == "Информатика" %}selected{% endif %}>Информатика</option>
+                    <option value="Пробный урок" {% if lesson.subject == "Пробный урок" %}selected{% endif %}>Пробный урок</option>
+                    <option value="Другое" {% if lesson.subject not in ["Математика", "Физика", "Химия", "Русский язык", "Литература", "История", "Обществознание", "География", "Биология", "Английский язык", "Информатика", "Пробный урок"] %}selected{% endif %}>Другое</option>
+                </select>
+            </div>
+
+            <!-- Кастомный предмет -->
+            <div id="custom_subject_div" style="display: {% if lesson.subject not in ['Математика', 'Физика', 'Химия', 'Русский язык', 'Литература', 'История', 'Обществознание', 'География', 'Биология', 'Английский язык', 'Информатика', 'Пробный урок'] %}block{% else %}none{% endif %};">
+                <label for="custom_subject" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Введите предмет:
+                </label>
+                <input type="text" id="custom_subject" name="custom_subject" 
+                       value="{% if lesson.subject not in ['Математика', 'Физика', 'Химия', 'Русский язык', 'Литература', 'История', 'Обществознание', 'География', 'Биология', 'Английский язык', 'Информатика', 'Пробный урок'] %}{{ lesson.subject }}{% endif %}"
+                       placeholder="Например: ОГЭ по математике">
+            </div>
+
+            <!-- Длительность урока -->
+            <div>
+                <label for="lesson_duration" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-primary);">
+                    Длительность урока (минут)
+                </label>
+                <input type="number" id="lesson_duration" name="lesson_duration" 
+                       min="10" max="300" step="5"
+                       value="{{ lesson.get('lesson_duration', 60) }}"
+                       placeholder="60">
+                <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">
+                    От 10 до 300 минут. Урок автоматически завершится через указанное время.
+                </small>
+            </div>
+
+        </div>
+
+        <!-- Информация о статусе урока -->
+        <div style="margin: 25px 0; padding: 15px; background: var(--bg-card); border-radius: 10px; border-left: 4px solid #00d4ff;">
+            <h4 style="margin: 0 0 10px 0; color: var(--text-accent);">Статус урока</h4>
+            <p style="margin: 0; color: var(--text-primary); font-size: 14px;">
+                Текущий статус: <strong>
+                {% if lesson.get('status') == 'scheduled' %}Запланирован
+                {% elif lesson.get('status') == 'completed' %}Проведен
+                {% elif lesson.get('status') == 'cancelled' %}Отменен
+                {% else %}{{ lesson.get('status', 'Неизвестно') }}{% endif %}
+                </strong>
+            </p>
+            {% if lesson.get('status') != 'cancelled' %}
+            <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 12px;">
+                Статус автоматически изменится на "Проведен" после окончания урока.
+                При переносе на будущее время статус вернется к "Запланирован".
+            </p>
+            {% endif %}
+        </div>
+
+        <div style="display: flex; gap: 15px; justify-content: space-between; margin-top: 30px;">
+            <!-- Сохранить изменения -->
+            <button type="submit" class="btn success" style="flex: 1; min-width: 0; padding: 12px 16px; font-size: 14px; white-space: nowrap; height: 44px; line-height: 1.2;">
+                Сохранить изменения
+            </button>
+            
+            <!-- Отменить урок -->
+            {% if lesson.get('status') != 'cancelled' %}
+            <button type="button" class="btn danger" 
+                    onclick="if(confirm('Отменить этот урок?\n\nОтмененный урок можно будет восстановить через API.')) { cancelLesson(); }" 
+                    style="flex: 1; min-width: 0; padding: 12px 16px; font-size: 14px; white-space: nowrap; height: 44px; line-height: 1.2;">
+                Отменить урок
+            </button>
+            {% else %}
+            <div style="flex: 1; text-align: center; color: var(--text-muted); font-style: italic; padding: 12px; height: 44px; line-height: 1.2; display: flex; align-items: center; justify-content: center;">
+                Урок отменен
+            </div>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleCustomSubject() {
+    const subjectSelect = document.getElementById('subject');
+    const customSubjectDiv = document.getElementById('custom_subject_div');
+    const customSubjectInput = document.getElementById('custom_subject');
+    
+    if (subjectSelect.value === 'Другое') {
+        customSubjectDiv.style.display = 'block';
+        customSubjectInput.required = true;
+    } else {
+        customSubjectDiv.style.display = 'none';
+        customSubjectInput.required = false;
+        customSubjectInput.value = '';
+    }
+}
+
+function cancelLesson() {
+    // Создаем скрытую форму для отмены урока
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.style.display = 'none';
+    
+    const actionInput = document.createElement('input');
+    actionInput.type = 'hidden';
+    actionInput.name = 'action';
+    actionInput.value = 'cancel';
+    
+    form.appendChild(actionInput);
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+
+<!-- Информационная панель -->
+<div class="info-panel" style="max-width: 600px; margin: 30px auto 0;">
+    <h4>Редактирование урока</h4>
+    <ul style="color: var(--text-primary); margin: 0; padding-left: 20px; line-height: 1.6;">
+        <li>При изменении даты или времени урок может изменить свой статус</li>
+        <li>Перенос на будущее время вернет статус "Запланирован"</li>
+        <li>Отмененный урок можно восстановить через API</li>
+        <li>Все изменения сохраняются с отметкой времени редактирования</li>
+        <li>Информация о переносе сохраняется в истории урока</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ url_for('raspisanie') }}" 
+       style="color: var(--text-accent); text-decoration: none; font-weight: bold; font-size: 16px;">
+        ← Назад к расписанию
+    </a>
+</div>
+
+{% endif %}
+
+{% endblock %}

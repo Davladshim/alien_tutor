@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2>Финансовый учет</h2>
+    <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">
+        Управление балансами и финансовый учет учеников
+    </p>
+    
+    <!-- Навигация по месяцам с кнопкой виджета -->
+    <div style="display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 20px; position: relative;">
+        <a href="{{ url_for('oplata', year=prev_year, month=prev_month) }}" class="btn" style="text-decoration: none;">
+            ← {{ prev_month }}/{{ prev_year }}
+        </a>
+        <h3 style="margin: 0; color: var(--text-accent);">{{ current_month_name }} {{ current_year }}</h3>
+        <a href="{{ url_for('oplata', year=next_year, month=next_month) }}" class="btn" style="text-decoration: none;">
+            {{ next_month }}/{{ next_year }} →
+        </a>
+        
+    </div>
+</div>
+
+<!-- Статистика как в виджетах БЕЗ АНИМАЦИИ -->
+<div class="payment-stats-section-fixed">
+    <div class="payment-stats-grid">
+        <div class="payment-stats-item-fixed">
+            <div class="payment-stats-value">{{ predicted_income|int }}₽</div>
+            <div class="payment-stats-label">Прогноз дохода<br>в текущем месяце</div>
+        </div>
+        <div class="payment-stats-item-fixed">
+            <div class="payment-stats-value">{{ actual_income|int }}₽</div>
+            <div class="payment-stats-label">Доход на<br>данный момент</div>
+        </div>
+        <div class="payment-stats-item-fixed">
+            <div class="payment-stats-value">{{ financial_overview.total_prepaid|int }}₽</div>
+            <div class="payment-stats-label">Оплачено<br>вперед</div>
+        </div>
+        <div class="payment-stats-item-fixed">
+            <div class="payment-stats-value">{{ financial_overview.total_debt|int }}₽</div>
+            <div class="payment-stats-label">Общие<br>долги</div>
+        </div>
+    </div>
+</div>
+
+<!-- Баланс учеников -->
+<div class="card" style="margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="margin: 0; color: var(--text-accent);">Баланс учеников</h3>
+        <!-- Кнопка добавить платеж как иконка -->
+        <span title="Добавить платеж" class="icon-action icon-add-payment" onclick="window.location.href='/добавить-платеж'">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+        </span>
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table class="payment-table" border="1" cellpadding="8" cellspacing="0" style="margin: 0; width: 100%;">
+            <thead>
+                <tr>
+                    <th style="text-align: center;">Ученик</th>
+                    <th style="text-align: center;">Стоимость урока</th>
+                    <th style="text-align: center;">Текущий баланс</th>
+                    <th style="text-align: center;">Уроков оплачено</th>
+                    <th style="text-align: center;">Уроков проведено</th>
+                    <th style="text-align: center;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                {% set balance = balances.get(student.name, {}) %}
+                {% set student_balance = balance.get('balance', 0) %}
+                {% set lesson_price = balance.get('lesson_price', student.lesson_price or 0) %}
+                {% set lessons_available = (student_balance / lesson_price)|round(0)|int if lesson_price > 0 else 0 %}
+                <tr>
+                    <td class="student-name-neutral" style="text-align: center;">{{ student.name }}</td>
+                    <td style="text-align: center;">{{ lesson_price|round(0)|int }} ₽</td>
+                    <td class="{% if student_balance > 0 %}balance-positive{% elif student_balance < 0 %}balance-negative{% else %}balance-zero{% endif %}" style="text-align: center;">
+                        {{ student_balance|round(0)|int }} ₽
+                    </td>
+                    <td style="text-align: center;">
+                        <span class="{% if lessons_available > 0 %}balance-positive{% elif lessons_available < 0 %}balance-negative{% else %}balance-zero{% endif %}" style="padding: 4px 8px; border-radius: 4px; font-weight: bold;">
+                            {{ lessons_available }}
+                        </span>
+                    </td>
+                    <td style="text-align: center;" class="lessons-count-neutral">
+                    {% set stats = student_detailed_stats.get(student.name, {}) %}
+                    {{ stats.get('actual_completed', 0) }}/{{ stats.get('regular_planned_actual', 0) }}
+                    </td>
+                    <td style="text-align: center;">
+                        <div style="display: flex; gap: 32px; justify-content: center; align-items: center;">
+                            <!-- История платежей (график) -->
+                            <span title="История платежей" class="icon-action icon-history" onclick="window.location.href='/история-платежей/{{ student.name }}'">
+                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="20" x2="18" y2="10"/>
+                                    <line x1="12" y1="20" x2="12" y2="4"/>
+                                    <line x1="6" y1="20" x2="6" y2="14"/>
+                                </svg>
+                            </span>
+                            
+                            <!-- Обнулить баланс (обновление) -->
+                            <span title="Обнулить баланс" class="icon-action icon-reset" onclick="resetBalance('{{ student.name }}')">
+                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="23 4 23 10 17 10"/>
+                                    <polyline points="1 20 1 14 7 14"/>
+                                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64l1.27 1.27"/>
+                                    <path d="M3.51 15a9 9 0 0 0 14.85 3.36l-1.27-1.27"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Стили -->
+<style>
+/* СТАТИСТИКА БЕЗ АНИМАЦИИ */
+.payment-stats-section-fixed {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 30px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.3);
+}
+
+.payment-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    z-index: 1;
+    position: relative;
+}
+
+.payment-stats-item-fixed {
+    text-align: center;
+    padding: 20px 15px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.payment-stats-value {
+    font-weight: 800;
+    font-size: 28px;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    color: white;
+}
+
+.payment-stats-label {
+    font-size: 12px;
+    opacity: 0.9;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+/* ИКОНКИ ДЕЙСТВИЙ */
+.icon-action {
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    transition: color 0.3s, transform 0.3s;
+    text-decoration: none;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.icon-action svg {
+    display: block;
+    width: 28px;
+    height: 28px;
+}
+
+.icon-action:hover, .icon-action:focus {
+    color: #00d4ff;
+    transform: scale(1.2);
+}
+
+.icon-action.icon-reset:hover, .icon-action.icon-reset:focus {
+    color: #ef4444;
+    transform: scale(1.2);
+}
+
+.icon-action.icon-add-payment:hover, .icon-action.icon-add-payment:focus {
+    color: #10b981;
+    transform: scale(1.2);
+}
+
+.icon-action.icon-history:hover, .icon-action.icon-history:focus {
+    color: #8b5cf6;
+    transform: scale(1.2);
+}
+
+/* ЦВЕТА БАЛАНСОВ */
+.balance-positive {
+    color: #10b981 !important;
+    font-weight: 600;
+}
+
+.balance-negative {
+    color: #ef4444 !important;
+    font-weight: 600;
+}
+
+.balance-zero {
+    color: var(--text-primary) !important;
+    font-weight: 500;
+}
+
+.student-name-neutral {
+    color: var(--text-primary) !important;
+    font-weight: 500;
+}
+
+/* АНИМАЦИЯ ТАБЛИЦЫ */
+.payment-table tr:hover {
+    background: rgba(0, 212, 255, 0.1) !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.payment-table td {
+    transition: background 0.3s ease;
+}
+
+.payment-table tr:hover td {
+    background: rgba(0, 212, 255, 0.1) !important;
+}
+
+[data-theme="light"] .payment-table tr:hover td {
+    background: rgba(0, 212, 255, 0.28) !important;
+}
+
+/* Сохранение цветов при наведении */
+.payment-table tr:hover .balance-negative {
+    color: #ef4444 !important;
+    background: rgba(0, 212, 255, 0.1) !important;
+}
+
+.payment-table tr:hover .balance-positive {
+    color: #10b981 !important;
+    background: rgba(0, 212, 255, 0.1) !important;
+}
+
+.payment-table tr:hover .balance-zero,
+.payment-table tr:hover .student-name-neutral {
+    color: var(--text-primary) !important;
+    background: rgba(0, 212, 255, 0.1) !important;
+}
+
+[data-theme="light"] .payment-table tr:hover .balance-negative {
+    color: #ef4444 !important;
+    background: rgba(0, 212, 255, 0.28) !important;
+}
+
+[data-theme="light"] .payment-table tr:hover .balance-positive {
+    color: #10b981 !important;
+    background: rgba(0, 212, 255, 0.28) !important;
+}
+
+[data-theme="light"] .payment-table tr:hover .balance-zero,
+[data-theme="light"] .payment-table tr:hover .student-name-neutral {
+    color: var(--text-primary) !important;
+    background: rgba(0, 212, 255, 0.28) !important;
+}
+
+/* АДАПТИВНОСТЬ */
+@media (max-width: 768px) {
+    .payment-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .payment-stats-value {
+        font-size: 22px;
+    }
+    
+    .payment-stats-label {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .payment-stats-value {
+        font-size: 20px;
+    }
+    
+    .payment-stats-item-fixed {
+        padding: 15px 10px;
+    }
+}
+</style>
+
+<script>
+// Функция обнуления баланса
+function resetBalance(studentName) {
+    if (confirm(`Обнулить баланс ученика ${studentName}?\n\nЭто действие:\n- Установит баланс в 0 ₽\n- Обнулит всю статистику платежей\n- НЕЛЬЗЯ ОТМЕНИТЬ!`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/обнулить-баланс/${studentName}`;
+        form.style.display = 'none';
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+
+{% endblock %}
