@@ -3,7 +3,8 @@ REM Navigate to your project folder
 cd /d "C:\Users\Kakasha\alien tutor"
 
 REM Add all changes
-git add .
+git add --all
+git reset HEAD .env
 
 REM Create commit message with current date and time
 for /f "tokens=1-5 delims=.:/ " %%d in ("%date% %time%") do (
