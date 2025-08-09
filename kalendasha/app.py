@@ -988,6 +988,26 @@ def auto_update_lesson_statuses():
 # ФУНКЦИИ ДЛЯ СТАТИСТИКИ
 # ============================================================================
 
+def get_lessons_stats(students):
+    """Получить статистику проведенных уроков для каждого ученика"""
+    lessons_stats = {}
+    
+    for student in students:
+        # Считаем проведенные уроки
+        completed_query = """
+            SELECT COUNT(*) as completed_lessons
+            FROM lessons
+            WHERE student_id = %s AND status = 'completed'
+        """
+        result = execute_query(completed_query, (student['id'],), fetch_one=True)
+        
+        lessons_stats[student['name']] = {
+            'actual_completed': int(result['completed_lessons']) if result['completed_lessons'] else 0,
+            'regular_planned_actual': 0  # Пока оставим 0
+        }
+    
+    return lessons_stats
+
 def get_student_widget_stats(student_name):
     """Получить статистику ученика для виджетов"""
     student = get_student_by_name(student_name)
@@ -1772,7 +1792,7 @@ def oplata(year=None, month=None):
                          financial_overview=financial_overview,
                          predicted_income=0,
                          actual_income=0,
-                         student_detailed_stats={},
+                         student_detailed_stats=get_lessons_stats(students),
                          current_month_name=current_month_name,
                          current_year=year,
                          prev_year=prev_year, 
