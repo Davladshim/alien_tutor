@@ -132,7 +132,8 @@
 
         <div style="display: flex; gap: 15px; justify-content: space-between; margin-top: 30px;">
             <!-- Сохранить изменения -->
-            <button type="submit" class="btn success" style="flex: 1; min-width: 0; padding: 12px 16px; font-size: 14px; white-space: nowrap; height: 44px; line-height: 1.2;">
+            <button type="submit" name="action" value="save" class="btn success" 
+                    style="flex: 1; min-width: 0; padding: 12px 16px; font-size: 14px; white-space: nowrap; height: 44px; line-height: 1.2;">
                 Сохранить изменения
             </button>
             
@@ -148,6 +149,13 @@
                 Урок отменен
             </div>
             {% endif %}
+
+            <!-- Удалить урок - всегда доступна -->
+            <button type="submit" name="action" value="delete" class="btn danger" 
+                    onclick="return confirm('Вы уверены, что хотите УДАЛИТЬ этот урок? Это действие нельзя отменить!')"
+                    style="flex: 1; min-width: 0; padding: 12px 16px; font-size: 14px; white-space: nowrap; height: 44px; line-height: 1.2;">
+                Удалить урок
+            </button>
         </div>
     </form>
 </div>

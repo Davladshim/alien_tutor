@@ -249,10 +249,17 @@ def update_lesson(lesson_id, lesson_data):
     execute_query(query, lesson_params)
     return True
 
+def update_lesson_status(lesson_id, new_status):
+    """Обновить только статус урока"""
+    query = "UPDATE lessons SET status = %s WHERE id = %s"
+    execute_query(query, (new_status, lesson_id))
+    return True
+
 def delete_lesson(lesson_id):
     """Удалить урок"""
     query = "DELETE FROM lessons WHERE id = %s"
-    execute_query(query, (lesson_id,))
+    result = execute_query(query, (lesson_id,))
+    return result is not None
 
 def get_lesson_by_id(lesson_id):
     """Получить урок по ID"""
@@ -1953,7 +1960,7 @@ def edit_lesson_from_schedule(lesson_id):
         
         if action == "cancel":
             # Отмена урока
-            update_lesson(lesson_id, {'status': 'cancelled'})
+            update_lesson_status(lesson_id, 'cancelled')
             return redirect(url_for("raspisanie"))
         
         elif action == "save":
@@ -1987,6 +1994,13 @@ def edit_lesson_from_schedule(lesson_id):
             }
             
             update_lesson(lesson_id, lesson_data)
+            return redirect(url_for("raspisanie"))
+        
+        elif action == "delete":
+            # Полное удаление урока
+            print(f"Удаляем урок с ID: {lesson_id}")
+            success = delete_lesson(lesson_id)
+            print(f"Результат удаления: {success}")
             return redirect(url_for("raspisanie"))
     
     return render_template("edit_lesson.html", lesson=lesson, students=students)
