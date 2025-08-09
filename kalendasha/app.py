@@ -229,10 +229,84 @@ def create_lesson(lesson_data):
 
 def update_lesson(lesson_id, lesson_data):
     """Обновить урок"""
+    print(f"🔄 Начинаем обновление урока {lesson_id}")
+    print(f"🔄 Новые данные: {lesson_data}")
+    
+    # Сначала получаем текущие данные урока
+    current_lesson = get_lesson_by_id(lesson_id)
+    if not current_lesson:
+        print(f"❌ Урок {lesson_id} не найден")
+        return False
+    
+    print(f"🔄 Текущий урок: {current_lesson}")
+    
     student = get_student_by_name(lesson_data.get('student'))
     if not student:
+        print(f"❌ Ученик {lesson_data.get('student')} не найден")
         return False
+    
+    # Проверяем, переносится ли урок в будущее
+    new_date = lesson_data.get('date')
+    new_time = lesson_data.get('time')
+    current_status = current_lesson.get('status')
+    
+    print(f"🔄 Проверяем перенос: статус={current_status}, новая дата={new_date}, новое время={new_time}")
+    
+    # Если урок был completed и переносится в будущее - отменяем оплату
+    if current_status == 'completed' and new_date and new_time:
+        try:
+            from datetime import datetime, date, time
+            
+            # Парсим новую дату и время
+            new_date_obj = datetime.strptime(new_date, '%Y-%m-%d').date()
+            new_time_obj = datetime.strptime(new_time, '%H:%M').time()
+            new_datetime = datetime.combine(new_date_obj, new_time_obj)
+            
+            print(f"🔄 Новое время урока: {new_datetime}")
+            print(f"🔄 Текущее время: {datetime.now()}")
+            
+            # Если урок переносится в будущее
+            if new_datetime > datetime.now():
+                print(f"🔄 Урок {lesson_id} переносится в будущее - отменяем оплату")
+                
+                # Возвращаем оплату - находим платеж за этот урок
+                refund_query = """
+                    SELECT id, amount FROM payments 
+                    WHERE lesson_id = %s AND payment_type = 'expense'
+                    ORDER BY created_at DESC LIMIT 1
+                """
+                payment_result = execute_query(refund_query, (lesson_id,), fetch_one=True)
+                
+                print(f"🔄 Найден платеж: {payment_result}")
+                
+                if payment_result:
+                    # Создаем возврат средств
+                    refund_amount = abs(payment_result['amount'])  # Делаем положительным
+                    refund_query = """
+                        INSERT INTO payments (id, student_id, amount, payment_type, description, lesson_id, payment_date, created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
+                    """
+                    refund_id = generate_slot_id()
+                    execute_query(refund_query, (
+                        refund_id, student['id'], refund_amount, 'refund', 
+                        f"Возврат за перенос урока {lesson_id}", lesson_id
+                    ))
+                    print(f"✅ Создан возврат {refund_amount} руб. за урок {lesson_id}")
+                
+                # Меняем статус на scheduled
+                lesson_data['status'] = 'scheduled'
+                print(f"🔄 Статус изменен на scheduled")
+            else:
+                print(f"🔄 Урок не переносится в будущее, оплату не возвращаем")
         
+        except Exception as e:
+            print(f"❌ Ошибка при обработке переноса урока: {e}")
+            import traceback
+            traceback.print_exc()
+    else:
+        print(f"🔄 Условия для возврата не выполнены: статус={current_status}, дата={new_date}, время={new_time}")
+    
+    # Обновляем урок
     query = """
         UPDATE lessons 
         SET student_id=%(student_id)s, date=%(date)s, time=%(time)s, day_of_week=%(day_of_week)s,
@@ -251,7 +325,10 @@ def update_lesson(lesson_id, lesson_data):
         'lesson_duration': lesson_data.get('lesson_duration', 60)
     }
     
+    print(f"🔄 Обновляем урок с параметрами: {lesson_params}")
+    
     execute_query(query, lesson_params)
+    print(f"✅ Урок {lesson_id} обновлен")
     return True
 
 def update_lesson_status(lesson_id, new_status):
@@ -1986,6 +2063,29 @@ def delete_slot(slot_id):
     """Удаление слота"""
     delete_available_slot(slot_id)
     return redirect(url_for("setup_slots"))
+
+@app.route("/api/delete-slot/<slot_id>", methods=["POST"])
+def delete_slot_by_id(slot_id):
+    """Удаление слота по ID через API"""
+    print(f"Удаляем слот с ID: {slot_id}")
+    
+    # Находим индекс слота в списке
+    slots = load_available_slots()
+    slot_index = None
+    
+    for i, slot in enumerate(slots):
+        if slot.get('id') == slot_id:
+            slot_index = i
+            break
+    
+    if slot_index is not None:
+        success = delete_available_slot(slot_index)
+        if success:
+            return {"success": True, "message": "Слот удален"}
+        else:
+            return {"success": False, "message": "Ошибка удаления"}, 500
+    else:
+        return {"success": False, "message": "Слот не найден"}, 404
 
 @app.route("/schedule/lesson/<lesson_id>/edit", methods=["GET", "POST"])
 def edit_lesson_from_schedule(lesson_id):

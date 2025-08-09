@@ -240,10 +240,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                 {{ lesson.subject }}
                             </div>
                             
-                            <!-- Длительность урока -->
+                            <!-- Длительность урока (показываем только если не 60 минут) -->
+                            {% if lesson.get('lesson_duration', 60) != 60 %}
                             <div style="background: rgba(0,0,0,0.1); color: var(--text-muted); padding: 4px 8px; border-radius: 4px; font-size: 12px; display: inline-block;">
                                 {{ lesson.get('lesson_duration', 60) }} мин
                             </div>
+                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}

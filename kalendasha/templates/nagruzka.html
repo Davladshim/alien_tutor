@@ -5,8 +5,8 @@
 </div>
 
 <!-- Панель управления -->
-<div class="card" style="margin-bottom: 20px;">
-    <div style="display: flex; justify-content: space-evenly; align-items: center; gap: 20px; padding: 20px;">
+<div class="card" style="margin-bottom: 20px; padding: 15px 25px;">  <!-- Было padding: 20px -->
+    <div style="display: flex; justify-content: space-evenly; align-items: center; gap: 15px; padding: 0;">  <!-- Убрали padding: 20px -->
         
         <!-- Переключатель режима -->
         <div class="view-toggle-container" style="justify-content: center; align-items: center;">
@@ -58,17 +58,7 @@
     </div>
 </div>
 
-<!-- Легенда -->
-<div class="color-legend">
-    <div class="legend-item">
-        <div class="legend-color free"></div>
-        <span style="font-size: 14px;">Свободен</span>
-    </div>
-    <div class="legend-item">
-        <div class="legend-color occupied"></div>
-        <span style="font-size: 14px;">Занят</span>
-    </div>
-</div>
+
 
 <!-- Основная область отображения -->
 <div
@@ -324,7 +314,22 @@ function renderSlots() {
                 const statusText = isOccupied ? 'Занят' : 'Свободен';
 
                 html += `
-                    <div class="slot-item ${statusClass}" data-slot-id="${slot.id || Math.random()}">
+                    <div class="slot-item ${statusClass}" data-slot-id="${slot.id || Math.random()}" style="position: relative;">
+                        
+                        <!-- Кнопка удаления слота -->
+                        <span class="delete-slot-btn" 
+                            onclick="event.stopPropagation(); deleteSlot('${slot.id}', '${slot.day}', '${convertedTime}');"
+                            title="Удалить этот слот"
+                            style="position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; 
+                                    background: rgba(239, 68, 68, 0.9); color: white; border-radius: 50%; 
+                                    cursor: pointer; display: flex; align-items: center; justify-content: center;
+                                    font-size: 14px; font-weight: bold; line-height: 1;
+                                    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+                                    font-family: Arial, sans-serif; opacity: 0; visibility: hidden;
+                                    transform: scale(0.8); transition: all 0.3s ease;">
+                            ×
+                        </span>
+                        
                         <div class="slot-time">${convertedTime}</div>
                         <div class="slot-status">
                             ${statusText}
@@ -401,8 +406,68 @@ document.addEventListener('DOMContentLoaded', function() {
     loadData();
 });
 
+// Функция удаления слота
+function deleteSlot(slotId, day, time) {
+    const message = `Удалить слот?\n\n` +
+                   `📅 День: ${day}\n` +
+                   `🕐 Время: ${time}\n\n` +
+                   `⚠️ Это действие:\n` +
+                   `• Удалит слот из настроек навсегда\n` +
+                   `• Слот исчезнет из нагрузки\n\n` +
+                   `Продолжить?`;
+    
+    if (confirm(message)) {
+        fetch(`/api/delete-slot/${slotId}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadData(); // Перезагружаем данные
+                alert('Слот удален!');
+            } else {
+                alert('Ошибка: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert('Ошибка удаления слота');
+        });
+    }
+}
+
+// Стили для кнопок удаления слотов
+document.addEventListener('DOMContentLoaded', function() {
+    const style = document.createElement('style');
+    style.textContent += `
+        /* Кнопка удаления слота скрыта по умолчанию */
+        .delete-slot-btn {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transform: scale(0.8) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        /* Показываем кнопку при наведении на слот */
+        .slot-item:hover .delete-slot-btn {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: scale(1) !important;
+        }
+        
+        /* Эффекты при наведении на саму кнопку */
+        .delete-slot-btn:hover {
+            background: #dc2626 !important;
+            transform: scale(1.15) !important;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.6) !important;
+        }
+    `;
+    document.head.appendChild(style);
+});
+
 // Автообновление каждые 2 минуты
 setInterval(loadData, 120000);
+
 </script>
 
 <style>
@@ -522,6 +587,27 @@ setInterval(loadData, 120000);
     font-weight: 600;
     margin-bottom: 8px;
 }
+
+/* Компактная панель управления нагрузкой - только для этой страницы */
+.card {
+    padding: 15px 25px !important;
+}
+
+/* Компактные элементы управления - ТОЛЬКО для селекта и навигации */
+#timezoneSelect {
+    padding: 6px 10px !important;
+}
+
+.schedule-nav-btn {
+    padding: 8px 14px !important;
+}
+
+/* Кнопки переключения регулярные/внеплановые оставляем нормального размера */
+.view-toggle-btn {
+    padding: 12px 20px !important;
+    margin: 8px !important;
+}
+
 </style>
 
 <div style="text-align: center; margin-top: 30px;">
