@@ -71,10 +71,14 @@ def execute_query(query, params=None, fetch=False, fetch_one=False):
     """Выполнить SQL запрос"""
     conn = get_db_connection()
     if not conn:
+        print("❌ Нет подключения к БД")
         return None
     
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            print(f"🔍 Выполняем запрос: {query}")
+            print(f"🔍 Параметры: {params}")
+            
             cur.execute(query, params)
             
             if fetch_one:
@@ -82,12 +86,13 @@ def execute_query(query, params=None, fetch=False, fetch_one=False):
             elif fetch:
                 result = cur.fetchall()
             else:
-                result = None
+                result = cur.rowcount  # ✅ Изменение здесь!
+                print(f"🔍 Количество затронутых строк: {result}")
                 
             conn.commit()
             return result
     except psycopg2.Error as e:
-        print(f"Ошибка выполнения запроса: {e}")
+        print(f"❌ Ошибка выполнения запроса: {e}")
         conn.rollback()
         return None
     finally:
@@ -257,9 +262,28 @@ def update_lesson_status(lesson_id, new_status):
 
 def delete_lesson(lesson_id):
     """Удалить урок"""
+    print(f"🎯 Пытаемся удалить урок с ID: {lesson_id}")
     query = "DELETE FROM lessons WHERE id = %s"
     result = execute_query(query, (lesson_id,))
-    return result is not None
+    
+    print(f"🎯 Результат execute_query: {result}")
+    success = result is not None and result > 0
+    print(f"🎯 Успешность удаления: {success}")
+    
+    return success
+    
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM lessons WHERE id = %s", (lesson_id,))
+            deleted_count = cur.rowcount  # Количество удаленных строк
+            conn.commit()
+            return deleted_count > 0  # True если удалили хотя бы одну строку
+    except psycopg2.Error as e:
+        print(f"Ошибка удаления урока: {e}")
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
 
 def get_lesson_by_id(lesson_id):
     """Получить урок по ID"""
@@ -1291,12 +1315,22 @@ def get_actual_income_current_month():
 
 def get_month_student_detailed_stats(year, month):
     """Получить детальную статистику по каждому ученику за месяц (БЫСТРО)"""
+    print(f"🔍 Считаем статистику для {month}/{year}")
+    
     query = """
         SELECT 
             s.name,
-            COUNT(CASE WHEN l.status = 'scheduled' AND l.from_template = true THEN 1 END) as regular_planned,
+            COUNT(CASE 
+                WHEN l.from_template = true 
+                AND l.status IN ('scheduled', 'completed', 'cancelled') 
+                THEN 1 
+            END) as regular_planned,
             COUNT(CASE WHEN l.status = 'completed' THEN 1 END) as total_completed,
-            COUNT(CASE WHEN l.status = 'cancelled' AND l.from_template = true THEN 1 END) as regular_cancelled
+            COUNT(CASE 
+                WHEN l.status = 'cancelled' 
+                AND l.from_template = true 
+                THEN 1 
+            END) as regular_cancelled
         FROM students s
         LEFT JOIN lessons l ON s.id = l.student_id 
             AND EXTRACT(MONTH FROM l.date) = %s
@@ -1308,6 +1342,7 @@ def get_month_student_detailed_stats(year, month):
     
     student_stats = {}
     for row in result:
+        print(f"📊 {row['name']}: регулярных={row['regular_planned']}, завершенных={row['total_completed']}")
         student_stats[row['name']] = {
             'regular_planned': int(row['regular_planned']),
             'total_completed': int(row['total_completed']),
@@ -1648,8 +1683,16 @@ def shablon_nedeli():
     return render_template("shablon_nedeli.html", students=students, template=template)
 
 @app.route("/шаблон-недели/удалить/<int:index>", methods=["POST"])
-def delete_template_lesson(index):
-    delete_template_lesson(index)
+def delete_template_lesson_route(index):
+    """Удаление урока из шаблона недели"""
+    print(f" Удаляем урок из шаблона с индексом: {index}")
+    success = delete_template_lesson(index)
+    
+    if success:
+        print(f"✅ Урок {index} успешно удален из шаблона")
+    else:
+        print(f"❌ Ошибка удаления урока {index} из шаблона")
+    
     return redirect(url_for("shablon_nedeli"))
 
 @app.route("/шаблон-недели/урок/<int:index>/редактировать", methods=["GET", "POST"])
@@ -1799,7 +1842,7 @@ def oplata(year=None, month=None):
                          financial_overview=financial_overview,
                          predicted_income=0,
                          actual_income=0,
-                         student_detailed_stats=get_lessons_stats(students),
+                         student_detailed_stats=get_month_student_detailed_stats(year, month),
                          current_month_name=current_month_name,
                          current_year=year,
                          prev_year=prev_year, 
@@ -2001,6 +2044,14 @@ def edit_lesson_from_schedule(lesson_id):
             print(f"Удаляем урок с ID: {lesson_id}")
             success = delete_lesson(lesson_id)
             print(f"Результат удаления: {success}")
+            return redirect(url_for("raspisanie"))
+        
+            # Добавь эту проверку:
+            if success:
+                print(f"Урок {lesson_id} успешно удален")
+            else:
+                print(f"Ошибка: урок {lesson_id} не был удален")
+            
             return redirect(url_for("raspisanie"))
     
     return render_template("edit_lesson.html", lesson=lesson, students=students)

@@ -196,39 +196,55 @@ document.addEventListener('DOMContentLoaded', function() {
                     <!-- Используем правильный индекс из основного списка -->
                     {% set lesson_index = template.index(lesson) %}
                     <div class="lesson-slot" 
-                         onclick="window.location.href='/шаблон-недели/урок/{{ lesson_index }}/редактировать'"
-                         style="cursor: pointer; {% if lesson.get('lesson_type') == 'trial' %}background: var(--lesson-trial-bg); border-left-color: var(--lesson-trial-border); color: var(--lesson-trial-text);{% else %}background: var(--lesson-regular-bg); border-left-color: var(--lesson-regular-border); color: var(--lesson-regular-text);{% endif %}">
+                        style="{% if lesson.get('lesson_type') == 'trial' %}background: var(--lesson-trial-bg); border-left-color: var(--lesson-trial-border); color: var(--lesson-trial-text);{% else %}background: var(--lesson-regular-bg); border-left-color: var(--lesson-regular-border); color: var(--lesson-regular-text);{% endif %} position: relative;">
                         
-                        <!-- Время как большая шапочка -->
-                        <div style="background: {% if lesson.get('lesson_type') == 'trial' %}var(--warning-gradient){% else %}var(--accent-gradient){% endif %}; 
-                                   color: white; 
-                                   padding: 8px 12px; 
-                                   border-radius: 6px; 
-                                   font-size: 16px; 
-                                   font-weight: bold; 
-                                   margin-bottom: 12px; 
-                                   display: inline-block;
-                                   min-width: 80px;
-                                   text-align: center;">
-                            {{ lesson.time }}
-                            {% if lesson.get('lesson_type') == 'trial' %}
-                                <span style="font-size: 12px; margin-left: 8px;">(ПРОБНЫЙ)</span>
-                            {% endif %}
-                        </div>
+                        <!-- Кнопка удаления в правом верхнем углу -->
+                        <span class="delete-lesson-btn" 
+                            onclick="event.stopPropagation(); deleteTemplateLesson({{ lesson_index }}, '{{ lesson.student }}', '{{ lesson.time }}', '{{ lesson.day }}');"
+                            title="Удалить урок из шаблона"
+                            style="position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; 
+                                    background: rgba(239, 68, 68, 0.9); color: white; border-radius: 50%; 
+                                    cursor: pointer; display: flex; align-items: center; justify-content: center;
+                                    font-size: 16px; font-weight: bold; line-height: 1;
+                                    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+                                    font-family: Arial, sans-serif;">
+                            ×
+                        </span>
                         
-                        <!-- Информация о занятии -->
-                        <div style="font-weight: bold; margin-bottom: 6px; font-size: 16px;">
-                            {{ lesson.student }}
+                        <!-- Основная область урока (кликабельная для редактирования) -->
+                        <div onclick="window.location.href='/шаблон-недели/урок/{{ lesson_index }}/редактировать'"
+                            style="cursor: pointer; padding-right: 40px;">
+                            
+                            <!-- Время как большая шапочка -->
+                            <div style="background: {% if lesson.get('lesson_type') == 'trial' %}var(--warning-gradient){% else %}var(--accent-gradient){% endif %}; 
+                                    color: white; 
+                                    padding: 8px 12px; 
+                                    border-radius: 6px; 
+                                    font-size: 16px; 
+                                    font-weight: bold; 
+                                    margin-bottom: 12px; 
+                                    display: inline-block;
+                                    min-width: 80px;
+                                    text-align: center;">
+                                {{ lesson.time }}
+                                {% if lesson.get('lesson_type') == 'trial' %}
+                                    <span style="font-size: 12px; margin-left: 8px;">(ПРОБНЫЙ)</span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Информация о занятии -->
+                            <div style="font-weight: bold; margin-bottom: 6px; font-size: 16px;">
+                                {{ lesson.student }}
+                            </div>
+                            <div style="font-size: 15px; margin-bottom: 8px;">
+                                {{ lesson.subject }}
+                            </div>
+                            
+                            <!-- Длительность урока -->
+                            <div style="background: rgba(0,0,0,0.1); color: var(--text-muted); padding: 4px 8px; border-radius: 4px; font-size: 12px; display: inline-block;">
+                                {{ lesson.get('lesson_duration', 60) }} мин
+                            </div>
                         </div>
-                        <div style="font-size: 15px; margin-bottom: 8px;">
-                            {{ lesson.subject }}
-                        </div>
-                        
-                        <!-- Длительность урока -->
-                        <div style="background: rgba(0,0,0,0.1); color: var(--text-muted); padding: 4px 8px; border-radius: 4px; font-size: 12px; display: inline-block;">
-                            {{ lesson.get('lesson_duration', 60) }} мин
-                        </div>
-                        
                     </div>
                     {% endfor %}
                 {% else %}
@@ -280,4 +296,70 @@ document.addEventListener('DOMContentLoaded', function() {
     color: #2C3E50 !important;
 }
 </style>
+
+<script>
+// Функция удаления урока из шаблона
+function deleteTemplateLesson(index, studentName, time, day) {
+    const message = `Удалить урок из шаблона недели?\n\n` +
+                   `👤 Ученик: ${studentName}\n` +
+                   `🕐 Время: ${time}\n` +
+                   `📅 День: ${day}\n\n` +
+                   `⚠️ Это действие:\n` +
+                   `• Удалит урок из шаблона навсегда\n` +
+                   `• Уже созданные уроки в расписании останутся\n` +
+                   `• Новые уроки больше не будут создаваться\n\n` +
+                   `Продолжить?`;
+    
+    if (confirm(message)) {
+        // Создаем форму для POST запроса
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/шаблон-недели/удалить/${index}`;
+        form.style.display = 'none';
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Красивые стили для кнопки удаления
+document.addEventListener('DOMContentLoaded', function() {
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Кнопка удаления скрыта по умолчанию */
+        .delete-lesson-btn {
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+        
+        /* Показываем кнопку при наведении на урок */
+        .lesson-slot:hover .delete-lesson-btn {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+        
+        /* Эффекты при наведении на саму кнопку */
+        .delete-lesson-btn:hover {
+            background: #dc2626 !important;
+            transform: scale(1.15) !important;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.6) !important;
+        }
+        
+        /* Плавная анимация появления */
+        .lesson-slot {
+            transition: all 0.3s ease;
+        }
+        
+        .lesson-slot:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+    `;
+    document.head.appendChild(style);
+});
+</script>
+
 {% endblock %}
