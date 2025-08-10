@@ -11,7 +11,7 @@
         <!-- Заголовок страницы -->
         <div class="dashboard-header">
             <h1>Личный кабинет ученика</h1>
-            <p class="welcome-text">Добро пожаловать в твой космический учебный центр!</p>
+            <p class="welcome-text">Добро пожаловать, {{ student.name }}! Класс: {{ student.class }}</p>
         </div>
 
         <!-- Навигация по вкладкам -->
@@ -69,20 +69,21 @@
                 
                 <!-- Статистика ученика -->
                 <div class="student-stats">
+                    <!-- Первая карточка -->
                     <div class="stats-card">
-                        <div class="stats-value">0</div>
+                        <div class="stats-value">{{ student.planned_lessons }}</div>
                         <div class="stats-label">Запланировано в месяце</div>
                     </div>
                     <div class="stats-card">
-                        <div class="stats-value">0</div>
+                        <div class="stats-value">{{ student.cancelled_lessons }}</div>
                         <div class="stats-label">Отменено уроков</div>
                     </div>
                     <div class="stats-card">
-                        <div class="stats-value">0</div>
+                        <div class="stats-value">{{ student.lessons_in_stock }}</div>
                         <div class="stats-label">Запас уроков</div>
                     </div>
                     <div class="stats-card">
-                        <div class="stats-value">0</div>
+                        <div class="stats-value">{{ student.completed_lessons }}</div>
                         <div class="stats-label">Проведено уроков</div>
                     </div>
                 </div>

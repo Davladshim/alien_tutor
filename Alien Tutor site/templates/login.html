@@ -3,47 +3,46 @@
 {% block title %}Вход в систему - Alien Tutor{% endblock %}
 
 {% block content %}
-    
     <h1>Добро пожаловать</h1>
     
-    <!-- Сетка кнопок в стекломорфном стиле -->
-    <div class="buttons-grid">
-        <!-- Верхний ряд -->
-        <div class="glass-button-container">
-            <a href="/student" class="glass-button student-btn">
-                <div class="button-title">Личный кабинет ученика</div>
-                <div class="button-subtitle">Войти</div>
-            </a>
-        </div>
-        
-        <div class="glass-button-container">
-            <a href="/parent" class="glass-button parent-btn">
-                <div class="button-title">Личный кабинет родителя</div>
-                <div class="button-subtitle">Войти</div>
-            </a>
-        </div>
-        
-        <!-- Нижний ряд -->
-        <div class="glass-button-container">
-            <a href="/admin" class="glass-button admin-btn">
-                <div class="button-title">Панель администратора</div>
-                <div class="button-subtitle">Войти</div>
-            </a>
-        </div>
-        
-        <div class="glass-button-container">
-            <a href="/about" class="glass-button about-btn">
-                <div class="button-title">О преподавателе</div>
-                <div class="button-subtitle">Инфо</div>
-            </a>
+    <!-- Форма входа -->
+    <div class="buttons-grid" style="max-width: 400px; margin: 0 auto;">
+        <div class="glass-button-container" style="grid-column: 1 / -1;">
+            <form method="POST" action="/login" style="width: 100%;">
+                <div style="margin-bottom: 20px;">
+                    <label for="login" style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 600;">
+                        Логин:
+                    </label>
+                    <input type="text" id="login" name="login" required 
+                           style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-secondary); background: var(--bg-card); color: var(--text-primary);">
+                </div>
+                
+                <div style="margin-bottom: 25px;">
+                    <label for="password" style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 600;">
+                        Пароль:
+                    </label>
+                    <input type="password" id="password" name="password" required 
+                           style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-secondary); background: var(--bg-card); color: var(--text-primary);">
+                </div>
+                
+                <button type="submit" class="glass-button" style="width: 100%; padding: 15px; background: var(--accent-gradient); color: white; border: none; border-radius: 10px; font-weight: 600;">
+                    Войти в систему
+                </button>
+            </form>
         </div>
     </div>
-{% endblock %}
-
-{% block styles %}
-    <!-- Здесь можно добавить специфичные стили для страницы входа -->
-{% endblock %}
-
-{% block scripts %}
-    <!-- Здесь можно добавить специфичные скрипты для страницы входа -->
+    
+    <!-- Сообщение об ошибке -->
+    {% if error %}
+    <div style="max-width: 400px; margin: 20px auto; padding: 15px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; color: #ef4444; text-align: center;">
+        {{ error }}
+    </div>
+    {% endif %}
+    
+    <!-- Тестовые данные для входа -->
+    <div style="max-width: 400px; margin: 30px auto; padding: 15px; background: var(--bg-card); border-radius: 10px; font-size: 14px;">
+        <h3 style="margin-bottom: 10px; color: var(--text-accent);">Тестовые данные:</h3>
+        <p style="margin: 5px 0; color: var(--text-primary);">Ученик: <code>anya_student / anya123</code></p>
+        <p style="margin: 5px 0; color: var(--text-primary);">Родитель: <code>anya_parent / anya_parent123</code></p>
+    </div>
 {% endblock %}
