@@ -2568,7 +2568,32 @@ def edit_lesson_from_schedule(lesson_id):
         action = request.form.get("action")
         
         if action == "cancel":
-            # Отмена урока
+            # Отмена урока с возвратом денег
+            lesson = get_lesson_by_id(lesson_id)
+            if lesson and lesson.get('status') == 'completed':
+                # Если урок был проведен - возвращаем деньги
+                student = get_student_by_name(lesson['student'])
+                if student:
+                    lesson_price = float(student['lesson_price']) if student['lesson_price'] else 0
+                    
+                    # Создаем возвратный платеж
+                    if lesson_price > 0:
+                        refund_query = """
+                            INSERT INTO payments (id, student_id, amount, payment_type, description, lesson_id, payment_date, created_at)
+                            VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
+                        """
+                        refund_id = generate_slot_id()
+                        execute_query(refund_query, (
+                            refund_id, student['id'], lesson_price, 'refund', 
+                            f"Возврат за отмененный урок {lesson_id}", lesson_id
+                        ))
+                        print(f"✅ Возвращено {lesson_price} руб. за отмененный урок {lesson_id}")
+                    
+                    # Убираем отметку об оплате
+                    unpaid_query = "UPDATE lessons SET is_paid = false WHERE id = %s"
+                    execute_query(unpaid_query, (lesson_id,))
+            
+            # Отменяем урок
             update_lesson_status(lesson_id, 'cancelled')
             return redirect(url_for("raspisanie"))
         
