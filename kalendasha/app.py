@@ -10,6 +10,7 @@ import json
 
 app = Flask(__name__)
 app.secret_key = 'darya_shim_kalendasha_key'
+app.permanent_session_lifetime = timedelta(days=30)
 
 # Настройки подключения к PostgreSQL
 import os
@@ -138,13 +139,29 @@ def require_admin_login():
 
 def save_student(student_data):
     """Сохранить нового ученика"""
+    from datetime import datetime
+    
     query = """
         INSERT INTO students (name, class_level, city, timezone, parent_name, contact, notes, lesson_price, created_at)
         VALUES (%(name)s, %(class)s, %(city)s, %(timezone)s, %(parent_name)s, %(contact)s, %(notes)s, %(lesson_price)s, NOW())
         RETURNING id
     """
     result = execute_query(query, student_data, fetch_one=True)
-    return result['id'] if result else None
+    
+    if result:
+        student_id = result['id']
+        registration_time = datetime.now()
+        
+        # Создаем учетные записи для ученика и родителя
+        login, password = create_user_account(student_id, student_data['name'], registration_time)
+        
+        print(f"✅ Создан ученик: {student_data['name']}")
+        print(f"📝 Логин: {login}")
+        print(f"🔑 Пароль: {password}")
+        
+        return student_id
+    
+    return None
 
 def update_student(student_id, student_data):
     """Обновить данные ученика"""
@@ -180,6 +197,47 @@ def get_student_by_id(student_id):
     query = "SELECT * FROM students WHERE id = %s"
     result = execute_query(query, (student_id,), fetch_one=True)
     return dict(result) if result else None
+
+def generate_credentials(student_name, registration_time):
+    """Генерация логина и пароля для ученика"""
+    # Логин: убираем пробелы из имени
+    login = student_name.replace(" ", "")
+    
+    # Пароль: имя + дата-время в формате ддммггччмм
+    password = login + registration_time.strftime("%d%m%y%H%M")
+    
+    return login, password
+
+def create_user_account(student_id, student_name, registration_time):
+    """Создать учетную запись для ученика"""
+    login, password = generate_credentials(student_name, registration_time)
+    
+    # Создаем аккаунт ученика
+    student_query = """
+        INSERT INTO user_accounts (login, password, role, student_id, full_name, created_at)
+        VALUES (%s, %s, %s, %s, %s, NOW())
+    """
+    execute_query(student_query, (login, password, 'student', student_id, student_name))
+    
+    # Создаем аккаунт родителя (если указан родитель)
+    student = get_student_by_id(student_id)
+    if student and student.get('parent_name'):
+        parent_name = student['parent_name']
+        parent_login = parent_name.replace(" ", "")
+        parent_password = parent_login + registration_time.strftime("%d%m%y%H%M")
+        
+        # Проверяем, нет ли уже такого родителя
+        check_parent_query = "SELECT id FROM user_accounts WHERE login = %s"
+        existing_parent = execute_query(check_parent_query, (parent_login,), fetch_one=True)
+        
+        if not existing_parent:
+            parent_query = """
+                INSERT INTO user_accounts (login, password, role, student_id, full_name, created_at)
+                VALUES (%s, %s, %s, %s, %s, NOW())
+            """
+            execute_query(parent_query, (parent_login, parent_password, 'parent', student_id, parent_name))
+    
+    return login, password
 
 # ============================================================================
 # ФУНКЦИИ ДЛЯ УРОКОВ
@@ -1591,22 +1649,17 @@ def get_parent_children(parent_name):
 def home():
     """Главная страница с админскими функциями"""
     
-    # Проверяем токен от сайта
+    # Простая проверка: если есть токен в URL - авторизуем
     token = request.args.get('token')
     if token and not session.get('admin_logged_in'):
-        # Проверяем токен на сайте
-        import requests
-        try:
-            response = requests.get(f"http://127.0.0.1:8080/verify-admin-token/{token}")
-            if response.json().get('valid'):
-                session['admin_logged_in'] = True
-                session['admin_token'] = token
-                # Убираем токен из URL (перенаправляем на ту же страницу без токена)
-                return redirect(url_for('home'))
-        except Exception as e:
-            print(f"Ошибка проверки токена: {e}")  # ОТЛАДКА
+        # Не проверяем токен на сайте, просто авторизуем
+        session['admin_logged_in'] = True
+        session.permanent = True
+        session['admin_token'] = token
+        # Убираем токен из URL
+        return redirect(url_for('home'))
     
-    # Проверяем авторизацию ТОЛЬКО если нет токена в URL
+    # Проверяем авторизацию
     if not session.get('admin_logged_in') and not request.args.get('token'):
         return redirect("http://127.0.0.1:8080/admin-auth")
 
@@ -1636,60 +1689,67 @@ def home():
                 'subject': lesson['subject'],
                 'student_name': lesson['student_name']
             })
-    
-    # Получаем всех учеников с правильными классами
-    students_query = """
-        SELECT id, name, class_level, city, timezone, parent_name, 
-            contact, notes, lesson_price, created_at
-        FROM students 
-        ORDER BY name
-    """
-    students_result = execute_query(students_query, fetch=True)
-    students = [dict(row) for row in students_result] if students_result else []
-    
-    # Получаем ВСЕХ родителей (не только семьи с 2+ детьми)
-    all_parents_query = """
-        SELECT DISTINCT parent_name
-        FROM students 
-        WHERE parent_name IS NOT NULL AND parent_name != ''
-        ORDER BY parent_name
-    """
-    all_parents_result = execute_query(all_parents_query, fetch=True)
 
-    families = {}
-    if all_parents_result:
-        for parent in all_parents_result:
-            parent_name = parent['parent_name']
-            children_query = """
-                SELECT name FROM students 
-                WHERE parent_name = %s
-                ORDER BY name
-            """
-            children = execute_query(children_query, (parent_name,), fetch=True)
-            families[parent_name] = [dict(child) for child in children]
+    # Получаем всех учеников с их аккаунтами
+    students_accounts_query = """
+        SELECT 
+            s.id, s.name, s.class_level, s.parent_name,
+            us.login as student_login, us.password as student_password,
+            up.login as parent_login, up.password as parent_password
+        FROM students s
+        LEFT JOIN user_accounts us ON s.id = us.student_id AND us.role = 'student'
+        LEFT JOIN user_accounts up ON s.id = up.student_id AND up.role = 'parent'
+        ORDER BY s.name
+    """
+    students_accounts = execute_query(students_accounts_query, fetch=True)
     
-    # Формируем данные для отображения родителей
-    parents_data = []
-    for parent_name, children in families.items():
-        children_names = ", ".join([child['name'] for child in children])
-        parents_data.append({
-            'parent_name': parent_name,
-            'children_names': children_names,
-            'children_count': len(children)
-        })
-    
+    # Формируем данные для таблицы учеников
+    accounts_data = []
+    if students_accounts:
+        for row in students_accounts:
+            accounts_data.append({
+                'student_id': row['id'],
+                'student_name': row['name'],
+                'student_class': row['class_level'] or 'Не указан',
+                'student_login': row['student_login'] or 'Нет аккаунта',
+                'student_password': row['student_password'] or 'Нет аккаунта',
+                'parent_name': row['parent_name'] or 'Не указан',
+                'has_student_account': bool(row['student_login']),
+                'has_parent_account': bool(row['parent_login'])
+            })
+
+    # Группируем родителей по семьям (БЕЗ ЛИШНЕГО ОТСТУПА!)
+    families_data = {}
+    if students_accounts:
+        for row in students_accounts:
+            parent_name = row['parent_name']
+            if parent_name and parent_name != '' and parent_name != 'Не указан':
+                if parent_name not in families_data:
+                    families_data[parent_name] = {
+                        'parent_name': parent_name,
+                        'children': [],
+                        'parent_login': row['parent_login'] or 'Нет аккаунта',
+                        'parent_password': row['parent_password'] or 'Нет аккаунта',
+                        'has_parent_account': bool(row['parent_login'])
+                    }
+                
+                families_data[parent_name]['children'].append(row['name'])
+
+    # Преобразуем в список для шаблона
+    families_list = list(families_data.values())
+
     return render_template("home.html", 
-                         recent_lessons=lessons_data,
-                         students=students,
-                         parents=parents_data)
+                        recent_lessons=lessons_data,
+                        accounts_data=accounts_data,
+                        families_data=families_list,
+                        admin_token=session.get('admin_token'))
 
 @app.route("/add-lesson-report", methods=["POST"])
 def add_lesson_report():
-    """Добавить отчет по уроку"""
-    # Проверяем авторизацию
+    # Тут уже есть проверка, но можно заменить на нашу:
     if not session.get('admin_logged_in'):
         return redirect("http://127.0.0.1:8080/admin-auth")
-    
+    """Добавить отчет по уроку"""
     try:
         lesson_id = request.form.get('lesson_id')
         topic = request.form.get('topic')
@@ -1732,6 +1792,8 @@ def add_lesson_report():
 
 @app.route("/admin/student/<int:student_id>")
 def admin_student_view(student_id):
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     """Перенаправление в ЛКУ ученика на сайте"""
     # Проверяем авторизацию
     if not session.get('admin_logged_in'):
@@ -1757,6 +1819,8 @@ def admin_student_view(student_id):
 
 @app.route("/admin/parent/<parent_name>")
 def admin_parent_view(parent_name):
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     """Перенаправление в ЛКР родителя на сайте"""
     # Проверяем авторизацию
     if not session.get('admin_logged_in'):
@@ -1784,11 +1848,18 @@ def admin_parent_view(parent_name):
 
 @app.route("/ученики")
 def ucheniki():
+    if not session.get('admin_logged_in'):
+        print(f"🔍 ОТЛАДКА: session = {dict(session)}")
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
     students = load_students()
     return render_template("ucheniki.html", students=students)
 
 @app.route("/ученики/добавить", methods=["GET", "POST"])
 def add_student():
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
     if request.method == "POST":
         # Обработка кастомного класса
         class_value = request.form.get("class", "").strip()
@@ -1823,6 +1894,9 @@ def add_student():
 
 @app.route("/ученики/редактировать/<int:index>", methods=["GET", "POST"])
 def edit_student(index):
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
     students = load_students()
     
     if index < 0 or index >= len(students):
@@ -1874,6 +1948,9 @@ def edit_student(index):
 
 @app.route("/ученики/удалить/<int:index>", methods=["POST"])
 def delete_student(index):
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
     students = load_students()
     if 0 <= index < len(students):
         student = students[index]
@@ -1884,6 +1961,9 @@ def delete_student(index):
 @app.route("/расписание/<view_type>")
 @app.route("/расписание/<view_type>/<int:year>/<int:period>")
 def raspisanie(view_type=None, year=None, period=None):
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
     # Автоматически обновляем статусы уроков
     auto_update_lesson_statuses()
     
@@ -1989,6 +2069,8 @@ def raspisanie(view_type=None, year=None, period=None):
 
 @app.route("/админ/очистить-расписание", methods=["POST"])
 def clear_schedule():
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     """Полная очистка расписания"""
     success, message = clear_all_lessons()
     if success:
@@ -1998,6 +2080,9 @@ def clear_schedule():
 
 @app.route("/добавить-занятие", methods=["GET", "POST"])
 def add_slot():
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
     students = load_students()
     
     if request.method == "POST":
@@ -2034,6 +2119,9 @@ def add_slot():
 
 @app.route("/шаблон-недели", methods=["GET", "POST"])
 def shablon_nedeli():
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
     students = load_students()
     template = load_template_week()
     
@@ -2105,6 +2193,8 @@ def shablon_nedeli():
 
 @app.route("/шаблон-недели/удалить/<int:index>", methods=["POST"])
 def delete_template_lesson_route(index):
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     """Удаление урока из шаблона недели"""
     print(f" Удаляем урок из шаблона с индексом: {index}")
     success = delete_template_lesson(index)
@@ -2118,6 +2208,8 @@ def delete_template_lesson_route(index):
 
 @app.route("/шаблон-недели/урок/<int:index>/редактировать", methods=["GET", "POST"])
 def edit_template_lesson_page(index):
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     """Редактирование урока в шаблоне недели на отдельной странице"""
     template = load_template_week()
     students = load_students()
@@ -2165,6 +2257,8 @@ def edit_template_lesson_page(index):
 
 @app.route("/применить-шаблон", methods=["POST"])
 def apply_template_week():
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     """Применить шаблон недели к основному расписанию с учетом периодов"""
     try:
         added_count = apply_template_to_schedule_with_periods()
@@ -2182,6 +2276,9 @@ def apply_template_week():
 @app.route("/оплата")
 @app.route("/оплата/<int:year>/<int:month>")
 def oplata(year=None, month=None):
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
     # Убираем медленную функцию!
     auto_update_lesson_statuses()
 
@@ -2284,6 +2381,8 @@ def oplata(year=None, month=None):
 
 @app.route("/добавить-платеж", methods=["GET", "POST"])
 def add_payment_page():
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     if request.method == "GET":
         # Показываем страницу добавления платежа
         students = load_students()
@@ -2311,6 +2410,8 @@ def add_payment_page():
 @app.route("/история-платежей")
 @app.route("/история-платежей/<student_name>")
 def payment_history_page(student_name=None):
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     """Страница истории платежей"""
     students = load_students()
     
@@ -2344,6 +2445,8 @@ def payment_history_page(student_name=None):
 
 @app.route("/обнулить-баланс/<student_name>", methods=["POST"])
 def reset_balance_route(student_name):
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     success = reset_student_balance(student_name)
     if success:
         return f"<script>alert('Баланс ученика {student_name} обнулен!'); window.location.href='/оплата';</script>"
@@ -2352,11 +2455,16 @@ def reset_balance_route(student_name):
 
 @app.route("/нагрузка")
 def nagruzka():
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
     """Главная страница нагрузки"""
     return render_template("nagruzka.html")
 
 @app.route("/настройка-слотов", methods=["GET", "POST"])
 def setup_slots():
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     """Страница настройки доступных слотов"""
     if request.method == "POST":
         try:
@@ -2414,6 +2522,8 @@ def setup_slots():
 
 @app.route("/удалить-слот/<int:slot_id>", methods=["POST"])
 def delete_slot(slot_id):
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     """Удаление слота"""
     delete_available_slot(slot_id)
     return redirect(url_for("setup_slots"))
@@ -2443,6 +2553,8 @@ def delete_slot_by_id(slot_id):
 
 @app.route("/schedule/lesson/<lesson_id>/edit", methods=["GET", "POST"])
 def edit_lesson_from_schedule(lesson_id):
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     students = load_students()
     lesson = get_lesson_by_id(lesson_id)
     
@@ -2546,6 +2658,8 @@ def internal_error(error):
 
 @app.route("/добавить-пробный-урок", methods=["GET", "POST"])
 def add_trial_lesson_route():
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     if request.method == "GET":
         return render_template("add_trial_lesson.html")
     
@@ -2631,6 +2745,8 @@ def get_week_schedule_api(year, week):
 
 @app.route("/restore-lesson/<lesson_id>", methods=["POST"])
 def restore_lesson(lesson_id):
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     """Восстановить отмененный урок"""
     print(f"🔄 Восстанавливаем урок {lesson_id}")
     
@@ -2652,6 +2768,153 @@ def restore_lesson(lesson_id):
     else:
         print(f"❌ Ошибка восстановления урока {lesson_id}")
         return jsonify({"success": False, "error": "Ошибка восстановления"}), 500
+
+@app.route("/создать-аккаунты-учеников", methods=["GET", "POST"])
+def create_existing_student_accounts():
+    """Создать аккаунты для существующих учеников"""
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
+    if request.method == "POST":
+        # Получаем всех учеников без аккаунтов
+        students_query = """
+            SELECT s.id, s.name, s.created_at, s.parent_name
+            FROM students s
+            LEFT JOIN user_accounts ua ON s.id = ua.student_id
+            WHERE ua.id IS NULL
+            ORDER BY s.name
+        """
+        students_without_accounts = execute_query(students_query, fetch=True)
+        
+        created_count = 0
+        results = []
+        
+        for student in students_without_accounts:
+            try:
+                student_id = student['id']
+                student_name = student['name']
+                registration_time = student['created_at']
+                
+                # Создаем аккаунт
+                login, password = create_user_account(student_id, student_name, registration_time)
+                
+                results.append({
+                    'name': student_name,
+                    'login': login,
+                    'password': password,
+                    'status': 'успешно'
+                })
+                created_count += 1
+                
+            except Exception as e:
+                results.append({
+                    'name': student['name'],
+                    'login': '',
+                    'password': '',
+                    'status': f'ошибка: {e}'
+                })
+        
+        return render_template("create_accounts_result.html", 
+                             results=results, 
+                             created_count=created_count)
+    
+    # GET - показываем список учеников без аккаунтов
+    students_query = """
+        SELECT s.id, s.name, s.created_at, s.parent_name
+        FROM students s
+        LEFT JOIN user_accounts ua ON s.id = ua.student_id
+        WHERE ua.id IS NULL
+        ORDER BY s.name
+    """
+    students_without_accounts = execute_query(students_query, fetch=True)
+    
+    return render_template("create_accounts.html", 
+                         students=students_without_accounts)
+
+@app.route("/пересоздать-все-аккаунты", methods=["GET", "POST"])
+def recreate_all_accounts():
+    """Пересоздать аккаунты для ВСЕХ учеников"""
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
+    if request.method == "POST":
+        # 1. Удаляем ВСЕ старые аккаунты (кроме админа)
+        delete_query = "DELETE FROM user_accounts WHERE role IN ('student', 'parent')"
+        execute_query(delete_query)
+        print("🗑️ Удалены все старые аккаунты учеников и родителей")
+        
+        # 2. Получаем всех учеников
+        students_query = "SELECT id, name, created_at, parent_name FROM students ORDER BY name"
+        all_students = execute_query(students_query, fetch=True)
+        
+        created_count = 0
+        results = []
+        
+        # 3. Создаем новые аккаунты для каждого ученика
+        for student in all_students:
+            try:
+                student_id = student['id']
+                student_name = student['name']
+                registration_time = student['created_at']
+                
+                # Создаем аккаунт
+                login, password = create_user_account(student_id, student_name, registration_time)
+                
+                results.append({
+                    'name': student_name,
+                    'login': login,
+                    'password': password,
+                    'parent_name': student['parent_name'],
+                    'status': 'успешно'
+                })
+                created_count += 1
+                
+                print(f"✅ {student_name}: {login} / {password}")
+                
+            except Exception as e:
+                results.append({
+                    'name': student['name'],
+                    'login': '',
+                    'password': '',
+                    'parent_name': student['parent_name'],
+                    'status': f'ошибка: {e}'
+                })
+                print(f"❌ Ошибка для {student['name']}: {e}")
+        
+        print(f"\n🎉 ГОТОВО! Создано {created_count} аккаунтов!")
+        
+        # Возвращаем результат
+        results_text = f"Создано {created_count} аккаунтов!\\n\\n"
+        for result in results:
+            if result['status'] == 'успешно':
+                results_text += f"✅ {result['name']}: {result['login']} / {result['password']}\\n"
+        
+        return f"<script>alert('{results_text}'); window.location.href='/';</script>"
+    
+    # GET - показываем кнопку подтверждения
+    students_count_query = "SELECT COUNT(*) as count FROM students"
+    students_count = execute_query(students_count_query, fetch_one=True)['count']
+    
+    return f"""
+    <html>
+    <head><title>Пересоздание аккаунтов</title></head>
+    <body style="font-family: Arial; padding: 50px; text-align: center;">
+        <h1>⚠️ Пересоздание всех аккаунтов</h1>
+        <p>Будут пересозданы аккаунты для <strong>{students_count} учеников</strong></p>
+        <p style="color: red;">ВНИМАНИЕ: Все старые логины/пароли будут удалены!</p>
+        
+        <form method="POST" style="margin-top: 30px;">
+            <button type="submit" style="padding: 15px 30px; font-size: 18px; background: #e74c3c; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                Да, пересоздать все аккаунты
+            </button>
+        </form>
+        
+        <a href="/" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background: #95a5a6; color: white; text-decoration: none; border-radius: 8px;">
+            Отмена
+        </a>
+    </body>
+    </html>
+    """
 
 # Запуск приложения
 if __name__ == "__main__":

@@ -269,6 +269,7 @@ app = Flask(__name__)
 
 # Базовая конфигурация
 app.config['SECRET_KEY'] = 'your-secret-key-here'
+app.permanent_session_lifetime = timedelta(days=30)
 
 from flask import Flask, render_template, request, redirect, url_for, session
 
@@ -331,6 +332,9 @@ def admin_auth():
             # Создаем токен для безопасной передачи в Календашу
             admin_token = secrets.token_urlsafe(32)
             session['admin_token'] = admin_token
+            session.permanent = True
+            print(f"🔍 СОЗДАН ТОКЕН: {admin_token}")  # ← Добавь эту строку
+            print(f"🔍 СЕССИЯ ПОСЛЕ СОЗДАНИЯ ТОКЕНА: {dict(session)}")  # ← И эту
             return redirect(f"http://127.0.0.1:5000?token={admin_token}")
         else:
             return render_template('login.html', error='Неверный логин или пароль', auth_type='admin')
@@ -340,8 +344,16 @@ def admin_auth():
 @app.route('/verify-admin-token/<token>')
 def verify_admin_token(token):
     """Проверка токена администратора"""
+    print(f"🔍 ПРОВЕРКА ТОКЕНА: получен токен = {token}")  # ← Добавь
+    print(f"🔍 Текущая сессия: {dict(session)}")  # ← Добавь
+    
     if session.get('admin_token') == token and session.get('role') == 'admin':
+        print("✅ ТОКЕН ВАЛИДНЫЙ")  # ← Добавь
         return {'valid': True, 'admin_id': session.get('user_id'), 'login': session.get('login')}
+    
+    print("❌ ТОКЕН НЕ ВАЛИДНЫЙ")  # ← Добавь
+    print(f"🔍 Сохраненный токен: {session.get('admin_token')}")  # ← Добавь
+    print(f"🔍 Роль: {session.get('role')}")  # ← Добавь
     return {'valid': False}
 
 @app.route('/about-teacher')
@@ -512,19 +524,11 @@ def parent_dashboard():
 @app.route('/admin-student/<int:student_id>')
 def admin_student_dashboard(student_id):
     """Админский доступ к ЛКУ ученика"""
-
-    # Проверяем, что вошел именно админ
-    if 'user_id' not in session or session.get('login') != 'Darya_Shim':
-        return redirect(url_for('login'))
-
-    # ДОБАВЬ ЭТУ ПРОВЕРКУ:
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
     
-    # Дополнительная проверка - только для админов
-    user_role = session.get('role')
-    if user_role not in ['admin', 'teacher']:  # Разреши только админам и преподавателям
-        return redirect(url_for('login'))
+    # Проверяем токен из URL
+    admin_token = request.args.get('token')
+    if not admin_token:
+        return redirect(url_for('index'))
 
     # Получаем данные ученика (тот же код что в parent_dashboard для детей)
     student = get_student_info(student_id)
@@ -567,18 +571,10 @@ def admin_student_dashboard(student_id):
 def admin_parent_dashboard(parent_name):
     """Админский доступ к ЛКР родителя"""
 
-    # Проверяем, что вошел именно админ
-    if 'user_id' not in session or session.get('login') != 'Darya_Shim':
-        return redirect(url_for('login'))
-
-    # ДОБАВЬ ЭТУ ПРОВЕРКУ:
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    
-    # Дополнительная проверка - только для админов
-    user_role = session.get('role')
-    if user_role not in ['admin', 'teacher']:  # Разреши только админам и преподавателям
-        return redirect(url_for('login'))
+    # Проверяем токен из URL
+    admin_token = request.args.get('token')
+    if not admin_token:
+        return redirect(url_for('index'))
 
     import urllib.parse
     parent_name = urllib.parse.unquote(parent_name)

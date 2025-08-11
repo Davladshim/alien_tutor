@@ -1506,3 +1506,151 @@ main {
     color: white;
     font-weight: 700;
 }
+
+/* ====================================================================
+   ТАБЛИЦА АККАУНТОВ
+   ==================================================================== */
+
+.accounts-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.accounts-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.accounts-table th {
+    padding: 15px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: white;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.accounts-table tbody tr {
+    border-bottom: 1px solid var(--border-primary);
+    transition: background-color 0.2s ease;
+}
+
+.accounts-table tbody tr:hover {
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.accounts-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.accounts-table td {
+    padding: 16px 12px;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+.student-name {
+    font-weight: 600;
+    color: var(--text-accent);
+}
+
+.login-cell, .password-cell {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+}
+
+.login-text {
+    color: var(--text-primary);
+    background: rgba(102, 126, 234, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.password-text {
+    color: var(--text-primary);
+    background: rgba(118, 75, 162, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.no-account {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 12px;
+}
+
+.action-cell {
+    text-align: center;
+    width: 50px;
+}
+
+/* Стили для иконок ЛКУ/ЛКР */
+.icon-student {
+    color: #667eea !important;
+}
+
+.icon-parent {
+    color: #764ba2 !important;
+}
+
+.icon-student:hover {
+    color: #5a67d8 !important;
+    transform: scale(1.2);
+}
+
+.icon-parent:hover {
+    color: #6b46c1 !important;
+    transform: scale(1.2);
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .accounts-table {
+        font-size: 12px;
+    }
+    
+    .accounts-table th,
+    .accounts-table td {
+        padding: 12px 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    .accounts-table {
+        font-size: 11px;
+    }
+    
+    .accounts-table th,
+    .accounts-table td {
+        padding: 8px 6px;
+    }
+    
+    .login-text,
+    .password-text {
+        padding: 2px 4px;
+        font-size: 11px;
+    }
+}
+
+.children-list {
+    font-size: 13px;
+}
+
+.child-tag {
+    background: rgba(102, 126, 234, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--text-primary);
+}
+
+.parent-name {
+    font-weight: 600;
+    color: var(--text-accent);
+}

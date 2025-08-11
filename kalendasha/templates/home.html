@@ -80,40 +80,139 @@
     </form>
 </div>
 
-<!-- Быстрый переход к ученикам и родителям -->
-<div class="card">
-    <h3 style="text-align: center; margin-bottom: 20px;">Ученики и родители</h3>
+<!-- Таблица учеников -->
+<div class="card" style="margin-bottom: 30px;">
+    <h3 style="text-align: center; margin-bottom: 20px;">🎓 Аккаунты учеников</h3>
     
-    {% if students %}
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-            {% for student in students %}
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: center;">
-                
-                <!-- Кнопка ученика -->
-                <a href="/admin/student/{{ student.id }}" class="btn" style="text-decoration: none;">
-                    {{ student.name }} ({{ student.class_level or 'Не указан' }} класс)
-                </a>
-                
-                <!-- Кнопка родителя -->
-                {% if student.parent_name %}
-                    {% set show_parent = loop.index0 == 0 or students[loop.index0-1].parent_name != student.parent_name %}
-                    {% if show_parent %}
-                        <a href="/admin/parent/{{ student.parent_name }}" class="btn warning" style="text-decoration: none;">
-                            {{ student.parent_name }}
-                        </a>
-                    {% else %}
-                        <div></div> <!-- Пустое место для выравнивания -->
-                    {% endif %}
-                {% else %}
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic; padding: 12px;">
-                        Родитель не указан
-                    </div>
-                {% endif %}
-            </div>
-            {% endfor %}
+    {% if accounts_data %}
+        <div style="overflow-x: auto;">
+            <table class="accounts-table">
+                <thead>
+                    <tr>
+                        <th>Ученик</th>
+                        <th>Класс</th>
+                        <th>Логин</th>
+                        <th>Пароль</th>
+                        <th>ЛКУ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for account in accounts_data %}
+                    <tr>
+                        <td class="student-name">{{ account.student_name }}</td>
+                        <td>{{ account.student_class }}</td>
+                        
+                        <!-- Логин ученика -->
+                        <td class="login-cell">
+                            {% if account.has_student_account %}
+                                <span class="login-text">{{ account.student_login }}</span>
+                            {% else %}
+                                <span class="no-account">Нет аккаунта</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Пароль ученика -->
+                        <td class="password-cell">
+                            {% if account.has_student_account %}
+                                <span class="password-text">{{ account.student_password }}</span>
+                            {% else %}
+                                <span class="no-account">Нет аккаунта</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Кнопка ЛКУ -->
+                        <td class="action-cell">
+                            {% if account.has_student_account %}
+                                <a href="http://127.0.0.1:8080/admin-student/{{ account.student_id }}?token={{ admin_token }}" 
+                                   class="icon-action icon-student" 
+                                   title="Личный кабинет ученика">
+                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </a>
+                            {% else %}
+                                <span class="no-account">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     {% else %}
         <p style="text-align: center; color: var(--text-muted);">Нет учеников</p>
+    {% endif %}
+</div>
+
+<!-- Таблица родителей -->
+<div class="card">
+    <h3 style="text-align: center; margin-bottom: 20px;">👨‍👩‍👧‍👦 Аккаунты родителей</h3>
+    
+    {% if families_data %}
+        <div style="overflow-x: auto;">
+            <table class="accounts-table parents-table">
+                <thead>
+                    <tr>
+                        <th>Родитель</th>
+                        <th>Дети</th>
+                        <th>Логин</th>
+                        <th>Пароль</th>
+                        <th>ЛКР</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for family in families_data %}
+                    <tr>
+                        <td class="parent-name">{{ family.parent_name }}</td>
+                        <td class="children-list">
+                            {% for child in family.children %}
+                                <span class="child-tag">{{ child }}</span>{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        
+                        <!-- Логин родителя -->
+                        <td class="login-cell">
+                            {% if family.has_parent_account %}
+                                <span class="login-text">{{ family.parent_login }}</span>
+                            {% else %}
+                                <span class="no-account">Нет аккаунта</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Пароль родителя -->
+                        <td class="password-cell">
+                            {% if family.has_parent_account %}
+                                <span class="password-text">{{ family.parent_password }}</span>
+                            {% else %}
+                                <span class="no-account">Нет аккаунта</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Кнопка ЛКР -->
+                        <td class="action-cell">
+                            {% if family.has_parent_account %}
+                                <a href="http://127.0.0.1:8080/admin-parent/{{ family.parent_name }}?token={{ admin_token }}" 
+                                   class="icon-action icon-parent" 
+                                   title="Личный кабинет родителя">
+                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                    </svg>
+                                </a>
+                            {% else %}
+                                <span class="no-account">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p style="text-align: center; color: var(--text-muted);">Нет родителей</p>
     {% endif %}
 </div>
 
