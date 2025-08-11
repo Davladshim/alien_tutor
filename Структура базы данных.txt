@@ -1,0 +1,132 @@
+Структура базы данных
+
+Название БД: local_alien_tutor
+
+Таблицы:
+
+1. available_slots
+
+id
+day_of_week
+time
+duration
+slot_type
+created_at
+
+2. exam_results - результаты экзаменов
+
+id - первичный ключ
+student_id - ссылка на ученика
+exam_date - дата экзамена
+exam_type
+primary_score
+secondary_score - баллы
+tasks_solved
+created_at - дата создания
+
+3. families
+
+id
+parent_name
+family_balanc
+total_family_paid
+total_family_spent
+created_at
+
+4. homework_assignments - домашние задания
+
+id - первичный ключ
+student_id - ссылка на ученика
+lesson_id - ссылка на урок
+assignment_date - дата задания
+primary_score - первичные баллы
+secondary_score - вторичные баллы
+tasks_solved - решенных задач
+grade - оценка
+topic - тема
+tasks_assigned - всего задач
+created_at - дата создания
+
+5. lesson_reports - отчеты по урокам
+
+id - первичный ключ
+lesson_id - ссылка на урок
+student_id - ссылка на ученика
+topic - тема урока
+understanding_level - уровень понимания
+teacher_comment - комментарий преподавателя
+homework_assigned - домашнее задание
+created_at - дата создания
+
+6. lesson_templates
+
+id
+day_of_week
+time
+student_id
+subject
+start_date
+end_date
+lesson_type
+lesson_duration
+created_at
+
+7. lessons - уроки
+
+id - первичный ключ
+student_id - ссылка на ученика
+date - дата урока
+time - время урока
+day_of_week
+subject - предмет
+status - статус (scheduled/completed/cancelled)
+lesson_type
+lesson_duration - длительность
+from_template
+is_paid
+created_at
+
+8. payments
+
+id
+student_id
+amount
+payment_type
+description
+lesson_id
+payment_date
+created_at
+
+9. students - ученики
+
+id - первичный ключ
+name - имя ученика
+class_level - класс (например, "8 класс")
+city - город
+timezone - часовой пояс
+parent_name - имя родителя
+contact - контакты
+notes - заметки
+lesson_price - стоимость урока
+created_at - дата создания
+
+10. topic_progress
+
+id
+student_id
+topic_name
+understanding_level
+last_studied
+lessons_count
+created_at
+
+11. user_accounts - аккаунты для входа
+
+id - первичный ключ
+student_id - ссылка на ученика
+role - роль (student/parent/admin)
+login - логин
+password - пароль
+full_name - полное имя
+last_login - последний вход
+created_at - дата создания

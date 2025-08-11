@@ -1,0 +1,22 @@
+Kalendasha/
+├── app.py
+├── .env
+├── static/
+│   └── style.css            
+└── templates/               
+    ├── add_payment.html           
+    ├── add_slot.html           
+    ├── add_student.html     
+    ├── add_trial_lesson.html 
+    ├── base.html       
+    ├── edit_lesson.html    
+    ├── edit_student.html   
+    ├── edit_template_lesson.html       
+    ├── home.html 
+    ├── nagruzka.html
+    ├── oplata.html
+    ├── payment_history.html         
+    ├── raspisanie.html
+    ├── setup_slots.html
+    ├── shablon_nedeli.html 
+    └── ucheniki.html   
