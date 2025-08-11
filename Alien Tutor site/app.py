@@ -668,6 +668,12 @@ def test_db():
     except Exception as e:
         return f"<h2>Ошибка подключения:</h2><p>{str(e)}</p>"
 
+@app.route('/logout')
+def logout():
+    """Выход из системы"""
+    session.clear()  # Очищаем всю сессию
+    return redirect(url_for('index'))  # На главную страницу выбора входа
+
 if __name__ == '__main__':
     # Запуск в режиме разработки
     app.run(debug=True, host='127.0.0.1', port=8080)

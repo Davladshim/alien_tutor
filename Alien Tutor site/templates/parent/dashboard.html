@@ -6,6 +6,21 @@
 <style>
     /* ===== ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ ЛКР ===== */
     
+    .logout-tab {
+        background: rgba(239, 68, 68, 0.1) !important;
+        color: #ef4444 !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .logout-tab:hover {
+        background: rgba(239, 68, 68, 0.2) !important;
+        transform: translateY(-2px);
+    }
+
     /* Переключатель детей (для семей) */
     .children-switcher {
         display: flex;
@@ -294,11 +309,16 @@
 </style>
 {% endblock %}
 {% block content %}
+
     <div class="dashboard-container">
         <!-- Заголовок страницы -->
-        <div class="parent-dashboard-header">
-            <h1>Личный кабинет родителя</h1>
-            <p class="parent-info">Добро пожаловать, {{ parent.parent_name }}</p>
+        <div class="dashboard-header">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>Личный кабинет родителя</h1>
+                    <p class="welcome-text">Добро пожаловать, {{ parent.parent_name }}!</p>
+                </div>
+            </div>
         </div>
 
         <!-- Переключатель детей (только для семей с несколькими детьми) -->
@@ -323,6 +343,9 @@
             <button class="tab-button" data-tab="progress">
                 <span class="tab-text">Успеваемость</span>
             </button>
+            <a href="/logout" class="tab-button logout-tab" title="Выйти из аккаунта">
+                <span class="tab-text">Выйти</span>
+            </a>
         </div>
 
         <!-- Контент вкладок -->

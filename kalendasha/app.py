@@ -2916,6 +2916,12 @@ def recreate_all_accounts():
     </html>
     """
 
+@app.route("/admin-logout")
+def admin_logout():
+    """Выход из админской панели"""
+    session.clear()  # Очищаем всю сессию
+    return redirect("http://127.0.0.1:8080/admin-auth")
+
 # Запуск приложения
 if __name__ == "__main__":
     initialize_app()

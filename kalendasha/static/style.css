@@ -1654,3 +1654,12 @@ main {
     font-weight: 600;
     color: var(--text-accent);
 }
+
+.logout-btn {
+    color: #e74c3c !important;
+    font-weight: bold;
+}
+
+.logout-btn:hover {
+    background: rgba(231, 76, 60, 0.1) !important;
+}
