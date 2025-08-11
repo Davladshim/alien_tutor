@@ -130,7 +130,7 @@
     }
 
     .financial-section::before {
-        content: '💰';
+
         position: absolute;
         top: 20px;
         right: 20px;
@@ -298,22 +298,20 @@
         <!-- Заголовок страницы -->
         <div class="parent-dashboard-header">
             <h1>Личный кабинет родителя</h1>
-            <p class="parent-info">Добро пожаловать, Иван Иванович</p>
+            <p class="parent-info">Добро пожаловать, {{ parent.parent_name }}</p>
         </div>
 
         <!-- Переключатель детей (только для семей с несколькими детьми) -->
         <div class="children-switcher" id="childrenSwitcher" style="display: none;">
             <span class="children-label">Выберите ребенка:</span>
             <div class="children-toggle-group">
-                <button class="child-toggle-btn active" data-child="0" onclick="switchChild(0)">
-                    Мария
+                {% for child in parent.children %}
+                <button class="child-toggle-btn {% if loop.index0 == 0 %}active{% endif %}" 
+                        data-child="{{ loop.index0 }}" 
+                        onclick="switchChild({{ loop.index0 }})">
+                    {{ child.name }}
                 </button>
-                <button class="child-toggle-btn" data-child="1" onclick="switchChild(1)">
-                    Александр
-                </button>
-                <button class="child-toggle-btn" data-child="2" onclick="switchChild(2)">
-                    Елизавета
-                </button>
+                {% endfor %}
             </div>
         </div>
 
@@ -336,31 +334,8 @@
                 <!-- Финансовая информация -->
                 <div class="financial-section">
                     <h2 class="financial-title">Финансовая информация</h2>
-                    <div class="financial-grid">
-                        <div class="financial-card">
-                            <div class="financial-value">12</div>
-                            <div class="financial-label">Запланировано уроков</div>
-                        </div>
-                        <div class="financial-card stock">
-                            <div class="financial-value">5</div>
-                            <div class="financial-label">Запас уроков</div>
-                        </div>
-                        <div class="financial-card debt">
-                            <div class="financial-value">2</div>
-                            <div class="financial-label">Ожидают оплаты</div>
-                        </div>
-                        <div class="financial-card">
-                            <div class="financial-value">1500₽</div>
-                            <div class="financial-label">Стоимость урока</div>
-                        </div>
-                        <div class="financial-card">
-                            <div class="financial-value">25</div>
-                            <div class="financial-label">Проведено уроков</div>
-                        </div>
-                        <div class="financial-card">
-                            <div class="financial-value">3</div>
-                            <div class="financial-label">Отменено уроков</div>
-                        </div>
+                    <div class="financial-grid" id="financialGrid">
+                        <!-- Будет заполнено JavaScript из данных первого ребенка -->
                     </div>
                 </div>
 
@@ -370,106 +345,45 @@
                         Расписание занятий
                     </h2>
                     
-                    <!-- Заглушка для виджета -->
-                    <div class="widget-loading">
-                        <div class="widget-loading-spinner"></div>
-                        <p>Загрузка расписания...</p>
-                        <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 1rem;">
-                            Здесь будет отображаться виджет расписания из календаря
-                        </p>
-                    </div>
-                    
-                    <!-- Временное расписание для демонстрации -->
-                    <div class="schedule-demo" style="display: none;">
+                    <!-- Реальное расписание -->
+                    <div class="schedule-demo">
                         <div class="schedule-container">
                             <div class="schedule-controls">
                                 <button class="nav-btn">← Назад</button>
                                 <div class="schedule-info">
-                                    <span class="current-period">Неделя 6, 2025</span>
+                                    <span class="current-period">{{ parent.children[0].schedule.week_info.title if parent.children else 'Нет данных' }}</span>
                                 </div>
                                 <button class="nav-btn">Вперед →</button>
                             </div>
                             
                             <div class="schedule-grid" style="margin-top: 2rem;">
-                                <div class="day-column">
-                                    <div class="day-header">
-                                        <div class="day-name">Понедельник</div>
-                                        <div class="day-date">10</div>
-                                    </div>
-                                    <div class="lessons-list">
-                                        <div class="lesson-placeholder">Нет занятий</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="day-column">
-                                    <div class="day-header">
-                                        <div class="day-name">Вторник</div>
-                                        <div class="day-date">11</div>
-                                    </div>
-                                    <div class="lessons-list">
-                                        <div class="lesson-item-placeholder">
-                                            <div class="lesson-time">15:00</div>
-                                            <div class="lesson-subject">Математика - Мария</div>
+                                {% if parent.children and parent.children[0].schedule.week_data %}
+                                    {% for day in parent.children[0].schedule.week_data %}
+                                    <div class="day-column {% if day.is_today %}today{% endif %}">
+                                        <div class="day-header">
+                                            <div class="day-name">{{ day.day_name }}</div>
+                                            <div class="day-date">{{ day.day_number }}</div>
+                                            {% if day.is_today %}
+                                                <div class="today-badge">Сегодня</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="lessons-list">
+                                            {% if day.lessons %}
+                                                {% for lesson in day.lessons %}
+                                                <div class="lesson-item-placeholder">
+                                                    <div class="lesson-time">{{ lesson.time }}</div>
+                                                    <div class="lesson-subject">{{ lesson.subject }}</div>
+                                                </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <div class="lesson-placeholder">Нет занятий</div>
+                                            {% endif %}
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <div class="day-column today">
-                                    <div class="day-header">
-                                        <div class="day-name">Среда</div>
-                                        <div class="day-date">12</div>
-                                        <div class="today-badge">Сегодня</div>
-                                    </div>
-                                    <div class="lessons-list">
-                                        <div class="lesson-item-placeholder">
-                                            <div class="lesson-time">16:00</div>
-                                            <div class="lesson-subject">Физика - Александр</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="day-column">
-                                    <div class="day-header">
-                                        <div class="day-name">Четверг</div>
-                                        <div class="day-date">13</div>
-                                    </div>
-                                    <div class="lessons-list">
-                                        <div class="lesson-placeholder">Нет занятий</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="day-column">
-                                    <div class="day-header">
-                                        <div class="day-name">Пятница</div>
-                                        <div class="day-date">14</div>
-                                    </div>
-                                    <div class="lessons-list">
-                                        <div class="lesson-item-placeholder">
-                                            <div class="lesson-time">14:30</div>
-                                            <div class="lesson-subject">Математика - Елизавета</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="day-column">
-                                    <div class="day-header">
-                                        <div class="day-name">Суббота</div>
-                                        <div class="day-date">15</div>
-                                    </div>
-                                    <div class="lessons-list">
-                                        <div class="lesson-placeholder">Нет занятий</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="day-column">
-                                    <div class="day-header">
-                                        <div class="day-name">Воскресенье</div>
-                                        <div class="day-date">16</div>
-                                    </div>
-                                    <div class="lessons-list">
-                                        <div class="lesson-placeholder">Нет занятий</div>
-                                    </div>
-                                </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div style="text-align: center; color: var(--text-muted);">Нет данных о расписании</div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -541,23 +455,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="parentLessonsTableBody">
-                                    <!-- Данные для Марии (по умолчанию) -->
-                                    <tr>
-                                        <td>05.02.2025</td>
-                                        <td>Квадратные уравнения</td>
-                                        <td>Тема разобрана полностью</td>
-                                        <td class="score-cell">85</td>
-                                        <td>Мария отлично усвоила материал, быстро решает стандартные задачи.</td>
-                                        <td>Задачи №15-20 из сборника ОГЭ</td>
-                                    </tr>
-                                    <tr>
-                                        <td>03.02.2025</td>
-                                        <td>Функции и графики</td>
-                                        <td>Есть вопросы по теме</td>
-                                        <td class="score-cell">72</td>
-                                        <td>Базовые графики строит хорошо, но нужна практика с параболами.</td>
-                                        <td>Построить графики функций из приложения</td>
-                                    </tr>
+                                    <!-- Будет заполнено JavaScript -->
                                 </tbody>
                             </table>
                         </div>
@@ -578,13 +476,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="parentHomeworkTableBody">
-                                    <tr>
-                                        <td>06.02.2025</td>
-                                        <td class="score-cell">45</td>
-                                        <td class="score-cell">89</td>
-                                        <td>18/20</td>
-                                        <td class="score-cell">5</td>
-                                    </tr>
+                                    <!-- Будет заполнено JavaScript -->
                                 </tbody>
                             </table>
                         </div>
@@ -599,74 +491,9 @@
     <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
     <script>
         // ===== ДАННЫЕ ДЛЯ РАЗНЫХ ДЕТЕЙ (МАКЕТ) =====
-        const childrenData = {
-            0: { // Мария
-                name: 'Мария',
-                class: '9 класс',
-                examScores: [
-                    { date: '29.01', score: 92 },
-                    { date: '01.02', score: 85 },
-                    { date: '03.02', score: 72 },
-                    { date: '05.02', score: 85 }
-                ],
-                topicProgress: { fully: 65, questions: 20, needWork: 15 },
-                lessons: [
-                    {
-                        date: '05.02.2025',
-                        topic: 'Квадратные уравнения',
-                        conclusion: 'Тема разобрана полностью',
-                        score: 85,
-                        fullConclusion: 'Мария отлично усвоила материал, быстро решает стандартные задачи.',
-                        homework: 'Задачи №15-20 из сборника ОГЭ'
-                    },
-                    {
-                        date: '03.02.2025',
-                        topic: 'Функции и графики',
-                        conclusion: 'Есть вопросы по теме',
-                        score: 72,
-                        fullConclusion: 'Базовые графики строит хорошо, но нужна практика с параболами.',
-                        homework: 'Построить графики функций из приложения'
-                    }
-                ]
-            },
-            1: { // Александр
-                name: 'Александр',
-                class: '7 класс',
-                examScores: null, // У 7 класса нет пробников
-                topicProgress: { fully: 55, questions: 30, needWork: 15 },
-                lessons: [
-                    {
-                        date: '04.02.2025',
-                        topic: 'Пропорции',
-                        conclusion: 'Тема разобрана полностью',
-                        score: null,
-                        fullConclusion: 'Александр хорошо понимает принцип пропорций, решает задачи самостоятельно.',
-                        homework: 'Задачи на пропорции №8-12'
-                    }
-                ]
-            },
-            2: { // Елизавета
-                name: 'Елизавета',
-                class: '11 класс',
-                examScores: [
-                    { date: '28.01', score: 76 },
-                    { date: '30.01', score: 82 },
-                    { date: '02.02', score: 89 },
-                    { date: '06.02', score: 91 }
-                ],
-                topicProgress: { fully: 70, questions: 20, needWork: 10 },
-                lessons: [
-                    {
-                        date: '06.02.2025',
-                        topic: 'Тригонометрия',
-                        conclusion: 'Тема разобрана полностью',
-                        score: 91,
-                        fullConclusion: 'Елизавета отлично справляется со сложными тригонометрическими уравнениями.',
-                        homework: 'Задания из ЕГЭ №13'
-                    }
-                ]
-            }
-        };
+        // Данные из Python
+        const childrenData = {{ parent.children | tojson | safe }};
+        console.log('Данные детей:', childrenData);
 
         let currentChildIndex = 0;
         let hasMultipleChildren = true; // Для демо показываем переключатель
@@ -680,12 +507,10 @@
             
             // Инициализация диаграмм для первого ребенка
             updateChildProgress(0);
+            updateFinancialInfo(0);
+            updateLessonsTable(childrenData[0].lesson_reports);
+            updateHomeworkTable(childrenData[0].homework_data);
             
-            // Показываем демо-расписание через 2 секунды (имитация загрузки)
-            setTimeout(() => {
-                document.querySelector('.widget-loading').style.display = 'none';
-                document.querySelector('.schedule-demo').style.display = 'block';
-            }, 2000);
         });
 // ===== ПЕРЕКЛЮЧЕНИЕ МЕЖДУ ДЕТЬМИ =====
         function switchChild(childIndex) {
@@ -699,6 +524,8 @@
             
             // Обновляем данные успеваемости
             updateChildProgress(childIndex);
+            updateLessonsTable(childrenData[childIndex].lesson_reports);
+            updateHomeworkTable(childrenData[childIndex].homework_data);
             
             // Обновляем финансовую информацию (в реальности будет из БД)
             updateFinancialInfo(childIndex);
@@ -708,6 +535,8 @@
         function updateChildProgress(childIndex) {
             const childData = childrenData[childIndex];
             
+            console.log('Данные ребенка:', childData); // Отладка
+            
             // Обновляем имя и класс
             document.getElementById('currentChildName').textContent = childData.name;
             const classInfo = document.querySelector('#progress-tab .content-section p');
@@ -716,26 +545,42 @@
             }
             
             // Обновляем диаграммы
-            if (childData.examScores) {
-                renderParentBarChart(childData.examScores);
-                document.querySelector('.bar-chart-section').style.display = 'block';
+            if (childData.exam_results) {
+                renderParentBarChart(childData.exam_results);
+                const barSection = document.querySelector('.bar-chart-section');
+                if (barSection) {
+                    barSection.style.display = 'block';
+                }
                 document.querySelector('.bar-chart-section h3').textContent = 
                     childData.class.includes('9') ? 'Баллы за пробники ОГЭ' : 'Баллы за пробники ЕГЭ';
             } else {
-                document.querySelector('.bar-chart-section').style.display = 'none';
+                const barSection = document.querySelector('.bar-chart-section');
+                if (barSection) {
+                    barSection.style.display = 'none';
+                }
             }
             
-            renderParentPieChart(childData.topicProgress);
+            renderParentPieChart(childData.topic_progress);
             
             // Обновляем таблицу уроков
-            updateLessonsTable(childData.lessons);
+            updateLessonsTable(childData.lesson_reports);
+            // Обновляем таблицу домашних заданий
+            updateHomeworkTable(childData.homework_data);
         }
 
         // ===== ОТРИСОВКА СТОЛБЧАТОЙ ДИАГРАММЫ ДЛЯ ЛКР =====
         function renderParentBarChart(scores) {
             const barChart = document.getElementById('parentBarChart');
             
-            if (!barChart) return;
+            if (!barChart) {
+                console.log('Элемент parentBarChart не найден');
+                return;
+            }
+            
+            if (!scores || scores.length === 0) {
+                barChart.innerHTML = '<div class="no-data">Нет данных о пробниках</div>';
+                return;
+            }
             
             barChart.innerHTML = '';
             barChart.className = 'bar-chart';
@@ -761,9 +606,29 @@
 
         // ===== ОТРИСОВКА КРУГОВОЙ ДИАГРАММЫ ДЛЯ ЛКР =====
         function renderParentPieChart(progress) {
+            console.log('Данные для диаграммы:', progress);
+            
             const pieChart = document.querySelector('#parentPieChart svg');
             
-            if (!pieChart) return;
+            if (!pieChart) {
+                console.log('SVG элемент не найден');
+                return;
+            }
+            
+            // Проверяем, что progress существует и имеет нужные поля
+            if (!progress || typeof progress !== 'object') {
+                console.log('Нет данных для круговой диаграммы');
+                pieChart.innerHTML = '<text x="100" y="100" text-anchor="middle" fill="var(--text-muted)">Нет данных</text>';
+                return;
+            }
+            
+            const totalProgress = (progress.fully || 0) + (progress.questions || 0) + (progress.needwork || 0);
+            
+            if (totalProgress === 0) {
+                console.log('Все значения равны нулю');
+                pieChart.innerHTML = '<text x="100" y="100" text-anchor="middle" fill="var(--text-muted)">Нет данных</text>';
+                return;
+            }
             
             pieChart.innerHTML = '';
             
@@ -841,19 +706,67 @@
         function updateLessonsTable(lessons) {
             const tableBody = document.getElementById('parentLessonsTableBody');
             
-            if (!tableBody) return;
+            if (!tableBody) {
+                console.log('Таблица уроков не найдена');
+                return;
+            }
             
             tableBody.innerHTML = '';
+            
+            if (!lessons || lessons.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); font-style: italic;">
+                        Нет данных об уроках
+                    </td>
+                `;
+                tableBody.appendChild(row);
+                return;
+            }
             
             lessons.forEach(lesson => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${lesson.date}</td>
                     <td>${lesson.topic}</td>
-                    <td>${lesson.conclusion}</td>
+                    <td>${lesson.understanding}</td>
                     <td class="score-cell">${lesson.score || '-'}</td>
-                    <td>${lesson.fullConclusion}</td>
-                    <td>${lesson.homework}</td>
+                    <td>${lesson.feedback}</td>
+                    <td>-</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function updateHomeworkTable(homework) {
+            const tableBody = document.getElementById('parentHomeworkTableBody');
+            
+            if (!tableBody) {
+                console.log('Таблица домашних заданий не найдена');
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            
+            if (!homework || homework.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="5" style="text-align: center; color: var(--text-muted); font-style: italic;">
+                        Нет данных о домашних заданиях
+                    </td>
+                `;
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            homework.forEach(hw => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${hw.date}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>${hw.score}</td>
+                    <td>-</td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -861,23 +774,35 @@
 
         // ===== ОБНОВЛЕНИЕ ФИНАНСОВОЙ ИНФОРМАЦИИ =====
         function updateFinancialInfo(childIndex) {
-            // В реальном приложении эти данные будут из БД
-            const financialData = {
-                0: { planned: 12, stock: 5, debt: 2, price: 1500, completed: 25, cancelled: 3 },
-                1: { planned: 10, stock: 3, debt: 0, price: 1300, completed: 20, cancelled: 2 },
-                2: { planned: 15, stock: 7, debt: 1, price: 1700, completed: 30, cancelled: 1 }
-            };
+            const child = childrenData[childIndex];
             
-            const data = financialData[childIndex];
-            
-            // Обновляем значения в карточках
-            const cards = document.querySelectorAll('.financial-card');
-            if (cards[0]) cards[0].querySelector('.financial-value').textContent = data.planned;
-            if (cards[1]) cards[1].querySelector('.financial-value').textContent = data.stock;
-            if (cards[2]) cards[2].querySelector('.financial-value').textContent = data.debt;
-            if (cards[3]) cards[3].querySelector('.financial-value').textContent = data.price + '₽';
-            if (cards[4]) cards[4].querySelector('.financial-value').textContent = data.completed;
-            if (cards[5]) cards[5].querySelector('.financial-value').textContent = data.cancelled;
+            const financialGrid = document.getElementById('financialGrid');
+            financialGrid.innerHTML = `
+                <div class="financial-card">
+                    <div class="financial-value">${child.planned_lessons}</div>
+                    <div class="financial-label">Запланировано уроков</div>
+                </div>
+                <div class="financial-card stock">
+                    <div class="financial-value">${child.lessons_in_stock}</div>
+                    <div class="financial-label">Запас уроков</div>
+                </div>
+                <div class="financial-card debt">
+                    <div class="financial-value">0</div>
+                    <div class="financial-label">Ожидают оплаты</div>
+                </div>
+                <div class="financial-card">
+                    <div class="financial-value">${child.lesson_price}₽</div>
+                    <div class="financial-label">Стоимость урока</div>
+                </div>
+                <div class="financial-card">
+                    <div class="financial-value">${child.completed_lessons}</div>
+                    <div class="financial-label">Проведено уроков</div>
+                </div>
+                <div class="financial-card">
+                    <div class="financial-value">${child.cancelled_lessons}</div>
+                    <div class="financial-label">Отменено уроков</div>
+                </div>
+            `;
         }
 
         // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ЦВЕТОВ =====

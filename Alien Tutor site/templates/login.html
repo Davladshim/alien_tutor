@@ -1,14 +1,40 @@
 {% extends "base.html" %}
 
-{% block title %}Вход в систему - Alien Tutor{% endblock %}
+{% block title %}
+{% if auth_type == 'student' %}
+    Вход для ученика - Alien Tutor
+{% elif auth_type == 'parent' %}
+    Вход для родителя - Alien Tutor  
+{% elif auth_type == 'admin' %}
+    Вход для администратора - Alien Tutor
+{% else %}
+    Вход в систему - Alien Tutor
+{% endif %}
+{% endblock %}
 
 {% block content %}
-    <h1>Добро пожаловать</h1>
+    <div style="text-align: center; margin-bottom: 30px;">
+        <a href="/" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">
+            ← Назад к выбору типа входа
+        </a>
+    </div>
+
+    <h1>
+        {% if auth_type == 'student' %}
+            Вход для ученика
+        {% elif auth_type == 'parent' %}
+            Вход для родителя
+        {% elif auth_type == 'admin' %}
+            Вход для администратора
+        {% else %}
+            Добро пожаловать
+        {% endif %}
+    </h1>
     
     <!-- Форма входа -->
     <div class="buttons-grid" style="max-width: 400px; margin: 0 auto;">
         <div class="glass-button-container" style="grid-column: 1 / -1;">
-            <form method="POST" action="/login" style="width: 100%;">
+            <form method="POST" style="width: 100%;">
                 <div style="margin-bottom: 20px;">
                     <label for="login" style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 600;">
                         Логин:
@@ -42,7 +68,12 @@
     <!-- Тестовые данные для входа -->
     <div style="max-width: 400px; margin: 30px auto; padding: 15px; background: var(--bg-card); border-radius: 10px; font-size: 14px;">
         <h3 style="margin-bottom: 10px; color: var(--text-accent);">Тестовые данные:</h3>
-        <p style="margin: 5px 0; color: var(--text-primary);">Ученик: <code>anya_student / anya123</code></p>
-        <p style="margin: 5px 0; color: var(--text-primary);">Родитель: <code>anya_parent / anya_parent123</code></p>
+        {% if auth_type == 'student' %}
+            <p style="margin: 5px 0; color: var(--text-primary);">Ученик: <code>anya_student / anya123</code></p>
+        {% elif auth_type == 'parent' %}
+            <p style="margin: 5px 0; color: var(--text-primary);">Родитель: <code>anya_parent / anya_parent123</code></p>
+        {% elif auth_type == 'admin' %}
+            <p style="margin: 5px 0; color: var(--text-primary);">Админ: <code>Darya_Shim / Darya3282</code></p>
+        {% endif %}
     </div>
 {% endblock %}

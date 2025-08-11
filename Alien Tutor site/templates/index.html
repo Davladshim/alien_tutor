@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Добро пожаловать - Alien Tutor{% endblock %}
+
+{% block content %}
+    <div style="text-align: center; margin-bottom: 50px;">
+        <h1 style="font-size: 3rem; margin-bottom: 20px; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Добро пожаловать
+        </h1>
+        <p style="font-size: 1.2rem; color: var(--text-muted);">
+            Выберите тип входа в систему
+        </p>
+    </div>
+
+    <!-- Сетка кнопок -->
+    <div class="entrance-grid">
+        <a href="/student-auth" class="entrance-button student">
+            <div class="entrance-icon">🎓</div>
+            <h3>Личный кабинет ученика</h3>
+            <p>Просмотр расписания, оценок и домашних заданий</p>
+        </a>
+
+        <a href="/parent-auth" class="entrance-button parent">
+            <div class="entrance-icon">‍</div>
+            <h3>Личный кабинет родителя</h3>
+            <p>Контроль успеваемости и расписания ребенка</p>
+        </a>
+
+        <a href="/admin-auth" class="entrance-button admin">
+            <div class="entrance-icon"></div>
+            <h3>Администратор</h3>
+            <p>Управление системой и добавление отчетов</p>
+        </a>
+
+        <a href="/about-teacher" class="entrance-button teacher">
+            <div class="entrance-icon"></div>
+            <h3>О преподавателе</h3>
+            <p>Информация о методике и подходе к обучению</p>
+        </a>
+    </div>
+
+    <style>
+        .entrance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .entrance-button {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .entrance-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--accent-gradient);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
+
+        .entrance-button:hover::before {
+            opacity: 0.1;
+        }
+
+        .entrance-button:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(94, 217, 215, 0.3);
+            border-color: rgba(94, 217, 215, 0.5);
+        }
+
+        .entrance-button.student:hover {
+            box-shadow: 0 20px 40px rgba(94, 217, 215, 0.3);
+        }
+
+        .entrance-button.parent:hover {
+            box-shadow: 0 20px 40px rgba(255, 165, 0, 0.3);
+        }
+
+        .entrance-button.admin:hover {
+            box-shadow: 0 20px 40px rgba(255, 99, 132, 0.3);
+        }
+
+        .entrance-button.teacher:hover {
+            box-shadow: 0 20px 40px rgba(139, 69, 19, 0.3);
+        }
+
+        .entrance-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .entrance-button h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--text-accent);
+        }
+
+        .entrance-button p {
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .entrance-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .entrance-button {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+{% endblock %}

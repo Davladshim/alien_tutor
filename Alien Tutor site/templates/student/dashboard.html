@@ -97,7 +97,7 @@
                         <button class="nav-btn">← Назад</button>
                         
                         <div class="schedule-info">
-                            <span class="current-period">Неделя 6, 2025</span>
+                            <span class="current-period">{{ student.schedule.week_info.title }}</span>
                             <div class="view-toggle">
                                 <button class="toggle-btn active">Неделя</button>
                                 <button class="toggle-btn">Месяц</button>
@@ -109,82 +109,32 @@
 
                     <!-- Календарная сетка -->
                     <div class="schedule-grid">
-                        <div class="day-column">
+                        {% for day in student.schedule.week_data %}
+                        <div class="day-column {% if day.is_today %}today{% endif %}">
                             <div class="day-header">
-                                <div class="day-name">Понедельник</div>
-                                <div class="day-date">10</div>
+                                <div class="day-name">{{ day.day_name }}</div>
+                                <div class="day-date">{{ day.day_number }}</div>
+                                {% if day.is_today %}
+                                    <div class="today-badge">Сегодня</div>
+                                {% endif %}
                             </div>
                             <div class="lessons-list">
-                                <div class="lesson-placeholder">Нет занятий</div>
+                                {% if day.lessons %}
+                                    {% for lesson in day.lessons %}
+                                    <div class="lesson-item-placeholder">
+                                        <div class="lesson-time">{{ lesson.time }}</div>
+                                        <div class="lesson-subject">{{ lesson.subject }}</div>
+                                        {% if lesson.status == 'cancelled' %}
+                                            <div class="lesson-status">Отменен</div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="lesson-placeholder">Нет занятий</div>
+                                {% endif %}
                             </div>
                         </div>
-                        
-                        <div class="day-column">
-                            <div class="day-header">
-                                <div class="day-name">Вторник</div>
-                                <div class="day-date">11</div>
-                            </div>
-                            <div class="lessons-list">
-                                <div class="lesson-item-placeholder">
-                                    <div class="lesson-time">15:00</div>
-                                    <div class="lesson-subject">Математика</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="day-column today">
-                            <div class="day-header">
-                                <div class="day-name">Среда</div>
-                                <div class="day-date">12</div>
-                                <div class="today-badge">Сегодня</div>
-                            </div>
-                            <div class="lessons-list">
-                                <div class="lesson-placeholder">Нет занятий</div>
-                            </div>
-                        </div>
-                        
-                        <div class="day-column">
-                            <div class="day-header">
-                                <div class="day-name">Четверг</div>
-                                <div class="day-date">13</div>
-                            </div>
-                            <div class="lessons-list">
-                                <div class="lesson-item-placeholder">
-                                    <div class="lesson-time">16:30</div>
-                                    <div class="lesson-subject">Физика</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="day-column">
-                            <div class="day-header">
-                                <div class="day-name">Пятница</div>
-                                <div class="day-date">14</div>
-                            </div>
-                            <div class="lessons-list">
-                                <div class="lesson-placeholder">Нет занятий</div>
-                            </div>
-                        </div>
-                        
-                        <div class="day-column">
-                            <div class="day-header">
-                                <div class="day-name">Суббота</div>
-                                <div class="day-date">15</div>
-                            </div>
-                            <div class="lessons-list">
-                                <div class="lesson-placeholder">Нет занятий</div>
-                            </div>
-                        </div>
-                        
-                        <div class="day-column">
-                            <div class="day-header">
-                                <div class="day-name">Воскресенье</div>
-                                <div class="day-date">16</div>
-                            </div>
-                            <div class="lessons-list">
-                                <div class="lesson-placeholder">Нет занятий</div>
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -256,35 +206,23 @@
                                 </tr>
                             </thead>
                             <tbody id="lessonsTableBody">
-                                <!-- Новые уроки добавляются сверху -->
-                                <tr>
-                                    <td>05.02.2025</td>
-                                    <td>Квадратные уравнения</td>
-                                    <td>Тема разобрана полностью</td>
-                                    <td class="score-cell">85</td>
-                                    <td>Ученик отлично понял принцип решения через дискриминант. Небольшие ошибки в вычислениях.</td>
-                                </tr>
-                                <tr>
-                                    <td>03.02.2025</td>
-                                    <td>Функции и графики</td>
-                                    <td>Есть вопросы по теме</td>
-                                    <td class="score-cell">72</td>
-                                    <td>Базовые понятия усвоены, но путается в построении графиков сложных функций.</td>
-                                </tr>
-                                <tr>
-                                    <td>01.02.2025</td>
-                                    <td>Системы уравнений</td>
-                                    <td>Тему нужно закрепить</td>
-                                    <td class="score-cell">58</td>
-                                    <td>Метод подстановки понятен, но алгебраический метод вызывает затруднения.</td>
-                                </tr>
-                                <tr>
-                                    <td>29.01.2025</td>
-                                    <td>Неравенства</td>
-                                    <td>Тема разобрана полностью</td>
-                                    <td class="score-cell">92</td>
-                                    <td>Превосходное понимание темы. Быстро решает как простые, так и сложные неравенства.</td>
-                                </tr>
+                                {% if student.lesson_reports %}
+                                    {% for lesson in student.lesson_reports %}
+                                    <tr>
+                                        <td>{{ lesson.date }}</td>
+                                        <td>{{ lesson.topic }}</td>
+                                        <td>{{ lesson.understanding }}</td>
+                                        <td class="score-cell">{{ lesson.score }}</td>
+                                        <td>{{ lesson.feedback }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; color: var(--text-muted); font-style: italic;">
+                                            Нет данных об уроках
+                                        </td>
+                                    </tr>
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>
@@ -295,10 +233,30 @@
                     <div class="table-wrapper">
                         <table class="lessons-table homework-table">
                             <thead id="homeworkTableHeader">
-                                <!-- Заголовки будут меняться в зависимости от класса -->
+                                <tr>
+                                    <th>Дата задания</th>
+                                    <th>Описание</th>
+                                    <th>Статус</th>
+                                    <th>Оценка</th>
+                                </tr>
                             </thead>
                             <tbody id="homeworkTableBody">
-                                <!-- Содержимое будет заполняться JavaScript -->
+                                {% if student.homework_data %}
+                                    {% for hw in student.homework_data %}
+                                    <tr>
+                                        <td>{{ hw.date }}</td>
+                                        <td>{{ hw.description }}</td>
+                                        <td>{{ hw.status }}</td>
+                                        <td>{{ hw.score }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; color: var(--text-muted); font-style: italic;">
+                                            Нет данных о домашних заданиях
+                                        </td>
+                                    </tr>
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>
@@ -336,5 +294,172 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+// Данные из Python
+const examResults = {{ student.exam_results | tojson | safe }};
+const topicProgress = {{ student.topic_progress | tojson | safe }};
+const currentClass = {{ student.class | tojson | safe }};
+
+// Переменные для отслеживания состояния
+let currentSelectedClass = '9';
+
+// Функция для отрисовки столбчатой диаграммы
+function renderBarChart() {
+    const barChart = document.getElementById('barChart');
+    barChart.innerHTML = '';
+    
+    if (!examResults || examResults.length === 0) {
+        barChart.innerHTML = '<div class="no-data">Нет данных о пробниках</div>';
+        return;
+    }
+    
+    const maxScore = Math.max(...examResults.map(item => item.score));
+    const chartHeight = 200;
+    
+    examResults.forEach(item => {
+        const barHeight = (item.score / maxScore) * chartHeight;
+        
+        const barContainer = document.createElement('div');
+        barContainer.className = 'bar-container';
+        barContainer.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 5px;
+            min-width: 40px;
+        `;
+        
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.cssText = `
+            width: 30px;
+            height: ${barHeight}px;
+            background: linear-gradient(45deg, #00d4ff, #7c3aed);
+            border-radius: 4px 4px 0 0;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        `;
+        
+        const scoreLabel = document.createElement('div');
+        scoreLabel.textContent = item.score;
+        scoreLabel.style.cssText = `
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        `;
+        
+        const dateLabel = document.createElement('div');
+        dateLabel.textContent = item.date;
+        dateLabel.style.cssText = `
+            font-size: 10px;
+            color: var(--text-muted);
+            transform: rotate(-45deg);
+            margin-top: 10px;
+        `;
+        
+        barContainer.appendChild(bar);
+        barContainer.appendChild(scoreLabel);
+        barContainer.appendChild(dateLabel);
+        
+        barChart.appendChild(barContainer);
+    });
+}
+
+// Функция для отрисовки круговой диаграммы
+function renderPieChart() {
+    const pieChart = document.querySelector('#pieChart svg');
+    const total = topicProgress.fully + topicProgress.questions + topicProgress.needWork;
+    
+    if (total === 0) {
+        pieChart.innerHTML = '<text x="100" y="100" text-anchor="middle" fill="var(--text-muted)">Нет данных</text>';
+        return;
+    }
+    
+    const colors = {
+        fully: '#10b981',
+        questions: '#f59e0b', 
+        needWork: '#ef4444'
+    };
+    
+    let cumulativePercentage = 0;
+    let segments = '';
+    
+    Object.entries(topicProgress).forEach(([key, value]) => {
+        if (value > 0) {
+            const percentage = value / total;
+            const angle = percentage * 360;
+            
+            const x1 = 100 + 80 * Math.cos((cumulativePercentage * 360 - 90) * Math.PI / 180);
+            const y1 = 100 + 80 * Math.sin((cumulativePercentage * 360 - 90) * Math.PI / 180);
+            
+            const x2 = 100 + 80 * Math.cos(((cumulativePercentage + percentage) * 360 - 90) * Math.PI / 180);
+            const y2 = 100 + 80 * Math.sin(((cumulativePercentage + percentage) * 360 - 90) * Math.PI / 180);
+            
+            const largeArc = percentage > 0.5 ? 1 : 0;
+            
+            segments += `
+                <path d="M 100 100 L ${x1} ${y1} A 80 80 0 ${largeArc} 1 ${x2} ${y2} Z"
+                      fill="${colors[key]}" 
+                      stroke="var(--bg-primary)" 
+                      stroke-width="2"/>
+            `;
+            
+            cumulativePercentage += percentage;
+        }
+    });
+    
+    pieChart.innerHTML = segments;
+}
+
+// Обработчики событий для переключения классов
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация диаграмм
+    renderBarChart();
+    renderPieChart();
+    
+    // Обработчики для кнопок классов
+    document.querySelectorAll('.class-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Убираем активный класс у всех кнопок
+            document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
+            // Добавляем активный класс к нажатой кнопке
+            this.classList.add('active');
+            
+            currentSelectedClass = this.dataset.class;
+            
+            // Показываем/скрываем столбчатую диаграмму для 9-11 классов
+            const barChartSection = document.querySelector('.bar-chart-section');
+            if (currentSelectedClass === '9' || currentSelectedClass === '11') {
+                barChartSection.style.display = 'block';
+                renderBarChart();
+            } else {
+                barChartSection.style.display = 'none';
+            }
+        });
+    });
+    
+    // Скрываем столбчатую диаграмму если не 9-11 класс
+    const barChartSection = document.querySelector('.bar-chart-section');
+    if (currentSelectedClass !== '9' && currentSelectedClass !== '11') {
+        barChartSection.style.display = 'none';
+    }
+});
+
+// Обработчики для переключения вкладок
+document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', function() {
+        const tabName = this.dataset.tab;
+        
+        // Убираем активный класс у всех кнопок и контента
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        // Добавляем активный класс к нажатой кнопке и соответствующему контенту
+        this.classList.add('active');
+        document.getElementById(tabName + '-tab').classList.add('active');
+    });
+});
+</script>
 {% endblock %}

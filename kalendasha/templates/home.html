@@ -1,10 +1,165 @@
 {% extends "base.html" %}
 
+{% block title %}Главная - Календаша{% endblock %}
+
 {% block content %}
-<div style="text-align: center; margin-bottom: 40px;">
-  <h2>Главная</h2>
-  <p style="color: var(--text-muted); font-size: 18px; margin-top: 15px; line-height: 1.6;">
-    Здесь добавим функции для отображения информации по ученикам, функцию "провести урок" и прочее
-  </p>
+<div style="text-align: center; margin-bottom: 30px;">
+    <h1>Админская панель</h1>
+    <p style="color: var(--text-muted); font-size: 16px;">
+        Управление учениками и быстрое добавление отчетов
+    </p>
 </div>
+
+<!-- Форма добавления отчета по уроку -->
+<div class="card" style="margin-bottom: 30px;">
+    <h2 style="margin-bottom: 20px; text-align: center;">Добавить отчет по уроку</h2>
+    
+    <form method="POST" action="/add-lesson-report">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            
+            <!-- Выбор урока -->
+            <div>
+                <label for="lesson_select">Выберите урок:</label>
+                <select id="lesson_select" name="lesson_id" required>
+                    <option value="">-- Выберите урок --</option>
+                    {% if recent_lessons %}
+                        {% for lesson in recent_lessons %}
+                        <option value="{{ lesson.id }}">
+                            {{ lesson.date }} {{ lesson.time }} - {{ lesson.student_name }} ({{ lesson.subject }})
+                        </option>
+                        {% endfor %}
+                    {% endif %}
+                    <option value="other">Другой урок...</option>
+                </select>
+            </div>
+            
+            <!-- Тема урока -->
+            <div>
+                <label for="topic">Тема урока:</label>
+                <input type="text" id="topic" name="topic" required placeholder="Например: Квадратные уравнения">
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            
+            <!-- Понимание темы -->
+            <div>
+                <label for="understanding">Понимание темы:</label>
+                <select id="understanding" name="understanding_level" required>
+                    <option value="">-- Выберите уровень --</option>
+                    <option value="Тема разобрана полностью">Тема разобрана полностью</option>
+                    <option value="Есть вопросы по теме">Есть вопросы по теме</option>
+                    <option value="Тему нужно закрепить">Тему нужно закрепить</option>
+                </select>
+            </div>
+            
+            <!-- Баллы за пробник -->
+            <div>
+                <label for="exam_score">Баллы за пробник (необязательно):</label>
+                <input type="number" id="exam_score" name="exam_score" min="0" max="100" placeholder="0-100">
+            </div>
+        </div>
+        
+        <!-- Комментарий преподавателя -->
+        <div style="margin-bottom: 20px;">
+            <label for="teacher_comment">Комментарий преподавателя:</label>
+            <textarea id="teacher_comment" name="teacher_comment" rows="3" required 
+                      placeholder="Подробный отзыв о работе ученика на уроке"></textarea>
+        </div>
+        
+        <!-- Домашнее задание -->
+        <div style="margin-bottom: 20px;">
+            <label for="homework">Домашнее задание:</label>
+            <textarea id="homework" name="homework_assigned" rows="2" 
+                      placeholder="Описание домашнего задания"></textarea>
+        </div>
+        
+        <div style="text-align: center;">
+            <button type="submit" class="btn success">Сохранить отчет</button>
+        </div>
+    </form>
+</div>
+
+<!-- Быстрый переход к ученикам и родителям -->
+<div class="card">
+    <h3 style="text-align: center; margin-bottom: 20px;">Ученики и родители</h3>
+    
+    {% if students %}
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            {% for student in students %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: center;">
+                
+                <!-- Кнопка ученика -->
+                <a href="/admin/student/{{ student.id }}" class="btn" style="text-decoration: none;">
+                    {{ student.name }} ({{ student.class_level or 'Не указан' }} класс)
+                </a>
+                
+                <!-- Кнопка родителя -->
+                {% if student.parent_name %}
+                    {% set show_parent = loop.index0 == 0 or students[loop.index0-1].parent_name != student.parent_name %}
+                    {% if show_parent %}
+                        <a href="/admin/parent/{{ student.parent_name }}" class="btn warning" style="text-decoration: none;">
+                            {{ student.parent_name }}
+                        </a>
+                    {% else %}
+                        <div></div> <!-- Пустое место для выравнивания -->
+                    {% endif %}
+                {% else %}
+                    <div style="text-align: center; color: var(--text-muted); font-style: italic; padding: 12px;">
+                        Родитель не указан
+                    </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="text-align: center; color: var(--text-muted);">Нет учеников</p>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const lessonSelect = document.getElementById('lesson_select');
+    
+    lessonSelect.addEventListener('change', function() {
+        if (this.value === 'other') {
+            // Создаем дополнительные поля для поиска урока
+            const container = this.parentElement;
+            
+            // Удаляем старые поля если есть
+            const existingFields = container.querySelector('.other-lesson-fields');
+            if (existingFields) {
+                existingFields.remove();
+            }
+            
+            // Добавляем новые поля
+            const otherFields = document.createElement('div');
+            otherFields.className = 'other-lesson-fields';
+            otherFields.style.marginTop = '10px';
+            otherFields.innerHTML = `
+                <label>Дата урока:</label>
+                <input type="date" name="other_date" required style="margin-bottom: 10px;">
+                <label>Время урока:</label>
+                <input type="time" name="other_time" required style="margin-bottom: 10px;">
+                <button type="button" onclick="findOtherLesson()" class="btn" style="padding: 8px 16px; margin-top: 5px;">
+                    Найти урок
+                </button>
+            `;
+            
+            container.appendChild(otherFields);
+        } else {
+            // Удаляем дополнительные поля
+            const existingFields = container.querySelector('.other-lesson-fields');
+            if (existingFields) {
+                existingFields.remove();
+            }
+        }
+    });
+});
+
+function findOtherLesson() {
+    alert('Функция поиска урока по дате/времени будет добавлена позже');
+}
+</script>
+
 {% endblock %}

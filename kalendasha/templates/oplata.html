@@ -70,7 +70,7 @@
                 {% set balance = balances.get(student.name, {}) %}
                 {% set student_balance = balance.get('balance', 0) %}
                 {% set lesson_price = balance.get('lesson_price', student.lesson_price or 0) %}
-                {% set lessons_available = (student_balance / lesson_price)|round(0)|int if lesson_price > 0 else 0 %}
+                {% set lessons_available = (student_balance / lesson_price)|round(0)|int if lesson_price > 0 and student_balance > 0 else 0 %}
                 <tr>
                     <td class="student-name-neutral" style="text-align: center;">{{ student.name }}</td>
                     <td style="text-align: center;">{{ lesson_price|round(0)|int }} ₽</td>
@@ -78,8 +78,9 @@
                         {{ student_balance|round(0)|int }} ₽
                     </td>
                     <td style="text-align: center;">
-                        <span class="{% if lessons_available > 0 %}balance-positive{% elif lessons_available < 0 %}balance-negative{% else %}balance-zero{% endif %}" style="padding: 4px 8px; border-radius: 4px; font-weight: bold;">
-                            {{ lessons_available }}
+                        {% set real_lessons_available = (student_balance / lesson_price)|round(0)|int if lesson_price > 0 and student_balance >= 0 else 0 %}
+                        <span class="{% if real_lessons_available > 0 %}balance-positive{% elif real_lessons_available < 0 %}balance-negative{% else %}balance-zero{% endif %}" style="padding: 4px 8px; border-radius: 4px; font-weight: bold;">
+                            {{ real_lessons_available }}
                         </span>
                     </td>
                     <td style="text-align: center;" class="lessons-count-neutral">

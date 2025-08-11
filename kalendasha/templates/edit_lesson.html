@@ -134,10 +134,10 @@
                 Сохранить
             </button>
             
-            <!-- Отменить урок -->
+            <!-- Отменить урок / Восстановить урок -->
             {% if lesson.get('status') != 'cancelled' %}
             <button type="button" class="btn danger" 
-                    onclick="if(confirm('Отменить этот урок?\n\nОтмененный урок можно будет восстановить через API.')) { 
+                    onclick="if(confirm('Отменить этот урок?\n\nОтмененный урок можно будет восстановить.')) { 
                         const form = document.createElement('form');
                         form.method = 'POST';
                         const input = document.createElement('input');
@@ -152,9 +152,13 @@
                 Отменить урок
             </button>
             {% else %}
-            <div style="flex: 1; text-align: center; color: var(--text-muted); font-style: italic; padding: 12px; height: 44px; line-height: 1.2; display: flex; align-items: center; justify-content: center;">
-                Урок отменен
-            </div>
+            <button type="button" class="btn success" 
+                    onclick="if(confirm('Восстановить этот урок?\n\nУрок снова станет запланированным.')) { 
+                        restoreLesson('{{ lesson.get('id') }}');
+                    }" 
+                    style="flex: 1; min-width: 0; padding: 12px 16px; font-size: 14px; white-space: nowrap; height: 44px; line-height: 1.2;">
+                Восстановить урок
+            </button>
             {% endif %}
 
             <!-- Удалить урок - отдельная форма -->
@@ -208,6 +212,30 @@ function cancelLesson() {
     document.body.appendChild(form);
     form.submit();
 }
+
+// Функция восстановления урока
+function restoreLesson(lessonId) {
+    fetch(`/restore-lesson/${lessonId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Урок восстановлен!');
+            window.location.reload();
+        } else {
+            alert('Ошибка: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('Произошла ошибка при восстановлении урока');
+    });
+}
+
 </script>
 
 <!-- Информационная панель -->

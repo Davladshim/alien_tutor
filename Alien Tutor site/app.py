@@ -4,6 +4,7 @@ import requests  # ← ПЕРЕНЕС НАВЕРХ
 import psycopg2
 import psycopg2.extras
 from datetime import datetime, timedelta
+import secrets
 import os
 from dotenv import load_dotenv
 
@@ -78,6 +79,16 @@ def get_student_info(student_id):
     result = execute_query(query, (student_id,), fetch_one=True)
     return dict(result) if result else None
 
+def authenticate_user(login, password):
+    """Проверка логина и пароля пользователя"""
+    query = """
+        SELECT id, login, role, student_id, full_name 
+        FROM user_accounts 
+        WHERE login = %s AND password = %s
+    """
+    result = execute_query(query, (login, password), fetch_one=True)
+    return dict(result) if result else None
+
 def get_student_balance(student_id):
     """Получить баланс ученика"""
     query = """
@@ -106,11 +117,105 @@ def get_student_lessons_count(student_id):
 
 def get_student_schedule_data(student_id):
     """Получить данные расписания ученика"""
-    # Пока возвращаем заглушку, позже добавим реальные данные
+    from datetime import datetime, timedelta
+    
+    # Получаем уроки на текущую неделю
+    today = datetime.now().date()
+    monday = today - timedelta(days=today.weekday())
+    sunday = monday + timedelta(days=6)
+    
+    query = """
+        SELECT date, time, subject, status, lesson_duration
+        FROM lessons
+        WHERE student_id = %s
+        AND date BETWEEN %s AND %s
+        ORDER BY date, time
+    """
+    result = execute_query(query, (student_id, monday, sunday), fetch=True)
+    
+    # Создаем структуру недели
+    week_days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+    week_data = []
+    
+    for i, day_name in enumerate(week_days):
+        current_date = monday + timedelta(days=i)
+        day_lessons = []
+        
+        if result:
+            for lesson in result:
+                if lesson['date'] == current_date:
+                    day_lessons.append({
+                        'time': lesson['time'].strftime('%H:%M'),
+                        'subject': lesson['subject'],
+                        'status': lesson['status']
+                    })
+        
+        week_data.append({
+            'day_name': day_name,
+            'day_number': current_date.day,
+            'full_date': current_date.strftime('%Y-%m-%d'),
+            'is_today': current_date == today,
+            'lessons': day_lessons
+        })
+    
     return {
-        'week_data': [],
-        'week_info': {'title': 'Расписание на неделю'}
+        'week_data': week_data,
+        'week_info': {
+            'title': f'Неделя {today.isocalendar()[1]}, {today.year}',
+            'period': f'с {monday.strftime("%d.%m")} по {sunday.strftime("%d.%m")}'
+        }
     }
+
+# Получаем данные уроков для таблицы
+def get_student_lesson_reports(student_id):
+    """Получить отчеты по урокам ученика"""
+    query = """
+        SELECT lr.created_at, lr.topic, lr.understanding_level, 
+               lr.teacher_comment, er.secondary_score
+        FROM lesson_reports lr
+        LEFT JOIN exam_results er ON lr.student_id = er.student_id 
+                                  AND DATE(lr.created_at) = er.exam_date
+        WHERE lr.student_id = %s
+        ORDER BY lr.created_at DESC
+        LIMIT 10
+    """
+    result = execute_query(query, (student_id,), fetch=True)
+    
+    lessons = []
+    if result:
+        for row in result:
+            lessons.append({
+                'date': row['created_at'].strftime('%d.%m.%Y'),
+                'topic': row['topic'],
+                'understanding': row['understanding_level'],
+                'score': row['secondary_score'] or '',
+                'feedback': row['teacher_comment']
+            })
+    
+    return lessons
+
+def get_student_homework(student_id):
+    """Получить домашние задания ученика"""
+    query = """
+        SELECT assignment_date, topic, grade, tasks_solved, tasks_assigned
+        FROM homework_assignments
+        WHERE student_id = %s
+        ORDER BY assignment_date DESC
+        LIMIT 10
+    """
+    result = execute_query(query, (student_id,), fetch=True)
+    
+    homework = []
+    if result:
+        for row in result:
+            homework.append({
+                'date': row['assignment_date'].strftime('%d.%m.%Y'),
+                'description': row['topic'],
+                'status': 'Выполнено' if row['grade'] else 'В работе',
+                'score': f"{row['tasks_solved']}/{row['tasks_assigned']}" if row['tasks_solved'] is not None else ''
+            })
+    
+    return homework
 
 def get_student_exam_results(student_id):
     """Получить результаты пробников ученика"""
@@ -168,6 +273,82 @@ app.config['SECRET_KEY'] = 'your-secret-key-here'
 from flask import Flask, render_template, request, redirect, url_for, session
 
 @app.route('/')
+def index():
+    """Главная страница с выбором типа входа"""
+    return render_template('index.html')
+
+@app.route('/student-auth', methods=['GET', 'POST'])
+def student_auth():
+    """Авторизация ученика"""
+    if request.method == 'POST':
+        login = request.form.get('login')
+        password = request.form.get('password')
+        
+        user = authenticate_user(login, password)
+        if user and user['role'] == 'student':
+            session['user_id'] = user['id']
+            session['login'] = user['login']
+            session['role'] = user['role']
+            session['student_id'] = user['student_id']
+            return redirect(url_for('student_dashboard'))
+        else:
+            return render_template('login.html', error='Неверный логин или пароль', auth_type='student')
+    
+    return render_template('login.html', auth_type='student')
+
+@app.route('/parent-auth', methods=['GET', 'POST'])
+def parent_auth():
+    """Авторизация родителя"""
+    if request.method == 'POST':
+        login = request.form.get('login')
+        password = request.form.get('password')
+        
+        user = authenticate_user(login, password)
+        if user and user['role'] == 'parent':
+            session['user_id'] = user['id']
+            session['login'] = user['login']
+            session['role'] = user['role']
+            session['student_id'] = user['student_id']
+            return redirect(url_for('parent_dashboard'))
+        else:
+            return render_template('login.html', error='Неверный логин или пароль', auth_type='parent')
+    
+    return render_template('login.html', auth_type='parent')
+
+@app.route('/admin-auth', methods=['GET', 'POST'])
+def admin_auth():
+    """Авторизация админа"""
+    if request.method == 'POST':
+        login = request.form.get('login')
+        password = request.form.get('password')
+        
+        user = authenticate_user(login, password)
+        if user and user['role'] == 'admin':
+            session['user_id'] = user['id']
+            session['login'] = user['login']
+            session['role'] = user['role']
+            session['admin_logged_in'] = True  # Для Календаши
+            # Создаем токен для безопасной передачи в Календашу
+            admin_token = secrets.token_urlsafe(32)
+            session['admin_token'] = admin_token
+            return redirect(f"http://127.0.0.1:5000?token={admin_token}")
+        else:
+            return render_template('login.html', error='Неверный логин или пароль', auth_type='admin')
+    
+    return render_template('login.html', auth_type='admin')
+
+@app.route('/verify-admin-token/<token>')
+def verify_admin_token(token):
+    """Проверка токена администратора"""
+    if session.get('admin_token') == token and session.get('role') == 'admin':
+        return {'valid': True, 'admin_id': session.get('user_id'), 'login': session.get('login')}
+    return {'valid': False}
+
+@app.route('/about-teacher')
+def about_teacher():
+    """Страница о преподавателе"""
+    return "<h1>Страница о преподавателе</h1><p>Здесь будет информация о методике обучения</p>"
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """Страница входа в систему"""
@@ -177,6 +358,10 @@ def login():
         
         # Проверяем логин и пароль
         user = check_user_login(login_input, password_input)
+
+        # Вызываем функции
+        lesson_reports = get_student_lesson_reports(student_id)
+        homework_data = get_student_homework(student_id)
         
         if user:
             # Сохраняем данные пользователя в сессии
@@ -204,7 +389,7 @@ def student_dashboard():
     """Личный кабинет ученика"""
     # Проверяем авторизацию
     if 'user_id' not in session or session.get('role') != 'student':
-        return redirect(url_for('login'))
+        return redirect(url_for('index'))
     
     # Получаем данные ученика
     student_id = session.get('student_id')
@@ -226,7 +411,11 @@ def student_dashboard():
     lesson_price = student.get('lesson_price', 0)
     current_balance = balance_data.get('balance', 0)
     lessons_in_stock = int(current_balance / lesson_price) if lesson_price > 0 else 0
-    
+
+    # Вызываем новые функции
+    lesson_reports = get_student_lesson_reports(student_id)
+    homework_data = get_student_homework(student_id)
+        
     student_data = {
         'name': student['name'],
         'class': student.get('class_level', 'Не указан'),
@@ -238,7 +427,9 @@ def student_dashboard():
         'planned_lessons': lessons_data.get('planned_lessons', 0),
         'schedule': schedule_data,
         'exam_results': exam_results,
-        'topic_progress': topic_progress
+        'topic_progress': topic_progress,
+        'lesson_reports': lesson_reports,  # НОВОЕ
+        'homework_data': homework_data     # НОВОЕ
     }
     
     # ОТЛАДКА - смотрим что передаем в шаблон
@@ -249,10 +440,193 @@ def student_dashboard():
 
     return render_template('student/dashboard.html', student=student_data)
 
+def get_parent_info(parent_id):
+    """Получить информацию о родителе по ID"""
+    query = "SELECT * FROM students WHERE id = %s"
+    result = execute_query(query, (parent_id,), fetch_one=True)
+    return dict(result) if result else None
+
+def get_parent_children(parent_name):
+    """Получить всех детей родителя по parent_name"""
+    query = "SELECT * FROM students WHERE parent_name = %s ORDER BY name"
+    result = execute_query(query, (parent_name,), fetch=True)
+    return [dict(row) for row in result] if result else []
+
 @app.route('/parent')
 def parent_dashboard():
     """Личный кабинет родителя"""
-    return render_template('parent/dashboard.html')
+    # Проверяем авторизацию
+    if 'user_id' not in session or session.get('role') != 'parent':
+        return redirect(url_for('index'))
+    
+    # Получаем данные родителя
+    parent_id = session.get('student_id')  # В БД это может быть parent_id
+    parent_info = get_parent_info(parent_id)
+    
+    if not parent_info:
+        return redirect(url_for('login'))
+    
+    # Получаем всех детей этого родителя
+    children = get_parent_children(parent_info['parent_name'])
+    
+    # Собираем данные для каждого ребенка
+    children_data = []
+    for child in children:
+        child_balance = get_student_balance(child['id'])
+        child_lessons = get_student_lessons_count(child['id'])
+        child_schedule = get_student_schedule_data(child['id'])
+        child_exam_results = get_student_exam_results(child['id'])
+        child_topic_progress = get_student_topic_progress(child['id'])
+        child_lesson_reports = get_student_lesson_reports(child['id'])
+        child_homework = get_student_homework(child['id'])
+        
+        # Рассчитываем запас уроков
+        lesson_price = child.get('lesson_price', 0)
+        current_balance = child_balance.get('balance', 0)
+        lessons_in_stock = int(current_balance / lesson_price) if lesson_price > 0 else 0
+        
+        children_data.append({
+            'id': child['id'],
+            'name': child['name'],
+            'class': child.get('class_level', 'Не указан'),
+            'lesson_price': lesson_price,
+            'balance': current_balance,
+            'lessons_in_stock': lessons_in_stock,
+            'completed_lessons': child_lessons.get('completed_lessons', 0),
+            'cancelled_lessons': child_lessons.get('cancelled_lessons', 0),
+            'planned_lessons': child_lessons.get('planned_lessons', 0),
+            'schedule': child_schedule,
+            'exam_results': child_exam_results,
+            'topic_progress': child_topic_progress,
+            'lesson_reports': child_lesson_reports,
+            'homework_data': child_homework
+        })
+    
+    parent_data = {
+        'parent_name': parent_info.get('parent_name', 'Родитель'),
+        'children': children_data
+    }
+    
+    return render_template('parent/dashboard.html', parent=parent_data)
+
+@app.route('/admin-student/<int:student_id>')
+def admin_student_dashboard(student_id):
+    """Админский доступ к ЛКУ ученика"""
+
+    # Проверяем, что вошел именно админ
+    if 'user_id' not in session or session.get('login') != 'Darya_Shim':
+        return redirect(url_for('login'))
+
+    # ДОБАВЬ ЭТУ ПРОВЕРКУ:
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    # Дополнительная проверка - только для админов
+    user_role = session.get('role')
+    if user_role not in ['admin', 'teacher']:  # Разреши только админам и преподавателям
+        return redirect(url_for('login'))
+
+    # Получаем данные ученика (тот же код что в parent_dashboard для детей)
+    student = get_student_info(student_id)
+    if not student:
+        return "Ученик не найден", 404
+    
+    # Собираем все данные
+    student_balance = get_student_balance(student_id)
+    lessons_data = get_student_lessons_count(student_id)
+    schedule_data = get_student_schedule_data(student_id)
+    exam_results = get_student_exam_results(student_id)
+    topic_progress = get_student_topic_progress(student_id)
+    lesson_reports = get_student_lesson_reports(student_id)
+    homework_data = get_student_homework(student_id)
+    
+    # Рассчитываем запас уроков
+    lesson_price = student.get('lesson_price', 0)
+    current_balance = student_balance.get('balance', 0)
+    lessons_in_stock = int(current_balance / lesson_price) if lesson_price > 0 else 0
+    
+    student_data = {
+        'name': student['name'],
+        'class': student.get('class_level', 'Не указан'),
+        'lesson_price': lesson_price,
+        'balance': current_balance,
+        'lessons_in_stock': lessons_in_stock,
+        'completed_lessons': lessons_data.get('completed_lessons', 0),
+        'cancelled_lessons': lessons_data.get('cancelled_lessons', 0),
+        'planned_lessons': lessons_data.get('planned_lessons', 0),
+        'schedule': schedule_data,
+        'exam_results': exam_results,
+        'topic_progress': topic_progress,
+        'lesson_reports': lesson_reports,
+        'homework_data': homework_data
+    }
+    
+    return render_template('student/dashboard.html', student=student_data)
+
+@app.route('/admin-parent/<parent_name>')
+def admin_parent_dashboard(parent_name):
+    """Админский доступ к ЛКР родителя"""
+
+    # Проверяем, что вошел именно админ
+    if 'user_id' not in session or session.get('login') != 'Darya_Shim':
+        return redirect(url_for('login'))
+
+    # ДОБАВЬ ЭТУ ПРОВЕРКУ:
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    # Дополнительная проверка - только для админов
+    user_role = session.get('role')
+    if user_role not in ['admin', 'teacher']:  # Разреши только админам и преподавателям
+        return redirect(url_for('login'))
+
+    import urllib.parse
+    parent_name = urllib.parse.unquote(parent_name)
+    
+    # Получаем всех детей этого родителя
+    children = get_parent_children(parent_name)
+    
+    if not children:
+        return "Дети не найдены", 404
+    
+    # Тот же код что в parent_dashboard()
+    children_data = []
+    for child in children:
+        child_balance = get_student_balance(child['id'])
+        child_lessons = get_student_lessons_count(child['id'])
+        child_schedule = get_student_schedule_data(child['id'])
+        child_exam_results = get_student_exam_results(child['id'])
+        child_topic_progress = get_student_topic_progress(child['id'])
+        child_lesson_reports = get_student_lesson_reports(child['id'])
+        child_homework = get_student_homework(child['id'])
+        
+        lesson_price = child.get('lesson_price', 0)
+        current_balance = child_balance.get('balance', 0)
+        lessons_in_stock = int(current_balance / lesson_price) if lesson_price > 0 else 0
+        
+        children_data.append({
+            'id': child['id'],
+            'name': child['name'],
+            'class': child.get('class_level', 'Не указан'),
+            'lesson_price': lesson_price,
+            'balance': current_balance,
+            'lessons_in_stock': lessons_in_stock,
+            'completed_lessons': child_lessons.get('completed_lessons', 0),
+            'cancelled_lessons': child_lessons.get('cancelled_lessons', 0),
+            'planned_lessons': child_lessons.get('planned_lessons', 0),
+            'schedule': child_schedule,
+            'exam_results': child_exam_results,
+            'topic_progress': child_topic_progress,
+            'lesson_reports': child_lesson_reports,
+            'homework_data': child_homework
+        })
+    
+    parent_data = {
+        'parent_name': parent_name,
+        'children': children_data
+    }
+    
+    return render_template('parent/dashboard.html', parent=parent_data)
 
 @app.route('/admin')
 def admin_dashboard():

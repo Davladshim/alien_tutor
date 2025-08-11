@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+import requests
 import psycopg2
 import psycopg2.extras
 from datetime import datetime, timedelta
@@ -8,6 +9,7 @@ import uuid
 import json
 
 app = Flask(__name__)
+app.secret_key = 'darya_shim_kalendasha_key'
 
 # Настройки подключения к PostgreSQL
 import os
@@ -112,6 +114,27 @@ def load_students():
     """
     result = execute_query(query, fetch=True)
     return [dict(row) for row in result] if result else []
+
+def verify_admin_login(login, password):
+    """Проверка логина и пароля админа"""
+    query = """
+        SELECT id, login, role, full_name 
+        FROM user_accounts 
+        WHERE login = %s AND password = %s AND role = 'admin'
+    """
+    result = execute_query(query, (login, password), fetch_one=True)
+    return dict(result) if result else None
+
+def require_admin_login():
+    """Декоратор для проверки админского доступа"""
+    def decorator(f):
+        def wrapper(*args, **kwargs):
+            if not session.get('admin_logged_in'):
+                return redirect(url_for('admin_login'))
+            return f(*args, **kwargs)
+        wrapper.__name__ = f.__name__
+        return wrapper
+    return decorator
 
 def save_student(student_data):
     """Сохранить нового ученика"""
@@ -963,6 +986,8 @@ def process_lesson_payment(student_name, lesson_id):
     lesson = get_lesson_by_id(lesson_id)
     if lesson and lesson.get('lesson_type') == 'trial':
         return True, "Пробный урок завершен (бесплатно)"
+    print(f"🔄 СПИСАНИЕ: урок {lesson_id}, ученик {student_name}")
+    print(f"🔄 Данные урока: {lesson}")
     
     student = get_student_by_name(student_name)
     if not student:
@@ -976,11 +1001,17 @@ def process_lesson_payment(student_name, lesson_id):
         VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
     """
     expense_id = generate_slot_id()
-    execute_query(expense_query, (
+    result = execute_query(expense_query, (
         expense_id, student['id'], -lesson_price, 'expense', 
         f"Оплата урока {lesson_id}", lesson_id
     ))
-    
+    print(f"🔄 Запись о списании создана: result={result}, amount={-lesson_price}")
+
+    # Помечаем урок как оплаченный
+    mark_paid_query = "UPDATE lessons SET is_paid = true WHERE id = %s"
+    result2 = execute_query(mark_paid_query, (lesson_id,))
+    print(f"🔄 Урок помечен как оплаченный: result={result2}")
+
     # Получаем текущий баланс
     balance = get_student_balance(student_name)
     
@@ -1000,6 +1031,7 @@ def reset_student_balance(student_name):
 
 def get_financial_overview():
     """Получить общий финансовый обзор по всем ученикам"""
+    # Общий баланс всех студентов
     query = """
         SELECT 
             SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as total_paid,
@@ -1009,6 +1041,19 @@ def get_financial_overview():
         JOIN students s ON p.student_id = s.id
     """
     result = execute_query(query, fetch_one=True)
+    
+    # Подсчитываем долги как отрицательные балансы учеников
+    debt_query = """
+        SELECT SUM(ABS(balance)) as total_debt
+        FROM (
+            SELECT student_id, SUM(amount) as balance
+            FROM payments p
+            JOIN students s ON p.student_id = s.id
+            GROUP BY student_id
+            HAVING SUM(amount) < 0
+        ) negative_balances
+    """
+    debt_result = execute_query(debt_query, fetch_one=True)
     
     if not result:
         return {
@@ -1020,13 +1065,8 @@ def get_financial_overview():
         }
     
     total_balance = float(result['total_balance']) if result['total_balance'] else 0
-    total_prepaid = 0
-    total_debt = 0
-    
-    if total_balance > 0:
-        total_prepaid = total_balance
-    else:
-        total_debt = abs(total_balance)
+    total_debt = float(debt_result['total_debt']) if debt_result and debt_result['total_debt'] else 0
+    total_prepaid = total_balance if total_balance > 0 else 0
     
     # Подсчитываем студентов с положительным и отрицательным балансом
     students_balances_query = """
@@ -1073,16 +1113,24 @@ def auto_update_lesson_statuses():
     modified = False
     
     for lesson in overdue_lessons:
-        # Обновляем статус урока
+        # Обновляем статус урока (убираем автоматическую пометку как оплаченный)
         update_query = """
             UPDATE lessons 
-            SET status = 'completed', is_paid = true
+            SET status = 'completed'
             WHERE id = %s
         """
         execute_query(update_query, (lesson['id'],))
-        
+
         # Списываем оплату
         success, message = process_lesson_payment(lesson['student_name'], lesson['id'])
+        print(f"[AUTO_UPDATE] Урок {lesson['id']}: success={success}, message={message}")
+        if success:
+            # Помечаем урок как оплаченный только после успешного списания
+            paid_query = "UPDATE lessons SET is_paid = true WHERE id = %s"
+            execute_query(paid_query, (lesson['id'],))
+            print(f"✅ Урок {lesson['id']} помечен как оплаченный")
+        else:
+            print(f"❌ Ошибка списания для урока {lesson['id']}: {message}")
         if success:
             print(f"[AUTO_UPDATE] Автоматически списана оплата: {message}")
         else:
@@ -1430,13 +1478,309 @@ def get_month_student_detailed_stats(year, month):
     
     return student_stats
 
+def get_student_by_id(student_id):
+    """Получить ученика по ID"""
+    query = "SELECT * FROM students WHERE id = %s"
+    result = execute_query(query, (student_id,), fetch_one=True)
+    return dict(result) if result else None
+
+def get_student_balance(student_id):
+    """Получить баланс ученика"""
+    # Временная заглушка - позже подключим к системе оплат
+    return {'balance': 0}
+
+def get_student_lessons_count(student_id):
+    """Получить количество уроков ученика"""
+    query = """
+        SELECT 
+            COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_lessons,
+            COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled_lessons,
+            COUNT(CASE WHEN status = 'scheduled' THEN 1 END) as planned_lessons
+        FROM lessons 
+        WHERE student_id = %s
+    """
+    result = execute_query(query, (student_id,), fetch_one=True)
+    if result:
+        return {
+            'completed_lessons': result['completed_lessons'] or 0,
+            'cancelled_lessons': result['cancelled_lessons'] or 0,
+            'planned_lessons': result['planned_lessons'] or 0
+        }
+    return {'completed_lessons': 0, 'cancelled_lessons': 0, 'planned_lessons': 0}
+
+def get_student_schedule_data(student_id):
+    """Получить расписание ученика"""
+    from datetime import datetime, timedelta
+    
+    today = datetime.now().date()
+    monday = today - timedelta(days=today.weekday())
+    sunday = monday + timedelta(days=6)
+    
+    query = """
+        SELECT date, time, subject, status, lesson_duration
+        FROM lessons
+        WHERE student_id = %s
+        AND date BETWEEN %s AND %s
+        ORDER BY date, time
+    """
+    result = execute_query(query, (student_id, monday, sunday), fetch=True)
+    
+    week_days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+    week_data = []
+    
+    for i, day_name in enumerate(week_days):
+        current_date = monday + timedelta(days=i)
+        day_lessons = []
+        
+        if result:
+            for lesson in result:
+                if lesson['date'] == current_date:
+                    day_lessons.append({
+                        'time': lesson['time'].strftime('%H:%M'),
+                        'subject': lesson['subject'],
+                        'status': lesson['status']
+                    })
+        
+        week_data.append({
+            'day_name': day_name,
+            'day_number': current_date.day,
+            'full_date': current_date.strftime('%Y-%m-%d'),
+            'is_today': current_date == today,
+            'lessons': day_lessons
+        })
+    
+    return {
+        'week_data': week_data,
+        'week_info': {
+            'title': f'Неделя {today.isocalendar()[1]}, {today.year}',
+            'period': f'с {monday.strftime("%d.%m")} по {sunday.strftime("%d.%m")}'
+        }
+    }
+
+def get_student_exam_results(student_id):
+    """Получить результаты экзаменов ученика"""
+    # Временная заглушка
+    return []
+
+def get_student_topic_progress(student_id):
+    """Получить прогресс по темам"""
+    # Временная заглушка
+    return {'fully': 0, 'questions': 0, 'needwork': 0}
+
+def get_student_lesson_reports(student_id):
+    """Получить отчеты по урокам ученика"""
+    # Временная заглушка
+    return []
+
+def get_student_homework(student_id):
+    """Получить домашние задания ученика"""
+    # Временная заглушка
+    return []
+
+def get_parent_children(parent_name):
+    """Получить детей родителя"""
+    query = "SELECT * FROM students WHERE parent_name = %s ORDER BY name"
+    result = execute_query(query, (parent_name,), fetch=True)
+    return [dict(row) for row in result] if result else []
+
 # ============================================================================
 # FLASK МАРШРУТЫ
 # ============================================================================
 
 @app.route("/")
 def home():
-    return render_template("home.html")
+    """Главная страница с админскими функциями"""
+    
+    # Проверяем токен от сайта
+    token = request.args.get('token')
+    if token and not session.get('admin_logged_in'):
+        # Проверяем токен на сайте
+        import requests
+        try:
+            response = requests.get(f"http://127.0.0.1:8080/verify-admin-token/{token}")
+            if response.json().get('valid'):
+                session['admin_logged_in'] = True
+                session['admin_token'] = token
+                # Убираем токен из URL (перенаправляем на ту же страницу без токена)
+                return redirect(url_for('home'))
+        except Exception as e:
+            print(f"Ошибка проверки токена: {e}")  # ОТЛАДКА
+    
+    # Проверяем авторизацию ТОЛЬКО если нет токена в URL
+    if not session.get('admin_logged_in') and not request.args.get('token'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+
+    # Получаем недавние проведенные уроки (последние 4 дня)
+    from datetime import datetime, timedelta
+    four_days_ago = datetime.now().date() - timedelta(days=4)
+    
+    recent_lessons_query = """
+        SELECT l.id, l.date, l.time, l.subject, s.name as student_name
+        FROM lessons l
+        JOIN students s ON l.student_id = s.id
+        WHERE l.status = 'completed'
+        AND l.date >= %s
+        ORDER BY l.date DESC, l.time DESC
+        LIMIT 10
+    """
+    recent_lessons = execute_query(recent_lessons_query, (four_days_ago,), fetch=True)
+    
+    # Форматируем данные уроков
+    lessons_data = []
+    if recent_lessons:
+        for lesson in recent_lessons:
+            lessons_data.append({
+                'id': lesson['id'],
+                'date': lesson['date'].strftime('%d.%m.%Y'),
+                'time': lesson['time'].strftime('%H:%M'),
+                'subject': lesson['subject'],
+                'student_name': lesson['student_name']
+            })
+    
+    # Получаем всех учеников с правильными классами
+    students_query = """
+        SELECT id, name, class_level, city, timezone, parent_name, 
+            contact, notes, lesson_price, created_at
+        FROM students 
+        ORDER BY name
+    """
+    students_result = execute_query(students_query, fetch=True)
+    students = [dict(row) for row in students_result] if students_result else []
+    
+    # Получаем ВСЕХ родителей (не только семьи с 2+ детьми)
+    all_parents_query = """
+        SELECT DISTINCT parent_name
+        FROM students 
+        WHERE parent_name IS NOT NULL AND parent_name != ''
+        ORDER BY parent_name
+    """
+    all_parents_result = execute_query(all_parents_query, fetch=True)
+
+    families = {}
+    if all_parents_result:
+        for parent in all_parents_result:
+            parent_name = parent['parent_name']
+            children_query = """
+                SELECT name FROM students 
+                WHERE parent_name = %s
+                ORDER BY name
+            """
+            children = execute_query(children_query, (parent_name,), fetch=True)
+            families[parent_name] = [dict(child) for child in children]
+    
+    # Формируем данные для отображения родителей
+    parents_data = []
+    for parent_name, children in families.items():
+        children_names = ", ".join([child['name'] for child in children])
+        parents_data.append({
+            'parent_name': parent_name,
+            'children_names': children_names,
+            'children_count': len(children)
+        })
+    
+    return render_template("home.html", 
+                         recent_lessons=lessons_data,
+                         students=students,
+                         parents=parents_data)
+
+@app.route("/add-lesson-report", methods=["POST"])
+def add_lesson_report():
+    """Добавить отчет по уроку"""
+    # Проверяем авторизацию
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
+    try:
+        lesson_id = request.form.get('lesson_id')
+        topic = request.form.get('topic')
+        understanding_level = request.form.get('understanding_level')
+        teacher_comment = request.form.get('teacher_comment')
+        homework_assigned = request.form.get('homework_assigned')
+        exam_score = request.form.get('exam_score')
+        
+        # Получаем информацию об уроке
+        lesson = get_lesson_by_id(lesson_id)
+        if not lesson:
+            return f"<script>alert('Урок не найден!'); window.location.href='/';</script>"
+        
+        # Получаем ученика
+        student = get_student_by_name(lesson['student'])
+        if not student:
+            return f"<script>alert('Ученик не найден!'); window.location.href='/';</script>"
+        
+        # Сохраняем отчет по уроку
+        report_query = """
+            INSERT INTO lesson_reports (lesson_id, student_id, topic, understanding_level, teacher_comment, homework_assigned, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, NOW())
+        """
+        execute_query(report_query, (lesson_id, student['id'], topic, understanding_level, teacher_comment, homework_assigned))
+        
+        # Если есть баллы за пробник - сохраняем их
+        if exam_score and exam_score.strip():
+            exam_query = """
+                INSERT INTO exam_results (student_id, exam_date, secondary_score, created_at)
+                VALUES (%s, %s, %s, NOW())
+            """
+            lesson_date = datetime.strptime(lesson['date'], '%Y-%m-%d').date()
+            execute_query(exam_query, (student['id'], lesson_date, int(exam_score)))
+        
+        return f"<script>alert('Отчет успешно сохранен!'); window.location.href='/';</script>"
+        
+    except Exception as e:
+        print(f"Ошибка сохранения отчета: {e}")
+        return f"<script>alert('Ошибка: {e}'); window.location.href='/';</script>"
+
+@app.route("/admin/student/<int:student_id>")
+def admin_student_view(student_id):
+    """Перенаправление в ЛКУ ученика на сайте"""
+    # Проверяем авторизацию
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
+    return f'''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Переход...</title>
+    </head>
+    <body>
+        <p>Открываем ЛКУ ученика...</p>
+        <script>
+            window.open("http://127.0.0.1:8080/admin-student/{student_id}", "_blank");
+            setTimeout(function() {{
+                window.location.href = "/";
+            }}, 500);
+        </script>
+    </body>
+    </html>
+    '''
+
+@app.route("/admin/parent/<parent_name>")
+def admin_parent_view(parent_name):
+    """Перенаправление в ЛКР родителя на сайте"""
+    # Проверяем авторизацию
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
+    import urllib.parse
+    encoded_name = urllib.parse.quote(parent_name)
+    return f'''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Переход...</title>
+    </head>
+    <body>
+        <p>Открываем ЛКР родителя...</p>
+        <script>
+            window.open("http://127.0.0.1:8080/admin-parent/{encoded_name}", "_blank");
+            setTimeout(function() {{
+                window.location.href = "/";
+            }}, 500);
+        </script>
+    </body>
+    </html>
+    '''
 
 @app.route("/ученики")
 def ucheniki():
@@ -1840,7 +2184,7 @@ def apply_template_week():
 def oplata(year=None, month=None):
     # Убираем медленную функцию!
     auto_update_lesson_statuses()
-    
+
     # Устанавливаем текущий месяц
     if year is None or month is None:
         today = datetime.now()
@@ -1868,16 +2212,26 @@ def oplata(year=None, month=None):
             s.lesson_price,
             COALESCE(SUM(CASE WHEN p.amount > 0 THEN p.amount ELSE 0 END), 0) as total_paid,
             COALESCE(SUM(CASE WHEN p.amount < 0 THEN ABS(p.amount) ELSE 0 END), 0) as total_spent,
-            COALESCE(SUM(p.amount), 0) as balance,
-            COALESCE(COUNT(l.id), 0) as lessons_taken
+            COALESCE(SUM(p.amount), 0) as balance
         FROM students s
         LEFT JOIN payments p ON s.id = p.student_id
-        LEFT JOIN lessons l ON s.id = l.student_id AND l.status = 'completed'
         GROUP BY s.id, s.name, s.lesson_price
         ORDER BY s.name
     """
 
     balances_result = execute_query(balances_query, fetch=True)
+
+    # Отдельно считаем завершенные уроки
+    lessons_count_query = """
+        SELECT s.name, COUNT(l.id) as lessons_taken
+        FROM students s
+        LEFT JOIN lessons l ON s.id = l.student_id AND l.status = 'completed'
+        GROUP BY s.id, s.name
+    """
+    lessons_counts = execute_query(lessons_count_query, fetch=True)
+
+    # Создаем словарь с количеством уроков
+    lessons_dict = {row['name']: row['lessons_taken'] for row in lessons_counts}
 
     for row in balances_result:
         balances[row['name']] = {
@@ -1885,7 +2239,7 @@ def oplata(year=None, month=None):
             'lesson_price': float(row['lesson_price']) if row['lesson_price'] else 0,
             'total_paid': float(row['total_paid']),
             'total_spent': float(row['total_spent']),
-            'lessons_taken': int(row['lessons_taken'])
+            'lessons_taken': lessons_dict.get(row['name'], 0)  # Берем из отдельного запроса
         }
     
     # Настоящий финансовый обзор
@@ -1917,8 +2271,8 @@ def oplata(year=None, month=None):
                          students=students,
                          balances=balances,
                          financial_overview=financial_overview,
-                         predicted_income=0,
-                         actual_income=0,
+                         predicted_income=get_predicted_income_current_month(),
+                         actual_income=get_actual_income_current_month(),
                          student_detailed_stats=get_month_student_detailed_stats(year, month),
                          current_month_name=current_month_name,
                          current_year=year,
@@ -2274,6 +2628,30 @@ def get_week_schedule_api(year, week):
             })
     
     return jsonify(week_schedule)
+
+@app.route("/restore-lesson/<lesson_id>", methods=["POST"])
+def restore_lesson(lesson_id):
+    """Восстановить отмененный урок"""
+    print(f"🔄 Восстанавливаем урок {lesson_id}")
+    
+    # Проверяем, что урок действительно отменен
+    lesson = get_lesson_by_id(lesson_id)
+    if not lesson:
+        return jsonify({"success": False, "error": "Урок не найден"}), 404
+    
+    if lesson.get('status') != 'cancelled':
+        return jsonify({"success": False, "error": "Урок не отменен"}), 400
+    
+    # Восстанавливаем урок
+    restore_query = "UPDATE lessons SET status = 'scheduled' WHERE id = %s"
+    result = execute_query(restore_query, (lesson_id,))
+    
+    if result is not None:
+        print(f"✅ Урок {lesson_id} восстановлен")
+        return jsonify({"success": True, "message": "Урок восстановлен"})
+    else:
+        print(f"❌ Ошибка восстановления урока {lesson_id}")
+        return jsonify({"success": False, "error": "Ошибка восстановления"}), 500
 
 # Запуск приложения
 if __name__ == "__main__":
