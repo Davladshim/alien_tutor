@@ -176,15 +176,42 @@ def update_student(student_id, student_data):
 
 def delete_student_completely(student_id):
     """Полное удаление ученика и всех его данных"""
+    print(f"🗑️ Начинаем удаление ученика с ID: {student_id}")
+    
+    # Удаляем в правильном порядке - сначала связанные данные, потом основные
     queries = [
+        # 1. Сначала удаляем все отчеты и задания (они ссылаются на lessons)
+        "DELETE FROM lesson_reports WHERE student_id = %s",
+        "DELETE FROM homework_assignments WHERE student_id = %s", 
+        "DELETE FROM exam_results WHERE student_id = %s",
+        "DELETE FROM topic_progress WHERE student_id = %s",
+        
+        # 2. Потом удаляем уроки и шаблоны
         "DELETE FROM lessons WHERE student_id = %s",
-        "DELETE FROM lesson_templates WHERE student_id = %s", 
+        "DELETE FROM lesson_templates WHERE student_id = %s",
+        
+        # 3. Удаляем платежи
         "DELETE FROM payments WHERE student_id = %s",
+        
+        # 4. Удаляем аккаунты ученика и родителя
+        "DELETE FROM user_accounts WHERE student_id = %s",
+        
+        # 5. И наконец удаляем самого ученика
         "DELETE FROM students WHERE id = %s"
     ]
     
-    for query in queries:
-        execute_query(query, (student_id,))
+    try:
+        for i, query in enumerate(queries, 1):
+            print(f"🗑️ Шаг {i}: {query}")
+            result = execute_query(query, (student_id,))
+            print(f"✅ Удалено записей: {result}")
+        
+        print(f"🎉 Ученик {student_id} полностью удален!")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Ошибка при удалении ученика {student_id}: {e}")
+        return False
 
 def get_student_by_name(student_name):
     """Получить ученика по имени"""
@@ -285,9 +312,11 @@ def create_lesson(lesson_data):
         
     query = """
         INSERT INTO lessons (id, student_id, date, time, day_of_week, subject, status, 
-                           lesson_type, lesson_duration, from_template, is_paid, created_at)
+                        lesson_type, lesson_duration, from_template, is_paid, 
+                        original_date, original_time, is_moved, moved_reason, created_at)
         VALUES (%(id)s, %(student_id)s, %(date)s, %(time)s, %(day_of_week)s, %(subject)s, %(status)s,
-                %(lesson_type)s, %(lesson_duration)s, %(from_template)s, %(is_paid)s, NOW())
+                %(lesson_type)s, %(lesson_duration)s, %(from_template)s, %(is_paid)s,
+                %(original_date)s, %(original_time)s, %(is_moved)s, %(moved_reason)s, NOW())
         RETURNING id
     """
     
@@ -302,7 +331,12 @@ def create_lesson(lesson_data):
         'lesson_type': lesson_data.get('lesson_type', 'regular'),
         'lesson_duration': lesson_data.get('lesson_duration', 60),
         'from_template': lesson_data.get('from_template', False),
-        'is_paid': lesson_data.get('is_paid', False)
+        'is_paid': lesson_data.get('is_paid', False),
+        # НОВЫЕ ПОЛЯ для переносов:
+        'original_date': lesson_data.get('original_date', lesson_data.get('date')),
+        'original_time': lesson_data.get('original_time', lesson_data.get('time')),
+        'is_moved': lesson_data.get('is_moved', False),
+        'moved_reason': lesson_data.get('moved_reason', None)
     }
     
     result = execute_query(query, lesson_params, fetch_one=True)
@@ -727,17 +761,22 @@ def apply_template_to_schedule_with_periods():
         current_date = start_date_obj
         while current_date <= end_date_obj:
             if current_date.weekday() == target_weekday:
-                # Проверяем, нет ли уже урока на эту дату
+                # Проверяем, нет ли уже урока с этим учеником на эту "исходную" дату/время
                 check_query = """
                     SELECT id FROM lessons 
-                    WHERE date = %s AND time = %s AND student_id = (
-                        SELECT id FROM students WHERE name = %s
-                    )
+                    WHERE student_id = (SELECT id FROM students WHERE name = %s)
+                    AND original_date = %s 
+                    AND original_time = %s
                 """
-                existing = execute_query(check_query, (current_date, template_lesson['time'], template_lesson['student']), fetch_one=True)
-                
+
+                print(f"🔍 ПРОВЕРЯЕМ: {template_lesson['student']} на {current_date} в {template_lesson['time']}")
+                existing = execute_query(check_query, (template_lesson['student'], current_date, template_lesson['time']), fetch_one=True)
+                print(f"🔍 РЕЗУЛЬТАТ ПРОВЕРКИ: {existing}")
+
                 if not existing:
-                    # Создаем новый урок
+                    print(f"✅ СОЗДАЕМ УРОК: {template_lesson['student']} на {current_date} в {template_lesson['time']}")
+                    
+                    # Создаем новый урок с правильными полями
                     lesson_data = {
                         'id': generate_slot_id(),
                         'date': current_date.strftime('%Y-%m-%d'),
@@ -747,11 +786,22 @@ def apply_template_to_schedule_with_periods():
                         'status': 'scheduled',
                         'from_template': True,
                         'lesson_type': template_lesson.get('lesson_type', 'regular'),
-                        'lesson_duration': template_lesson.get('lesson_duration', 60)
+                        'lesson_duration': template_lesson.get('lesson_duration', 60),
+                        'original_date': current_date.strftime('%Y-%m-%d'),
+                        'original_time': template_lesson['time'],
+                        'is_moved': False,
+                        'moved_reason': None
                     }
+                    
+                    print(f"🔍 ДАННЫЕ УРОКА: {lesson_data}")
                     
                     if create_lesson(lesson_data):
                         added_count += 1
+                        print(f"✅ УРОК СОЗДАН! Всего создано: {added_count}")
+                    else:
+                        print(f"❌ ОШИБКА СОЗДАНИЯ УРОКА!")
+                else:
+                    print(f"⏭️ УРОК УЖЕ СУЩЕСТВУЕТ, ПРОПУСКАЕМ")
             
             current_date += timedelta(days=1)
     
@@ -2690,13 +2740,11 @@ def add_trial_lesson_route():
     
     # Обработка POST запроса
     try:
-        data = request.get_json()
-        
-        date = data.get('date')
-        time = data.get('time')
-        student_name = data.get('student_name', '').strip()
-        subject = data.get('subject', 'Пробный урок')
-        lesson_duration = int(data.get('lesson_duration', 60))
+        date = request.form.get('date')
+        time = request.form.get('time') 
+        student_name = request.form.get('student_name', '').strip()
+        subject = request.form.get('subject', 'Пробный урок')
+        lesson_duration = int(request.form.get('lesson_duration', 60))
         
         if not date or not time or not student_name:
             return jsonify({"success": False, "error": "Заполните обязательные поля"}), 400
@@ -2716,11 +2764,7 @@ def add_trial_lesson_route():
         
         lesson_id = create_lesson(lesson_data)
         
-        return jsonify({
-            "success": True, 
-            "message": f"Пробный урок с {student_name} добавлен на {date} в {time}",
-            "lesson_id": lesson_id
-        })
+        return f"<script>alert('Пробный урок с {student_name} добавлен на {date} в {time}!'); window.location.href='/расписание';</script>"
         
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
