@@ -83,95 +83,117 @@
             </div>
         </div>
     </div>
+<!-- Блоки с уроками - заполняются из БД -->
+<div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 30px;">
     
-    <!-- Блоки с уроками - будут заполняться JavaScript -->
-    <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 30px;">
-        
-        <!-- Уроки вчера -->
-        <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-                <td style="width: 200px; background: var(--accent-gradient); color: white; padding: 20px; 
-                           font-weight: bold; font-size: 18px; text-align: center; vertical-align: middle; 
-                           border-right: 2px solid var(--border-secondary);">
-                    Уроки вчера<br>
-                    <span style="font-size: 14px; font-weight: normal;">(14.08.2025)</span>
-                </td>
-                
-                <!-- 6 пустых ячеек для уроков вчера -->
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-            </tr>
-        </table>
-        
-        <!-- Уроки сегодня -->
-        <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-                <td rowspan="2" style="width: 200px; background: var(--accent-gradient); color: white; padding: 20px; 
-                           font-weight: bold; font-size: 18px; text-align: center; vertical-align: middle; 
-                           border-right: 2px solid var(--border-secondary);">
-                    <span id="today_lessons_title">Уроки сегодня</span><br>
-                    <span id="today_lessons_date" style="font-size: 14px; font-weight: normal;">(15.08.2025)</span>
-                </td>
-                
-                <!-- Первая строка: 6 пустых ячеек -->
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-            </tr>
-            <tr>
-                <!-- Вторая строка: еще 6 пустых ячеек -->
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-                <td style="background: var(--bg-card); padding: 15px; width: 200px;">
-                    <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-                </td>
-            </tr>
-        </table>
-    </div>
+    <!-- Уроки вчера - до 12 уроков (динамически 1-2 строки) -->
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <!-- Левая колонка - заголовок на 2 строки -->
+            <td rowspan="2" style="width: 200px; background: var(--accent-gradient); color: white; padding: 20px; 
+                    font-weight: bold; font-size: 18px; text-align: center; vertical-align: middle; 
+                    border-right: 2px solid var(--border-secondary);">
+                Уроки вчера<br>
+                <span style="font-size: 14px; font-weight: normal;">(14.08.2025)</span>
+            </td>
+            
+            <!-- Первая строка: 6 пустых ячеек - JavaScript их заполнит -->
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+        </tr>
+        <tr id="yesterday_row_2" style="display: none;">
+            <!-- Вторая строка: еще 6 пустых ячеек (скрыта по умолчанию) -->
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+        </tr>
+    </table>
+    
+    <!-- Уроки сегодня - до 12 уроков (2 строки по 6) -->
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <!-- Левая колонка - заголовок на 2 строки -->
+            <td rowspan="2" style="width: 200px; background: var(--accent-gradient); color: white; padding: 20px; 
+                    font-weight: bold; font-size: 18px; text-align: center; vertical-align: middle; 
+                    border-right: 2px solid var(--border-secondary);">
+                <span id="today_lessons_title">Уроки сегодня</span><br>
+                <span id="today_lessons_date" style="font-size: 14px; font-weight: normal;">(15.08.2025)</span>
+            </td>
+            
+            <!-- Первая строка: 6 пустых ячеек - JavaScript их заполнит -->
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+        </tr>
+        <tr id="today_row_2">
+            <!-- Вторая строка: еще 6 пустых ячеек - JavaScript их заполнит -->
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+            <td style="background: var(--bg-card); padding: 15px; width: 200px;">
+                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
+            </td>
+        </tr>
+    </table>
+</div>
 <!-- Формы для работы с выбранным уроком -->
     <div id="lesson_forms" style="border: 2px solid var(--accent-color, #00d4ff); border-radius: 15px; padding: 25px; display: none;">
         <div id="selected_lesson_info" style="background: var(--accent-gradient); color: white; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: center; font-weight: bold; font-size: 18px;">
@@ -243,20 +265,20 @@
                 </div>
                 
                 <div id="homework_evaluation_fields" style="display: none;">
-                    <label>Решение:</label>
-                    <select style="width: 100%;">
-                        <option value="">-- Выберите --</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                    </select>
+                        <label>Решение:</label>
+                        <select style="width: 100%;">
+                            <option value="">-- Выберите --</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                        </select>
                 </div>
                 
                 <div id="homework_formatting_fields" style="display: none;">
@@ -445,6 +467,8 @@
         <p style="text-align: center; color: var(--text-muted);">Нет родителей</p>
     {% endif %}
 </div>
+
+<script>
 // Переменная для хранения выбранного урока
 let selectedLesson = null;
 
@@ -621,20 +645,33 @@ function loadYesterdayLessons(date) {
 function updateYesterdayLessonsDisplay(lessons) {
     console.log('Вчерашние уроки:', lessons);
     
-    // Находим ячейки вчерашних уроков (первая строка таблицы)
-    const yesterdayLessonCells = document.querySelectorAll('table tr:first-child td[onclick*="selectLesson"]');
+    // Находим таблицу вчерашних уроков
+    const yesterdayTable = document.querySelector('div[style*="grid-template-columns"] table');
+    const yesterdayRows = yesterdayTable.querySelectorAll('tr');
+    const yesterdayFirstRowCells = yesterdayRows[0].querySelectorAll('td:not(:first-child)'); // первая строка, кроме заголовка
+    const yesterdaySecondRowCells = yesterdayRows[1].querySelectorAll('td'); // вторая строка, все ячейки
+    const allYesterdayCells = [...yesterdayFirstRowCells, ...yesterdaySecondRowCells];
+    
+    // Скрываем вторую строку по умолчанию
+    const yesterdayRow2 = document.getElementById('yesterday_row_2');
+    yesterdayRow2.style.display = 'none';
     
     // Очищаем все ячейки вчера
-    yesterdayLessonCells.forEach(cell => {
+    allYesterdayCells.forEach(cell => {
         cell.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>';
         cell.style.background = 'var(--bg-card)';
         cell.style.borderLeftColor = 'var(--border-secondary)';
         cell.onclick = null;
     });
     
-    // Заполняем реальными уроками (максимум 6)
-    lessons.slice(0, 6).forEach((lesson, index) => {
-        const cell = yesterdayLessonCells[index];
+    // Показываем вторую строку если уроков больше 6
+    if (lessons.length > 6) {
+        yesterdayRow2.style.display = 'table-row';
+    }
+    
+    // Заполняем реальными уроками (максимум 12)
+    lessons.slice(0, 12).forEach((lesson, index) => {
+        const cell = allYesterdayCells[index];
         if (cell) {
             const statusInfo = getLessonStatusInfo(lesson);
             
@@ -660,12 +697,16 @@ function updateLessonsDisplay(lessons, date) {
     // Обновляем заголовок
     updateDateDisplay(date);
     
-    // Очищаем все ячейки уроков сегодня (вторая строка таблицы)
-    const todayLessonCells = document.querySelectorAll('table tr:last-child td[onclick*="selectLesson"]');
-    const todayFirstRowCells = document.querySelectorAll('table tr:nth-last-child(2) td[onclick*="selectLesson"]');
+    // Находим вторую таблицу (уроки сегодня)
+    const todayTable = document.querySelectorAll('div[style*="grid-template-columns"] table')[1];
+    const todayRows = todayTable.querySelectorAll('tr');
+    const todayFirstRowCells = todayRows[0].querySelectorAll('td:not(:first-child)'); // первая строка, кроме заголовка
+    const todaySecondRowCells = todayRows[1].querySelectorAll('td'); // вторая строка, все ячейки
+    const allTodayCells = [...todayFirstRowCells, ...todaySecondRowCells];
     
-    // Объединяем обе строки
-    const allTodayCells = [...todayFirstRowCells, ...todayLessonCells];
+    // Скрываем вторую строку по умолчанию
+    const todayRow2 = document.getElementById('today_row_2');
+    todayRow2.style.display = 'none';
     
     // Очищаем все ячейки
     allTodayCells.forEach(cell => {
@@ -675,7 +716,12 @@ function updateLessonsDisplay(lessons, date) {
         cell.onclick = null;
     });
     
-    // Заполняем реальными уроками (максимум 12 - по 6 в каждой строке)
+    // Показываем вторую строку если уроков больше 6
+    if (lessons.length > 6) {
+        todayRow2.style.display = 'table-row';
+    }
+    
+    // Заполняем реальными уроками (максимум 12)
     lessons.slice(0, 12).forEach((lesson, index) => {
         const cell = allTodayCells[index];
         if (cell) {
@@ -767,7 +813,7 @@ function selectLesson(lessonId) {
         'lesson_1': 'Фарида - Математика (16:30, 14.08.2025)',
         'lesson_2': 'Матвей - Физика (18:00, 14.08.2025)', 
         'lesson_3': 'Марк - Математика (19:30, 14.08.2025)',
-        'lesson_4': 'Гарья - Математика (12:00, 15.08.2025)',
+        'lesson_4': 'Дарья - Математика (12:00, 15.08.2025)',
         'lesson_5': 'Матвей - Физика (13:00, 15.08.2025)'
     };
     
@@ -990,3 +1036,7 @@ function saveHomework() {
         alert('❌ Ошибка сохранения домашнего задания');
     });
 }
+
+</script>
+
+{% endblock %}
