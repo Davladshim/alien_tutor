@@ -627,7 +627,10 @@ def add_template_lesson(lesson_data):
     return True
 
 def update_template_lesson(index, lesson_data):
-    """Обновить урок в шаблоне недели"""
+    """Обновить урок в шаблоне недели с автоматическим удалением старых регулярных уроков"""
+    print(f"🔄 Обновляем урок в шаблоне, индекс: {index}")
+    print(f"🔄 Новые данные: {lesson_data}")
+    
     # Получаем список всех шаблонов для определения ID по индексу
     templates = load_template_week()
     if index < 0 or index >= len(templates):
@@ -635,7 +638,7 @@ def update_template_lesson(index, lesson_data):
         
     # Получаем ID шаблона по порядковому номеру
     query_get_id = """
-        SELECT id FROM lesson_templates 
+        SELECT id, day_of_week, time, student_id FROM lesson_templates 
         ORDER BY 
             CASE day_of_week
                 WHEN 'Понедельник' THEN 1
@@ -653,10 +656,50 @@ def update_template_lesson(index, lesson_data):
         return False
         
     template_id = result['id']
+    old_day = result['day_of_week']
+    old_time = result['time']
+    old_student_id = result['student_id']
+    
+    print(f"🔄 Старые параметры: {old_day} {old_time}, student_id: {old_student_id}")
+    
     student = get_student_by_name(lesson_data.get("student"))
     if not student:
         return False
     
+    new_student_id = student['id']
+    new_day = lesson_data.get("day")
+    new_time = lesson_data.get("time")
+    
+    print(f"🔄 Новые параметры: {new_day} {new_time}, student_id: {new_student_id}")
+    
+    # ВАЖНО: Удаляем старые регулярные уроки только если что-то изменилось
+    if (old_day != new_day or old_time != new_time or old_student_id != new_student_id):
+        print(f"🗑️ Найдены изменения! Удаляем старые регулярные уроки...")
+        
+        # Удаляем старые регулярные уроки (только будущие, только из шаблона)
+        delete_old_query = """
+            DELETE FROM lessons 
+            WHERE student_id = %s 
+            AND original_date IS NOT NULL 
+            AND original_time = %s
+            AND EXTRACT(DOW FROM original_date) = %s
+            AND from_template = true 
+            AND status NOT IN ('cancelled') 
+            AND date >= CURRENT_DATE
+        """
+        
+        # Преобразуем день недели в номер (0=воскресенье, 1=понедельник, etc.)
+        old_day_num = {
+            'Воскресенье': 0, 'Понедельник': 1, 'Вторник': 2, 'Среда': 3,
+            'Четверг': 4, 'Пятница': 5, 'Суббота': 6
+        }.get(old_day, 1)
+        
+        deleted_count = execute_query(delete_old_query, (old_student_id, old_time, old_day_num))
+        print(f"🗑️ Удалено старых регулярных уроков: {deleted_count}")
+    else:
+        print(f"ℹ️ Изменений в расписании нет, старые уроки не удаляем")
+    
+    # Обновляем сам шаблон
     query = """
         UPDATE lesson_templates 
         SET day_of_week=%(day)s, time=%(time)s, student_id=%(student_id)s, subject=%(subject)s,
@@ -678,6 +721,8 @@ def update_template_lesson(index, lesson_data):
     }
     
     execute_query(query, template_params)
+    print(f"✅ Шаблон обновлен!")
+    
     return True
 
 def delete_template_lesson(index):
