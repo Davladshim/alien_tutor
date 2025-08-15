@@ -3036,6 +3036,211 @@ def admin_logout():
     session.clear()  # Очищаем всю сессию
     return redirect("http://127.0.0.1:8080/admin-auth")
 
+@app.route("/api/save-report", methods=["POST"])
+def save_report():
+    """Сохранить отчет по уроку"""
+    if not session.get('admin_logged_in'):
+        return jsonify({"success": False, "error": "Не авторизован"}), 401
+    
+    try:
+        data = request.get_json()
+        lesson_id = data.get('lesson_id')
+        topic = data.get('topic', '').strip()
+        understanding_level = data.get('understanding_level', '').strip()
+        teacher_comment = data.get('teacher_comment', '').strip()
+        primary_score = data.get('primary_score')
+        secondary_score = data.get('secondary_score')
+        
+        # Проверяем обязательные поля
+        if not lesson_id:
+            return jsonify({"success": False, "error": "ID урока не указан"}), 400
+        
+        if not topic:
+            return jsonify({"success": False, "error": "Тема урока обязательна"}), 400
+        
+        # Получаем информацию об уроке
+        lesson = get_lesson_by_id(lesson_id)
+        if not lesson:
+            return jsonify({"success": False, "error": "Урок не найден"}), 404
+        
+        # Получаем ученика
+        student = get_student_by_name(lesson['student'])
+        if not student:
+            return jsonify({"success": False, "error": "Ученик не найден"}), 404
+        
+        # Преобразуем баллы
+        try:
+            primary_score = int(primary_score) if primary_score else None
+            secondary_score = int(secondary_score) if secondary_score else None
+        except (ValueError, TypeError):
+            primary_score = None
+            secondary_score = None
+        
+        # Сохраняем отчет
+        # Сначала проверяем, есть ли уже отчет для этого урока
+        check_query = "SELECT id FROM lesson_reports WHERE lesson_id = %s"
+        existing_report = execute_query(check_query, (lesson_id,), fetch_one=True)
+
+        if existing_report:
+            # Обновляем существующий отчет
+            report_query = """
+                UPDATE lesson_reports 
+                SET topic = %s, understanding_level = %s, teacher_comment = %s
+                WHERE lesson_id = %s
+                RETURNING id
+            """
+            result = execute_query(report_query, (topic, understanding_level, teacher_comment, lesson_id), fetch_one=True)
+        else:
+            # Создаем новый отчет
+            report_query = """
+                INSERT INTO lesson_reports (lesson_id, student_id, topic, understanding_level, teacher_comment, created_at)
+                VALUES (%s, %s, %s, %s, %s, NOW())
+                RETURNING id
+            """
+            result = execute_query(report_query, (lesson_id, student['id'], topic, understanding_level, teacher_comment), fetch_one=True)
+        
+        # Если есть баллы за экзамен - сохраняем их отдельно
+        if secondary_score is not None:
+            exam_query = """
+                INSERT INTO exam_results (student_id, exam_date, primary_score, secondary_score, created_at)
+                VALUES (%s, %s, %s, %s, NOW())
+            """
+            lesson_date = datetime.strptime(lesson['date'], '%Y-%m-%d').date()
+            execute_query(exam_query, (student['id'], lesson_date, primary_score, secondary_score))
+        
+        return jsonify({"success": True, "message": "Отчет успешно сохранен"})
+        
+    except Exception as e:
+        print(f"Ошибка сохранения отчета: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/get-lessons/<date>")
+def get_lessons_by_date(date):
+    """Получить уроки по дате"""
+    if not session.get('admin_logged_in'):
+        return jsonify({"success": False, "error": "Не авторизован"}), 401
+    
+    try:
+        # Парсим дату
+        from datetime import datetime
+        lesson_date = datetime.strptime(date, '%Y-%m-%d').date()
+        
+        # Получаем уроки за дату
+        query = """
+            SELECT l.id, l.date, l.time, l.subject, l.status, l.lesson_type, 
+                   s.name as student_name, s.id as student_id
+            FROM lessons l
+            JOIN students s ON l.student_id = s.id
+            WHERE l.date = %s
+            ORDER BY l.time
+        """
+        lessons = execute_query(query, (lesson_date,), fetch=True)
+        
+        # Для каждого урока проверяем наличие отчета и домашки
+        lessons_data = []
+        for lesson in lessons:
+            # Проверяем отчет
+            report_query = "SELECT id FROM lesson_reports WHERE lesson_id = %s"
+            has_report = execute_query(report_query, (lesson['id'],), fetch_one=True)
+            
+            # Проверяем домашку
+            homework_query = "SELECT id FROM homework_assignments WHERE lesson_id = %s"
+            has_homework = execute_query(homework_query, (lesson['id'],), fetch_one=True)
+            
+            lessons_data.append({
+                'id': lesson['id'],
+                'time': lesson['time'].strftime('%H:%M'),
+                'student': lesson['student_name'],
+                'subject': lesson['subject'],
+                'status': lesson['status'],
+                'lesson_type': lesson['lesson_type'],
+                'has_report': bool(has_report),
+                'has_homework': bool(has_homework)
+            })
+        
+        return jsonify({"success": True, "lessons": lessons_data})
+        
+    except Exception as e:
+        print(f"Ошибка получения уроков: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/save-homework", methods=["POST"])
+def save_homework():
+    """Сохранить домашнее задание"""
+    if not session.get('admin_logged_in'):
+        return jsonify({"success": False, "error": "Не авторизован"}), 401
+    
+    try:
+        data = request.get_json()
+        lesson_id = data.get('lesson_id')
+        homework_type = data.get('homework_type', '').strip()
+        description = data.get('description', '').strip()
+        primary_score = data.get('primary_score')
+        secondary_score = data.get('secondary_score')
+        solution_score = data.get('solution_score')
+        formatting_score = data.get('formatting_score')
+        
+        # Проверяем обязательные поля
+        if not lesson_id:
+            return jsonify({"success": False, "error": "ID урока не указан"}), 400
+        
+        if not homework_type:
+            return jsonify({"success": False, "error": "Тип домашнего задания обязателен"}), 400
+        
+        # Получаем информацию об уроке
+        lesson = get_lesson_by_id(lesson_id)
+        if not lesson:
+            return jsonify({"success": False, "error": "Урок не найден"}), 404
+        
+        # Получаем ученика
+        student = get_student_by_name(lesson['student'])
+        if not student:
+            return jsonify({"success": False, "error": "Ученик не найден"}), 404
+        
+        # Преобразуем баллы
+        try:
+            primary_score = int(primary_score) if primary_score else None
+            secondary_score = int(secondary_score) if secondary_score else None
+            solution_score = int(solution_score) if solution_score else None
+            formatting_score = int(formatting_score) if formatting_score else None
+        except (ValueError, TypeError):
+            primary_score = secondary_score = solution_score = formatting_score = None
+        
+        # Проверяем, есть ли уже домашка для этого урока
+        check_query = "SELECT id FROM homework_assignments WHERE lesson_id = %s"
+        existing_homework = execute_query(check_query, (lesson_id,), fetch_one=True)
+        
+        if existing_homework:
+            # Обновляем существующую домашку
+            homework_query = """
+                UPDATE homework_assignments 
+                SET assignment_date = NOW()::date, primary_score = %s, secondary_score = %s, 
+                    tasks_solved = %s, grade = %s, topic = %s
+                WHERE lesson_id = %s
+                RETURNING id
+            """
+            result = execute_query(homework_query, (
+                primary_score, secondary_score, solution_score, formatting_score, description, lesson_id
+            ), fetch_one=True)
+        else:
+            # Создаем новую домашку
+            homework_query = """
+                INSERT INTO homework_assignments (lesson_id, student_id, assignment_date, primary_score, 
+                                                secondary_score, tasks_solved, grade, topic, created_at)
+                VALUES (%s, %s, NOW()::date, %s, %s, %s, %s, %s, NOW())
+                RETURNING id
+            """
+            result = execute_query(homework_query, (
+                lesson_id, student['id'], primary_score, secondary_score, 
+                solution_score, formatting_score, description
+            ), fetch_one=True)
+        
+        return jsonify({"success": True, "message": "Домашнее задание успешно сохранено"})
+        
+    except Exception as e:
+        print(f"Ошибка сохранения домашки: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 # Запуск приложения
 if __name__ == "__main__":
     initialize_app()
