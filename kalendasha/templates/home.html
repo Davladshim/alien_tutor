@@ -94,7 +94,7 @@
                     font-weight: bold; font-size: 18px; text-align: center; vertical-align: middle; 
                     border-right: 2px solid var(--border-secondary);">
                 Уроки вчера<br>
-                <span style="font-size: 14px; font-weight: normal;">(14.08.2025)</span>
+                <span id="yesterday_date" style="font-size: 14px; font-weight: normal;">(загрузка...)</span>
             </td>
             
             <!-- Первая строка: 6 пустых ячеек - JavaScript их заполнит -->
@@ -148,7 +148,7 @@
                     font-weight: bold; font-size: 18px; text-align: center; vertical-align: middle; 
                     border-right: 2px solid var(--border-secondary);">
                 <span id="today_lessons_title">Уроки сегодня</span><br>
-                <span id="today_lessons_date" style="font-size: 14px; font-weight: normal;">(15.08.2025)</span>
+                <span id="today_lessons_date" style="font-size: 14px; font-weight: normal;">(загрузка...)</span>
             </td>
             
             <!-- Первая строка: 6 пустых ячеек - JavaScript их заполнит -->
@@ -246,7 +246,7 @@
             
             <div style="text-align: center;">
                 <button class="btn success" style="margin-right: 10px;" onclick="saveReport()">Сохранить отчет</button>
-                <button class="btn danger">Удалить отчет</button>
+                <button class="btn danger" onclick="deleteReport()">Удалить отчет</button>
             </div>
         </div>
         
@@ -326,7 +326,8 @@
             
             <div style="text-align: center;">
                 <button class="btn success" style="margin-right: 10px;" onclick="saveHomework()">Сохранить домашку</button>
-                <button class="btn warning">Отметить как проверенную</button>
+                <button class="btn warning" style="margin-right: 10px;" onclick="markHomeworkChecked()">Отметить как проверенную</button>
+                <button class="btn danger" onclick="deleteHomework()">Удалить Д/З</button>
             </div>
         </div>
     </div>
@@ -494,21 +495,21 @@ function switchMode(mode) {
 }
 
 function updateLessonsColors() {
-    // Получаем все ячейки с уроками
-    const lessons = document.querySelectorAll('[onclick*="selectLesson"]');
+    // Просто перезагружаем данные с сервера для текущей даты
+    const selectedDate = document.getElementById('date_select').value;
     
-    lessons.forEach(lesson => {
-        // Пока используем статичные данные для демонстрации
-        // В будущем здесь будут реальные данные из базы
+    if (selectedDate) {
+        console.log('Перекрашиваем уроки в режим:', currentMode);
+        loadLessonsForDate(selectedDate);
         
-        if (currentMode === 'report') {
-            // Режим "Отчет"
-            updateLessonColorForReport(lesson);
-        } else {
-            // Режим "ДЗ" 
-            updateLessonColorForHomework(lesson);
+        // И загружаем вчерашние если это сегодня
+        if (selectedDate === new Date().toISOString().split('T')[0]) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            loadYesterdayLessons(yesterdayStr);
         }
-    });
+    }
 }
 
 function updateLessonColorForReport(lesson) {
@@ -551,6 +552,23 @@ function updateFormsVisibility() {
         if (reportForm) reportForm.style.display = 'none';
         if (homeworkForm) homeworkForm.style.display = 'block';
     }
+}
+
+function updateStaticDates() {
+    // Получаем реальные даты
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    
+    // Форматируем для отображения (ДД.ММ.ГГГГ)
+    const todayFormatted = today.toLocaleDateString('ru-RU');
+    const yesterdayFormatted = yesterday.toLocaleDateString('ru-RU');
+    
+    // Обновляем заголовки
+    document.getElementById('yesterday_date').textContent = `(${yesterdayFormatted})`;
+    document.getElementById('today_lessons_date').textContent = `(${todayFormatted})`;
+    
+    console.log('Даты обновлены:', yesterdayFormatted, 'и', todayFormatted);
 }
 
 function updateDateDisplay(selectedDate) {
@@ -747,51 +765,82 @@ function updateLessonsDisplay(lessons, date) {
 
 function getLessonStatusInfo(lesson) {
     if (lesson.status === 'scheduled') {
+        // Синий для запланированных (во всех режимах)
         return {
-            color: '#00d4ff',
-            text: '🕒 Запланирован',
-            background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(30, 58, 138, 0.2))',
-            borderColor: '#00d4ff'
+            color: '#0ea5e9',
+            text: 'Запланирован',
+            background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(2, 132, 199, 0.15))',
+            borderColor: '#0ea5e9'
         };
     }
     
     if (lesson.status === 'completed') {
         if (currentMode === 'report') {
+            // РЕЖИМ ОТЧЕТОВ
             if (lesson.has_report) {
+                // Зеленый - отчет есть
                 return {
                     color: '#10b981',
-                    text: '✅ Отчет добавлен',
-                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 95, 70, 0.2))',
+                    text: 'Отчет готов',
+                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15))',
                     borderColor: '#10b981'
                 };
             } else {
+                // Красный - отчета нет
                 return {
                     color: '#ef4444',
-                    text: '⚠️ Нет отчета',
-                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(127, 29, 29, 0.2))',
+                    text: 'Нет отчета',
+                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.15))',
                     borderColor: '#ef4444'
                 };
             }
         } else {
-            // Режим ДЗ - пока упрощено
-            return {
-                color: '#f59e0b',
-                text: '📋 Не проверена',
-                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2))',
-                borderColor: '#f59e0b'
-            };
+            // РЕЖИМ ДОМАШЕК
+            if (!lesson.has_homework) {
+                // Красный - домашки нет
+                return {
+                    color: '#ef4444',
+                    text: 'Нет домашки',
+                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.15))',
+                    borderColor: '#ef4444'
+                };
+            } else if (lesson.homework_type === 'none') {
+                // Зеленый - выбрано "не задавать"
+                return {
+                    color: '#10b981',
+                    text: 'Не задавать',
+                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15))',
+                    borderColor: '#10b981'
+                };
+            } else if (lesson.homework_checked) {
+                // Зеленый - домашка проверена
+                return {
+                    color: '#10b981',
+                    text: 'Проверена',
+                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15))',
+                    borderColor: '#10b981'
+                };
+            } else {
+                // Оранжевый - домашка не проверена
+                return {
+                    color: '#f97316',
+                    text: 'Не проверена',
+                    background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(234, 88, 12, 0.15))',
+                    borderColor: '#f97316'
+                };
+            }
         }
     }
     
+    // Серый для отмененных
     return {
         color: '#6b7280',
-        text: '⏸ Отменен',
-        background: 'linear-gradient(135deg, rgba(107, 114, 128, 0.2), rgba(55, 65, 81, 0.2))',
+        text: '⏸️ Отменен',
+        background: 'linear-gradient(135deg, rgba(107, 114, 128, 0.15), rgba(75, 85, 99, 0.15))',
         borderColor: '#6b7280'
     };
 }
 
-// Функция выбора урока
 function selectLesson(lessonId) {
     selectedLesson = lessonId;
     
@@ -799,26 +848,38 @@ function selectLesson(lessonId) {
     document.querySelectorAll('[onclick*="selectLesson"]').forEach(lesson => {
         lesson.style.boxShadow = '';
         lesson.style.transform = '';
+        lesson.style.filter = '';
     });
     
-    // Выделяем выбранный урок
-    event.currentTarget.style.boxShadow = '0 0 0 3px rgba(0, 212, 255, 0.5)';
+    // Выделяем выбранный урок (мягкое свечение)
+    event.currentTarget.style.boxShadow = '0 0 20px rgba(0, 212, 255, 0.6)';
     event.currentTarget.style.transform = 'scale(1.02)';
+    event.currentTarget.style.filter = 'brightness(1.1)';
     
     // Показываем формы
     document.getElementById('lesson_forms').style.display = 'block';
     
-    // Обновляем информацию о выбранном уроке
-    const lessonInfo = {
-        'lesson_1': 'Фарида - Математика (16:30, 14.08.2025)',
-        'lesson_2': 'Матвей - Физика (18:00, 14.08.2025)', 
-        'lesson_3': 'Марк - Математика (19:30, 14.08.2025)',
-        'lesson_4': 'Дарья - Математика (12:00, 15.08.2025)',
-        'lesson_5': 'Матвей - Физика (13:00, 15.08.2025)'
-    };
+    // Получаем данные урока из DOM элемента
+    const lessonElement = event.currentTarget;
+    const timeElement = lessonElement.querySelector('div:first-child');
+    const studentElement = lessonElement.querySelector('div:nth-child(2)');
+    const subjectElement = lessonElement.querySelector('div:nth-child(3)');
     
-    document.getElementById('selected_lesson_info').innerHTML = 
-        `Работаем с уроком: ${lessonInfo[lessonId]}`;
+    if (timeElement && studentElement && subjectElement) {
+        const time = timeElement.textContent.trim();
+        const student = studentElement.textContent.trim();
+        const subject = subjectElement.textContent.trim();
+        
+        // Получаем дату из таблицы
+        const today = new Date();
+        const dateStr = today.toLocaleDateString('ru-RU');
+        
+        document.getElementById('selected_lesson_info').innerHTML = 
+            `Работаем с уроком: ${student} - ${subject} (${time}, ${dateStr})`;
+    } else {
+        document.getElementById('selected_lesson_info').innerHTML = 
+            `Работаем с уроком ID: ${lessonId}`;
+    }
 
     // Обновляем видимость форм согласно текущему режиму
     updateFormsVisibility();
@@ -849,7 +910,36 @@ function toggleHomeworkFields() {
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
+    
+    // НОВЫЙ КОД - генерируем правильные даты для выпадающего списка
     const dateSelect = document.getElementById('date_select');
+    const todayForSelect = new Date();
+    
+    // Очищаем старые опции
+    dateSelect.innerHTML = '';
+    
+    // Создаем 5 дней назад от сегодня
+    for (let i = 0; i < 5; i++) {
+        const date = new Date(todayForSelect);
+        date.setDate(todayForSelect.getDate() - i);
+        
+        const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
+        const displayDate = date.toLocaleDateString('ru-RU'); // DD.MM.YYYY
+        const dayName = date.toLocaleDateString('ru-RU', { weekday: 'long' }); // понедельник, вторник...
+        
+        const option = document.createElement('option');
+        option.value = dateStr;
+        
+        if (i === 0) {
+            option.text = `Сегодня (${displayDate})`;
+        } else if (i === 1) {
+            option.text = `Вчера (${displayDate})`;
+        } else {
+            option.text = `${displayDate} (${dayName})`;
+        }
+        
+        dateSelect.appendChild(option);
+    }
     
     dateSelect.addEventListener('change', function() {
         const selectedDate = this.value;
@@ -857,6 +947,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Загружаем уроки для выбранной даты
         loadLessonsForDate(selectedDate);
+        
+        // Загружаем уроки вчера (на день раньше выбранной даты)
+        const selectedDateObj = new Date(selectedDate);
+        selectedDateObj.setDate(selectedDateObj.getDate() - 1);
+        const yesterdayStr = selectedDateObj.toISOString().split('T')[0];
+        loadYesterdayLessons(yesterdayStr);
     });
     
     // Инициализируем цвета уроков согласно текущему режиму
@@ -868,9 +964,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Инициализируем счетчики
     updateCounters();
 
-    // Загружаем уроки для сегодняшней даты и вчерашней
-    loadLessonsForDate('2025-08-15');
-    loadYesterdayLessons('2025-08-14');
+    // Загружаем уроки для РЕАЛЬНЫХ дат
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const todayStr = today.toISOString().split('T')[0]; // формат YYYY-MM-DD
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    console.log('Сегодня:', todayStr, 'Вчера:', yesterdayStr);
+
+    // Обновляем статичные даты в заголовках
+    updateStaticDates();
+
+    loadLessonsForDate(todayStr);
+    loadYesterdayLessons(yesterdayStr);
 });
 
 // Функция для открытия модального окна пробника
@@ -1034,6 +1142,127 @@ function saveHomework() {
     .catch(error => {
         console.error('Ошибка:', error);
         alert('❌ Ошибка сохранения домашнего задания');
+    });
+}
+
+function deleteReport() {
+    if (!selectedLesson) {
+        alert('Сначала выберите урок!');
+        return;
+    }
+    
+    // Подтверждение удаления
+    if (!confirm('Вы уверены что хотите удалить отчет по этому уроку?')) {
+        return;
+    }
+    
+    // Отправляем AJAX запрос на удаление
+    fetch('/api/delete-report', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({lesson_id: selectedLesson})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Отчет успешно удален!');
+            
+            // Очищаем форму
+            document.querySelector('.report-form input[placeholder*="Квадратные"]').value = '';
+            document.querySelector('.report-form select').value = '';
+            document.querySelector('.report-form textarea').value = '';
+            document.querySelector('.report-form input[placeholder="0-50"]').value = '';
+            document.querySelector('.report-form input[placeholder="0-100"]').value = '';
+            
+            // Обновляем отображение урока (убираем галочку)
+            updateLessonsColors();
+        } else {
+            alert('❌ Ошибка: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('❌ Ошибка удаления отчета');
+    });
+}
+
+function markHomeworkChecked() {
+    if (!selectedLesson) {
+        alert('Сначала выберите урок!');
+        return;
+    }
+    
+    // Отправляем AJAX запрос
+    fetch('/api/mark-homework-checked', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({lesson_id: selectedLesson})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Домашнее задание отмечено как проверенное!');
+            
+            // Обновляем отображение урока
+            updateLessonsColors();
+        } else {
+            alert('❌ Ошибка: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('❌ Ошибка отметки домашки');
+    });
+}
+
+function deleteHomework() {
+    if (!selectedLesson) {
+        alert('Сначала выберите урок!');
+        return;
+    }
+    
+    // Подтверждение удаления
+    if (!confirm('Вы уверены что хотите удалить домашнее задание по этому уроку?')) {
+        return;
+    }
+    
+    // Отправляем AJAX запрос на удаление
+    fetch('/api/delete-homework', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({lesson_id: selectedLesson})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Домашнее задание успешно удалено!');
+            
+            // Очищаем форму
+            document.getElementById('homework_type').value = '';
+            document.querySelector('.homework-form textarea').value = '';
+            document.querySelector('.homework-form input[placeholder="0-50"]').value = '';
+            document.querySelector('.homework-form input[placeholder="0-100"]').value = '';
+            document.querySelector('#homework_evaluation_fields select').value = '';
+            document.querySelector('#homework_formatting_fields select').value = '';
+            
+            // Скрываем поля
+            toggleHomeworkFields();
+            
+            // Обновляем отображение урока
+            updateLessonsColors();
+        } else {
+            alert('❌ Ошибка: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('❌ Ошибка удаления домашки');
     });
 }
 

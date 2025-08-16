@@ -453,29 +453,27 @@ def update_lesson_status(lesson_id, new_status):
     return True
 
 def delete_lesson(lesson_id):
-    """Удалить урок"""
-    print(f"🎯 Пытаемся удалить урок с ID: {lesson_id}")
-    query = "DELETE FROM lessons WHERE id = %s"
-    result = execute_query(query, (lesson_id,))
+    """Удалить урок и все связанные платежи"""
+    print(f"🗑️ Удаляем урок {lesson_id} и связанные данные")
     
-    print(f"🎯 Результат execute_query: {result}")
-    success = result is not None and result > 0
-    print(f"🎯 Успешность удаления: {success}")
+    # Сначала удаляем все платежи за этот урок
+    payments_query = "DELETE FROM payments WHERE lesson_id = %s"
+    execute_query(payments_query, (lesson_id,))
+    print(f"✅ Удалены платежи за урок {lesson_id}")
     
-    return success
+    # Потом удаляем отчеты и домашки
+    reports_query = "DELETE FROM lesson_reports WHERE lesson_id = %s"
+    execute_query(reports_query, (lesson_id,))
     
-    try:
-        with conn.cursor() as cur:
-            cur.execute("DELETE FROM lessons WHERE id = %s", (lesson_id,))
-            deleted_count = cur.rowcount  # Количество удаленных строк
-            conn.commit()
-            return deleted_count > 0  # True если удалили хотя бы одну строку
-    except psycopg2.Error as e:
-        print(f"Ошибка удаления урока: {e}")
-        conn.rollback()
-        return False
-    finally:
-        conn.close()
+    homework_query = "DELETE FROM homework_assignments WHERE lesson_id = %s"
+    execute_query(homework_query, (lesson_id,))
+    
+    # И наконец удаляем сам урок
+    lesson_query = "DELETE FROM lessons WHERE id = %s"
+    result = execute_query(lesson_query, (lesson_id,))
+    
+    print(f"✅ Урок {lesson_id} полностью удален")
+    return result is not None and result > 0
 
 def get_lesson_by_id(lesson_id):
     """Получить урок по ID"""
@@ -806,16 +804,22 @@ def apply_template_to_schedule_with_periods():
         current_date = start_date_obj
         while current_date <= end_date_obj:
             if current_date.weekday() == target_weekday:
-                # Проверяем, нет ли уже урока с этим учеником на эту "исходную" дату/время
+                # Проверяем, нет ли уже урока с этим учеником на эту дату/время (включая перенесенные)
                 check_query = """
                     SELECT id FROM lessons 
                     WHERE student_id = (SELECT id FROM students WHERE name = %s)
-                    AND original_date = %s 
-                    AND original_time = %s
+                    AND (
+                        (original_date = %s AND original_time = %s) OR 
+                        (date = %s AND time = %s)
+                    )
                 """
 
                 print(f"🔍 ПРОВЕРЯЕМ: {template_lesson['student']} на {current_date} в {template_lesson['time']}")
-                existing = execute_query(check_query, (template_lesson['student'], current_date, template_lesson['time']), fetch_one=True)
+                existing = execute_query(check_query, (
+                    template_lesson['student'], 
+                    current_date, template_lesson['time'],  # original_date, original_time
+                    current_date, template_lesson['time']   # date, time
+                ), fetch_one=True)
                 print(f"🔍 РЕЗУЛЬТАТ ПРОВЕРКИ: {existing}")
 
                 if not existing:
@@ -3114,6 +3118,109 @@ def save_report():
         print(f"Ошибка сохранения отчета: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/api/delete-report', methods=['POST'])
+def delete_report():
+    """Удалить отчет по уроку"""
+    try:
+        data = request.get_json()
+        lesson_id = data.get('lesson_id')
+        
+        if not lesson_id:
+            return jsonify({'success': False, 'error': 'Не указан ID урока'})
+        
+        print(f"🗑️ Удаляем отчет для урока {lesson_id}")
+        
+        # Проверяем существует ли отчет
+        check_query = "SELECT id FROM lesson_reports WHERE lesson_id = %s"
+        existing_report = execute_query(check_query, (lesson_id,), fetch_one=True)
+        
+        if not existing_report:
+            return jsonify({'success': False, 'error': 'Отчет не найден'})
+        
+        # Удаляем отчет
+        delete_query = "DELETE FROM lesson_reports WHERE lesson_id = %s"
+        result = execute_query(delete_query, (lesson_id,))
+        
+        if result is not None:
+            print(f"✅ Отчет для урока {lesson_id} успешно удален")
+            return jsonify({'success': True, 'message': 'Отчет удален'})
+        else:
+            return jsonify({'success': False, 'error': 'Ошибка при удалении отчета'})
+            
+    except Exception as e:
+        print(f"❌ Ошибка при удалении отчета: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+    
+@app.route('/api/mark-homework-checked', methods=['POST'])
+def mark_homework_checked():
+    """Отметить домашнее задание как проверенное"""
+    try:
+        data = request.get_json()
+        lesson_id = data.get('lesson_id')
+        
+        if not lesson_id:
+            return jsonify({'success': False, 'error': 'Не указан ID урока'})
+        
+        print(f"✅ Отмечаем домашку как проверенную для урока {lesson_id}")
+        
+        # Проверяем существует ли домашка
+        check_query = "SELECT id FROM homework_assignments WHERE lesson_id = %s"
+        existing_homework = execute_query(check_query, (lesson_id,), fetch_one=True)
+        
+        if not existing_homework:
+            return jsonify({'success': False, 'error': 'Домашнее задание не найдено'})
+        
+        # Отмечаем как проверенное
+        update_query = """
+            UPDATE homework_assignments 
+            SET is_checked = TRUE, checked_date = CURRENT_TIMESTAMP
+            WHERE lesson_id = %s
+        """
+        result = execute_query(update_query, (lesson_id,))
+        
+        if result is not None:
+            print(f"✅ Домашка для урока {lesson_id} отмечена как проверенная")
+            return jsonify({'success': True, 'message': 'Домашка отмечена как проверенная'})
+        else:
+            return jsonify({'success': False, 'error': 'Ошибка при обновлении статуса'})
+            
+    except Exception as e:
+        print(f"❌ Ошибка при отметке домашки: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/delete-homework', methods=['POST'])
+def delete_homework():
+    """Удалить домашнее задание"""
+    try:
+        data = request.get_json()
+        lesson_id = data.get('lesson_id')
+        
+        if not lesson_id:
+            return jsonify({'success': False, 'error': 'Не указан ID урока'})
+        
+        print(f"🗑️ Удаляем домашку для урока {lesson_id}")
+        
+        # Проверяем существует ли домашка
+        check_query = "SELECT id FROM homework_assignments WHERE lesson_id = %s"
+        existing_homework = execute_query(check_query, (lesson_id,), fetch_one=True)
+        
+        if not existing_homework:
+            return jsonify({'success': False, 'error': 'Домашнее задание не найдено'})
+        
+        # Удаляем домашку
+        delete_query = "DELETE FROM homework_assignments WHERE lesson_id = %s"
+        result = execute_query(delete_query, (lesson_id,))
+        
+        if result is not None:
+            print(f"✅ Домашка для урока {lesson_id} успешно удалена")
+            return jsonify({'success': True, 'message': 'Домашка удалена'})
+        else:
+            return jsonify({'success': False, 'error': 'Ошибка при удалении домашки'})
+            
+    except Exception as e:
+        print(f"❌ Ошибка при удалении домашки: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
 @app.route("/api/get-lessons/<date>")
 def get_lessons_by_date(date):
     """Получить уроки по дате"""
@@ -3240,6 +3347,64 @@ def save_homework():
     except Exception as e:
         print(f"Ошибка сохранения домашки: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/admin/clear-all-reports')
+def clear_all_reports():
+    """Админская функция: удалить ВСЕ отчеты"""
+    return '''
+    <h2>⚠️ ОПАСНАЯ ОПЕРАЦИЯ!</h2>
+    <p>Это действие удалит <strong>ВСЕ отчеты</strong> из базы данных!</p>
+    <p>Восстановить данные будет невозможно!</p>
+    <br>
+    <a href="/admin/clear-all-reports-confirmed" 
+       style="background: red; color: white; padding: 15px; text-decoration: none; border-radius: 5px;"
+       onclick="return confirm('ВЫ ТОЧНО УВЕРЕНЫ? Все отчеты будут удалены НАВСЕГДА!')">
+       🗑️ ДА, УДАЛИТЬ ВСЕ ОТЧЕТЫ
+    </a>
+    <br><br>
+    <a href="/">← Отмена, вернуться на главную</a>
+    '''
+
+@app.route('/admin/clear-all-reports-confirmed')
+def clear_all_reports_confirmed():
+    """Реальное удаление отчетов"""
+    try:
+        delete_query = "DELETE FROM lesson_reports"
+        result = execute_query(delete_query)
+        print(f"✅ АДМИН: Все отчеты удалены")
+        return f"<h2>✅ Все отчеты удалены!</h2><a href='/'>← Главная</a>"
+    except Exception as e:
+        print(f"❌ Ошибка: {e}")
+        return f"<h2>❌ Ошибка: {str(e)}</h2><a href='/'>← Главная</a>"
+
+@app.route('/admin/clear-all-homework')
+def clear_all_homework():
+    """Админская функция: удалить ВСЕ домашки"""  
+    return '''
+    <h2>⚠️ ОПАСНАЯ ОПЕРАЦИЯ!</h2>
+    <p>Это действие удалит <strong>ВСЕ домашние задания</strong> из базы данных!</p>
+    <p>Восстановить данные будет невозможно!</p>
+    <br>
+    <a href="/admin/clear-all-homework-confirmed"
+       style="background: red; color: white; padding: 15px; text-decoration: none; border-radius: 5px;"
+       onclick="return confirm('ВЫ ТОЧНО УВЕРЕНЫ? Все домашки будут удалены НАВСЕГДА!')">
+       🗑️ ДА, УДАЛИТЬ ВСЕ ДОМАШКИ
+    </a>
+    <br><br>
+    <a href="/">← Отмена, вернуться на главную</a>
+    '''
+
+@app.route('/admin/clear-all-homework-confirmed')
+def clear_all_homework_confirmed():
+    """Реальное удаление домашек"""
+    try:
+        delete_query = "DELETE FROM homework_assignments"
+        result = execute_query(delete_query)
+        print(f"✅ АДМИН: Все домашки удалены")
+        return f"<h2>✅ Все домашки удалены!</h2><a href='/'>← Главная</a>"
+    except Exception as e:
+        print(f"❌ Ошибка: {e}")
+        return f"<h2>❌ Ошибка: {str(e)}</h2><a href='/'>← Главная</a>"
 
 # Запуск приложения
 if __name__ == "__main__":
