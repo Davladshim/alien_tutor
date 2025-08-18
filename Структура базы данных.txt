@@ -22,6 +22,7 @@ exam_type
 primary_score
 secondary_score - баллы
 tasks_solved
+grade
 created_at - дата создания
 
 3. families
@@ -45,7 +46,9 @@ tasks_solved - решенных задач
 grade - оценка
 topic - тема
 tasks_assigned - всего задач
-created_at - дата создания
+created_at
+is_checked
+checked_date
 
 5. lesson_reports - отчеты по урокам
 
@@ -85,6 +88,10 @@ lesson_duration - длительность
 from_template
 is_paid
 created_at
+original_date
+original_time
+is_moved
+moved_reason
 
 8. payments
 
