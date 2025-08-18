@@ -1526,7 +1526,7 @@ main {
 
 .accounts-table th {
     padding: 15px 12px;
-    text-align: left;
+    text-align: center;
     font-weight: 600;
     color: white;
     font-size: 14px;
@@ -1550,7 +1550,6 @@ main {
 .accounts-table td {
     padding: 16px 12px;
     vertical-align: middle;
-    font-size: 14px;
 }
 
 .student-name {
@@ -1559,13 +1558,12 @@ main {
 }
 
 .login-cell, .password-cell {
-    font-family: 'Courier New', monospace;
-    font-size: 13px;
+    font-family: 'Arial';
+    font-size: 15px;
 }
 
 .login-text {
     color: var(--text-primary);
-    background: rgba(102, 126, 234, 0.1);
     padding: 4px 8px;
     border-radius: 6px;
     display: inline-block;
@@ -1573,7 +1571,6 @@ main {
 
 .password-text {
     color: var(--text-primary);
-    background: rgba(118, 75, 162, 0.1);
     padding: 4px 8px;
     border-radius: 6px;
     display: inline-block;
@@ -1643,10 +1640,9 @@ main {
 }
 
 .child-tag {
-    background: rgba(102, 126, 234, 0.1);
     padding: 2px 6px;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 15px;
     color: var(--text-primary);
 }
 
@@ -1662,4 +1658,12 @@ main {
 
 .logout-btn:hover {
     background: rgba(231, 76, 60, 0.1) !important;
+}
+
+.lesson-selected {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.8) !important;
+    transform: scale(1.02) !important;
+    filter: brightness(1.15) !important;
+    border: 2px solid #00d4ff !important;
+    transition: none !important;
 }

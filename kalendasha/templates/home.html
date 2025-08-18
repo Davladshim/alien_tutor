@@ -338,168 +338,164 @@
 </div>
 
 <!-- Таблица учеников -->
-<div class="card" style="margin-bottom: 30px;">
-    <h3 style="text-align: center; margin-bottom: 20px;">Аккаунты учеников</h3>
-    
-    {% if accounts_data %}
-        <div style="overflow-x: auto;">
-            <table class="accounts-table">
-                <thead>
-                    <tr>
-                        <th>Ученик</th>
-                        <th>Класс</th>
-                        <th>Логин</th>
-                        <th>Пароль</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for account in accounts_data %}
-                    <tr>
-                        <td class="student-name">{{ account.student_name }}</td>
-                        <td>{{ account.student_class }}</td>
-                        
-                        <!-- Логин ученика -->
-                        <td class="login-cell">
-                            {% if account.has_student_account %}
-                                <span class="login-text">{{ account.student_login }}</span>
-                            {% else %}
-                                <span class="no-account">Нет аккаунта</span>
-                            {% endif %}
-                        </td>
-                        
-                        <!-- Пароль ученика -->
-                        <td class="password-cell">
-                            {% if account.has_student_account %}
-                                <span class="password-text">{{ account.student_password }}</span>
-                            {% else %}
-                                <span class="no-account">Нет аккаунта</span>
-                            {% endif %}
-                        </td>
-                        
-                        <!-- Кнопка ЛКУ -->
-                        <td class="action-cell">
-                            {% if account.has_student_account %}
-                                <div style="display: flex; gap: 8px; align-items: center;">
-                                    <!-- Кнопка копирования -->
-                                    <a onclick="copyLoginPassword('{{ account.student_login }}', '{{ account.student_password }}'); return false;" 
-                                    href="#"
-                                    class="icon-action icon-parent" 
-                                    title="Копировать логин и пароль">
-                                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                        </svg>
-                                    </button>
-                                    
-                                    <!-- Кнопка ЛКУ -->
-                                    <a href="http://127.0.0.1:8080/admin-student/{{ account.student_id }}?token={{ admin_token }}" 
-                                    class="icon-action icon-parent"
-                                    title="Личный кабинет ученика">
-                                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                            <circle cx="12" cy="7" r="4"></circle>
-                                        </svg>
-                                    </a>
-                                </div>
-                            {% else %}
-                                <span class="no-account">—</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <p style="text-align: center; color: var(--text-muted);">Нет учеников</p>
-    {% endif %}
-</div>
+<h3 style="text-align: center; margin-bottom: 20px;">Аккаунты учеников</h3>
+
+{% if accounts_data %}
+    <div style="overflow-x: auto;">
+        <table class="accounts-table">
+            <thead>
+                <tr>
+                    <th>Ученик</th>
+                    <th>Класс</th>
+                    <th>Логин</th>
+                    <th>Пароль</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in accounts_data %}
+                <tr>
+                    <td class="student-name">{{ account.student_name }}</td>
+                    <td>{{ account.student_class }}</td>
+                    
+                    <!-- Логин ученика -->
+                    <td class="login-cell">
+                        {% if account.has_student_account %}
+                            <span class="login-text">{{ account.student_login }}</span>
+                        {% else %}
+                            <span class="no-account">Нет аккаунта</span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Пароль ученика -->
+                    <td class="password-cell">
+                        {% if account.has_student_account %}
+                            <span class="password-text">{{ account.student_password }}</span>
+                        {% else %}
+                            <span class="no-account">Нет аккаунта</span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Кнопка ЛКУ -->
+                    <td class="action-cell">
+                        {% if account.has_student_account %}
+                            <div style="display: flex; gap: 25px; align-items: center;">
+                                <!-- Кнопка копирования -->
+                                <a onclick="copyLoginPassword('{{ account.student_login }}', '{{ account.student_password }}'); return false;" 
+                                href="#"
+                                class="icon-action" 
+                                title="Копировать логин и пароль">
+                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Кнопка ЛКУ -->
+                                <a href="http://127.0.0.1:8080/admin-student/{{ account.student_id }}?token={{ admin_token }}" 
+                                class="icon-action"
+                                title="Личный кабинет ученика">
+                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </a>
+                            </div>
+                        {% else %}
+                            <span class="no-account">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p style="text-align: center; color: var(--text-muted);">Нет учеников</p>
+{% endif %}
 
 <!-- Таблица родителей -->
-<div class="card">
-    <h3 style="text-align: center; margin-bottom: 20px;">Аккаунты родителей</h3>
-    
-    {% if families_data %}
-        <div style="overflow-x: auto;">
-            <table class="accounts-table parents-table">
-                <thead>
-                    <tr>
-                        <th>Родитель</th>
-                        <th>Дети</th>
-                        <th>Логин</th>
-                        <th>Пароль</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for family in families_data %}
-                    <tr>
-                        <td class="parent-name">{{ family.parent_name }}</td>
-                        <td class="children-list">
-                            {% for child in family.children %}
-                                <span class="child-tag">{{ child }}</span>{% if not loop.last %}, {% endif %}
-                            {% endfor %}
-                        </td>
-                        
-                        <!-- Логин родителя -->
-                        <td class="login-cell">
-                            {% if family.has_parent_account %}
-                                <span class="login-text">{{ family.parent_login }}</span>
-                            {% else %}
-                                <span class="no-account">Нет аккаунта</span>
-                            {% endif %}
-                        </td>
-                        
-                        <!-- Пароль родителя -->
-                        <td class="password-cell">
-                            {% if family.has_parent_account %}
-                                <span class="password-text">{{ family.parent_password }}</span>
-                            {% else %}
-                                <span class="no-account">Нет аккаунта</span>
-                            {% endif %}
-                        </td>
-                        
-                        <!-- Кнопка ЛКР -->
-                        <td class="action-cell">
-                            {% if family.has_parent_account %}
-                                <div style="display: flex; gap: 8px; align-items: center;">
-                                    <!-- Кнопка копирования -->
-                                    <a onclick="copyLoginPassword('{{ family.parent_login }}', '{{ family.parent_password }}'); return false;" 
-                                    href="#"
-                                    class="icon-action icon-parent" 
-                                    title="Копировать логин и пароль">
-                                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                        </svg>
-                                    </button>
-                                    
-                                    <!-- Кнопка ЛКР -->
-                                    <a href="http://127.0.0.1:8080/admin-parent/{{ family.parent_name }}?token={{ admin_token }}" 
-                                    class="icon-action icon-parent" 
-                                    title="Личный кабинет родителя">
-                                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                                            <circle cx="9" cy="7" r="4"></circle>
-                                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                        </svg>
-                                    </a>
-                                </div>
-                            {% else %}
-                                <span class="no-account">—</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <p style="text-align: center; color: var(--text-muted);">Нет родителей</p>
-    {% endif %}
-</div>
+<h3 style="text-align: center; margin-bottom: 20px;">Аккаунты родителей</h3>
+
+{% if families_data %}
+    <div style="overflow-x: auto;">
+        <table class="accounts-table parents-table">
+            <thead>
+                <tr>
+                    <th>Родитель</th>
+                    <th>Дети</th>
+                    <th>Логин</th>
+                    <th>Пароль</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for family in families_data %}
+                <tr>
+                    <td class="parent-name">{{ family.parent_name }}</td>
+                    <td class="children-list">
+                        {% for child in family.children %}
+                            <span class="child-tag">{{ child }}</span>{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                    
+                    <!-- Логин родителя -->
+                    <td class="login-cell">
+                        {% if family.has_parent_account %}
+                            <span class="login-text">{{ family.parent_login }}</span>
+                        {% else %}
+                            <span class="no-account">Нет аккаунта</span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Пароль родителя -->
+                    <td class="password-cell">
+                        {% if family.has_parent_account %}
+                            <span class="password-text">{{ family.parent_password }}</span>
+                        {% else %}
+                            <span class="no-account">Нет аккаунта</span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Кнопка ЛКР -->
+                    <td class="action-cell">
+                        {% if family.has_parent_account %}
+                            <div style="display: flex; gap: 25px; align-items: center;">
+                                <!-- Кнопка копирования -->
+                                <a onclick="copyLoginPassword('{{ family.parent_login }}', '{{ family.parent_password }}'); return false;" 
+                                href="#"
+                                class="icon-action" 
+                                title="Копировать логин и пароль">
+                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Кнопка ЛКР -->
+                                <a href="http://127.0.0.1:8080/admin-parent/{{ family.parent_name }}?token={{ admin_token }}" 
+                                class="icon-action" 
+                                title="Личный кабинет родителя">
+                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        {% else %}
+                            <span class="no-account">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p style="text-align: center; color: var(--text-muted);">Нет родителей</p>
+{% endif %}
 
 <!-- Админ-функции -->
 <div class="card" style="margin-top: 30px; border: 2px solid #ef4444;">
@@ -972,16 +968,12 @@ function selectLesson(lessonId) {
     selectedLesson = lessonId;
     
     // Убираем выделение со всех уроков
-    document.querySelectorAll('[onclick*="selectLesson"]').forEach(lesson => {
-        lesson.style.boxShadow = '';
-        lesson.style.transform = '';
-        lesson.style.filter = '';
+    document.querySelectorAll('td[style*="cursor: pointer"]').forEach(lesson => {
+        lesson.classList.remove('lesson-selected');
     });
     
-    // Выделяем выбранный урок (мягкое свечение)
-    event.currentTarget.style.boxShadow = '0 0 20px rgba(0, 212, 255, 0.6)';
-    event.currentTarget.style.transform = 'scale(1.02)';
-    event.currentTarget.style.filter = 'brightness(1.1)';
+    // Выделяем выбранный урок
+    event.currentTarget.classList.add('lesson-selected');
     
     // Показываем формы
     document.getElementById('lesson_forms').style.display = 'block';
