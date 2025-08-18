@@ -2119,22 +2119,23 @@ def raspisanie(view_type=None, year=None, period=None):
             date_lessons = get_lessons_for_date(date_info['full_date'], slots)
             date_info['lessons'] = date_lessons
         
-        # Правильные русские названия месяцев для недели
-        week_start = datetime.strptime(f"{year}-W{period:02d}-1", "%Y-W%W-%w")
-        week_end = week_start + timedelta(days=6)
+        # Правильные русские названия месяцев для недели - используем ISO недели
+        week_dates_for_header = get_week_dates(year, period)
+        week_start_date = datetime.strptime(week_dates_for_header[0]['full_date'], "%Y-%m-%d")
+        week_end_date = datetime.strptime(week_dates_for_header[6]['full_date'], "%Y-%m-%d")
         
         month_names = {
             1: "января", 2: "февраля", 3: "марта", 4: "апреля", 5: "мая", 6: "июня",
             7: "июля", 8: "августа", 9: "сентября", 10: "октября", 11: "ноября", 12: "декабря"
         }
         
-        start_month = month_names.get(week_start.month, "")
-        end_month = month_names.get(week_end.month, "")
-        
-        if week_start.month == week_end.month:
-            week_info = f"с {week_start.day} по {week_end.day} {end_month}"
+        start_month = month_names.get(week_start_date.month, "")
+        end_month = month_names.get(week_end_date.month, "")
+
+        if week_start_date.month == week_end_date.month:
+            week_info = f"с {week_start_date.day} по {week_end_date.day} {end_month}"
         else:
-            week_info = f"с {week_start.day} {start_month} по {week_end.day} {end_month}"
+            week_info = f"с {week_start_date.day} {start_month} по {week_end_date.day} {end_month}"
         
         return render_template("raspisanie.html",
                              view_type="week",
@@ -3548,6 +3549,55 @@ def get_counters_api():
         import traceback
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/для-скрина")
+def screenshot_page():
+    """Страница для скриншота слотов (без авторизации - для удобства)"""
+    
+    # Получаем параметры из URL
+    timezone = request.args.get('timezone', 'МСК+1')
+    mode = request.args.get('mode', 'regular')
+    year = int(request.args.get('year', datetime.now().year))
+    week = int(request.args.get('week', datetime.now().isocalendar()[1]))
+    
+    print(f"📸 Страница скриншота: timezone={timezone}, mode={mode}, year={year}, week={week}")
+    
+    # Загружаем доступные слоты
+    available_slots = load_available_slots()
+    
+    # В зависимости от режима загружаем разные данные
+    if mode == 'regular':
+        # Для регулярных - загружаем шаблон недели
+        template_week = load_template_week()
+        current_schedule = []
+        title = ""
+        week_info = "Постоянное расписание"
+    else:
+        # Для внеплановых - загружаем расписание конкретной недели
+        template_week = []
+        
+        # Здесь нужно получить расписание для конкретной недели
+        # Пока используем заглушку, потом доделаем
+        current_schedule = []
+        
+        # Формируем информацию о неделе
+        week_dates = get_week_dates(year, week)
+        start_date = week_dates[0]['date'] if week_dates else "01.01"
+        end_date = week_dates[6]['date'] if len(week_dates) > 6 else "07.01"
+        
+        title = "Внеплановые занятия"
+        week_info = f"Неделя с {start_date} по {end_date}"
+    
+    return render_template("screenshot.html",
+                         available_slots=available_slots,
+                         template_week=template_week,
+                         current_schedule=current_schedule,
+                         timezone=timezone,
+                         mode=mode,
+                         year=year,
+                         week=week,
+                         title=title,
+                         week_info=week_info)
 
 # Запуск приложения
 if __name__ == "__main__":

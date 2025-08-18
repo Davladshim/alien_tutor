@@ -85,12 +85,12 @@
             backdrop-filter: blur(10px);
             border-radius: 12px;
             padding: 15px;
-            min-height: 300px;
+            min-height: 400px;
             border: 1px solid var(--border-secondary);
         }
         
         .screenshot-slot {
-            padding: 12px;
+            padding: 6px 8px;
             border-radius: 8px;
             margin-bottom: 10px;
             border-left: 4px solid;
@@ -110,28 +110,31 @@
             color: var(--text-primary);
         }
         
+        .screenshot-slot-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .screenshot-slot-time {
             background: var(--accent-gradient);
             color: white;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            display: inline-block;
-            min-width: 60px;
-            text-align: center;
-        }
-        
-        .screenshot-slot-status {
-            font-weight: bold;
-            font-size: 13px;
-        }
-        
-        .screenshot-slot-subject {
+            padding: 4px 8px;
+            border-radius: 4px;
             font-size: 12px;
-            margin-top: 4px;
-            font-style: italic;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .screenshot-slot-info {
+            font-weight: 600;
+            font-size: 11px;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         
         /* АДАПТИВНОСТЬ */
@@ -155,11 +158,9 @@
 <body>
     <div class="screenshot-container">
         
-        <!-- ЗАГОЛОВОК -->
+        <!-- КОМПАКТНЫЙ ЗАГОЛОВОК -->
         <div class="screenshot-header">
-            <h1 class="screenshot-title">{{ title }}</h1>
-            <div class="screenshot-subtitle">{{ week_info }}</div>
-            <div class="screenshot-timezone">Часовой пояс: {{ timezone }}</div>
+            <div class="screenshot-timezone">{{ timezone }} • {{ week_info }}</div>
         </div>
         
         <!-- НЕДЕЛЬНАЯ СЕТКА -->
@@ -261,9 +262,10 @@
                         
                         html += `
                             <div class="screenshot-slot ${statusClass}">
-                                <div class="screenshot-slot-time">${convertedTime}</div>
-                                <div class="screenshot-slot-status">${statusText}</div>
-                                ${subject ? `<div class="screenshot-slot-subject">${subject}</div>` : ''}
+                                <div class="screenshot-slot-row">
+                                    <span class="screenshot-slot-time">${convertedTime}</span>
+                                    <span class="screenshot-slot-info">${subject || statusText}</span>
+                                </div>
                             </div>
                         `;
                     });
