@@ -218,8 +218,23 @@ document.addEventListener('DOMContentLoaded', function() {
                                 {% endif %}
                             </div>
                             
-                            <div class="lesson-student">{{ lesson.student }}</div>
-                            <div class="lesson-subject">{{ lesson.subject }}</div>
+                            <div class="lesson-student" style="display: flex; align-items: center;">
+                                {% set subject_class = '' %}
+                                {% if lesson.subject == 'Химия' %}
+                                    {% set subject_class = 'chemistry' %}
+                                {% elif lesson.subject == 'Физика' %}
+                                    {% set subject_class = 'physics' %}
+                                {% elif lesson.subject == 'Математика' %}
+                                    {% set subject_class = 'math' %}
+                                {% elif lesson.get('lesson_type') == 'trial' or 'Пробный' in lesson.subject %}
+                                    {% set subject_class = 'trial' %}
+                                {% endif %}
+                                
+                                {% if subject_class %}
+                                    <span class="subject-icon {{ subject_class }}"></span>
+                                {% endif %}
+                                {{ lesson.student }}
+                            </div>
                         </div>
                         {% endfor %}
                     {% endfor %}
@@ -299,8 +314,23 @@ document.addEventListener('DOMContentLoaded', function() {
                                     {% endif %}
                                 </div>
                                 
-                                <div class="lesson-student">{{ lesson.student }}</div>
-                                <div class="lesson-subject">{{ lesson.subject }}</div>
+                                <div class="lesson-student" style="display: flex; align-items: center;">
+                                    {% set subject_class = '' %}
+                                    {% if lesson.subject == 'Химия' %}
+                                        {% set subject_class = 'chemistry' %}
+                                    {% elif lesson.subject == 'Физика' %}
+                                        {% set subject_class = 'physics' %}
+                                    {% elif lesson.subject == 'Математика' %}
+                                        {% set subject_class = 'math' %}
+                                    {% elif lesson.get('lesson_type') == 'trial' or 'Пробный' in lesson.subject %}
+                                        {% set subject_class = 'trial' %}
+                                    {% endif %}
+                                    
+                                    {% if subject_class %}
+                                        <span class="subject-icon {{ subject_class }}"></span>
+                                    {% endif %}
+                                    {{ lesson.student }}
+                                </div>
                             </div>
                             {% endfor %}
                         {% endfor %}
