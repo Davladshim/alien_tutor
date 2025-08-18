@@ -2951,6 +2951,9 @@ def create_existing_student_accounts():
 
 @app.route("/пересоздать-все-аккаунты", methods=["GET", "POST"])
 def recreate_all_accounts():
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+
     """Пересоздать аккаунты для ВСЕХ учеников"""
     if not session.get('admin_logged_in'):
         return redirect("http://127.0.0.1:8080/admin-auth")
@@ -3350,6 +3353,8 @@ def save_homework():
 
 @app.route('/admin/clear-all-reports')
 def clear_all_reports():
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     """Админская функция: удалить ВСЕ отчеты"""
     return '''
     <h2>⚠️ ОПАСНАЯ ОПЕРАЦИЯ!</h2>
@@ -3379,6 +3384,8 @@ def clear_all_reports_confirmed():
 
 @app.route('/admin/clear-all-homework')
 def clear_all_homework():
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
     """Админская функция: удалить ВСЕ домашки"""  
     return '''
     <h2>⚠️ ОПАСНАЯ ОПЕРАЦИЯ!</h2>
@@ -3405,6 +3412,87 @@ def clear_all_homework_confirmed():
     except Exception as e:
         print(f"❌ Ошибка: {e}")
         return f"<h2>❌ Ошибка: {str(e)}</h2><a href='/'>← Главная</a>"
+
+@app.route("/api/get-counters")
+def get_counters_api():
+    """API для получения актуальных счетчиков проблемных уроков за месяц"""
+    if not session.get('admin_logged_in'):
+        return jsonify({"success": False, "error": "Не авторизован"}), 401
+    
+    try:
+        # Получаем выбранный месяц из параметров
+        selected_month = request.args.get('month')
+        
+        if not selected_month:
+            # Если месяц не указан, берем текущий
+            from datetime import date
+            today = date.today()
+            selected_month = f"{today.year}-{today.month:02d}"
+        
+        # Разбираем месяц на год и месяц
+        year, month = selected_month.split('-')
+        
+        print(f"🔢 Считаем счетчики за {selected_month}")
+        
+        # Считаем уроки без отчета за указанный месяц
+        reports_missing_query = """
+            SELECT COUNT(*) as count
+            FROM lessons l
+            LEFT JOIN lesson_reports lr ON l.id = lr.lesson_id
+            WHERE l.status = 'completed' 
+            AND lr.id IS NULL
+            AND l.lesson_type != 'trial'
+            AND EXTRACT(YEAR FROM l.date) = %s
+            AND EXTRACT(MONTH FROM l.date) = %s
+        """
+        reports_missing_result = execute_query(reports_missing_query, (int(year), int(month)), fetch_one=True)
+        reports_missing = int(reports_missing_result['count']) if reports_missing_result and reports_missing_result['count'] else 0
+        
+        # Считаем уроки без домашки за указанный месяц
+        homework_missing_query = """
+            SELECT COUNT(*) as count
+            FROM lessons l
+            LEFT JOIN homework_assignments ha ON l.id = ha.lesson_id
+            WHERE l.status = 'completed' 
+            AND ha.id IS NULL
+            AND l.lesson_type != 'trial'
+            AND EXTRACT(YEAR FROM l.date) = %s
+            AND EXTRACT(MONTH FROM l.date) = %s
+        """
+        homework_missing_result = execute_query(homework_missing_query, (int(year), int(month)), fetch_one=True)
+        homework_missing = int(homework_missing_result['count']) if homework_missing_result and homework_missing_result['count'] else 0
+        
+        # Считаем домашки на проверке за указанный месяц
+        homework_unchecked_query = """
+            SELECT COUNT(*) as count
+            FROM homework_assignments ha
+            JOIN lessons l ON ha.lesson_id = l.id
+            WHERE l.status = 'completed'
+            AND l.lesson_type != 'trial'
+            AND (ha.checked_date IS NULL)
+            AND EXTRACT(YEAR FROM l.date) = %s
+            AND EXTRACT(MONTH FROM l.date) = %s
+        """
+        homework_unchecked_result = execute_query(homework_unchecked_query, (int(year), int(month)), fetch_one=True)
+        homework_unchecked = int(homework_unchecked_result['count']) if homework_unchecked_result and homework_unchecked_result['count'] else 0
+        
+        print(f"🔢 Счетчики за {selected_month}: отчеты={reports_missing}, домашки={homework_missing}, непроверенные={homework_unchecked}")
+        
+        return jsonify({
+            "success": True,
+            "counters": {
+                "homework_missing": homework_missing,
+                "homework_unchecked": homework_unchecked,
+                "reports_missing": reports_missing
+            },
+            "month": selected_month
+        })
+        
+    except Exception as e:
+        print(f"❌ Ошибка получения счетчиков: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
 
 # Запуск приложения
 if __name__ == "__main__":

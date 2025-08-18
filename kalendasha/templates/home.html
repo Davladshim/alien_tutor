@@ -2,7 +2,9 @@
 
 {% block title %}Главная - Календаша{% endblock %}
 
+
 {% block content %}
+
 <div style="text-align: center; margin-bottom: 30px;">
     <h1>Админская панель</h1>
     <p style="color: var(--text-muted); font-size: 16px;">
@@ -36,15 +38,17 @@
             <!-- Выбор даты -->
             <div style="flex: 1; min-width: 200px;">
                 <label for="date_select" style="display: block; margin-bottom: 8px; font-weight: bold;">
-                    Выбрать другую дату:
+                    Выбрать дату:
                 </label>
-                <select id="date_select" style="width: 100%; padding: 10px; border-radius: 8px;">
-                    <option value="2025-08-15">Сегодня (15.08.2025)</option>
-                    <option value="2025-08-14">Вчера (14.08.2025)</option>
-                    <option value="2025-08-13">13.08.2025 (вторник)</option>
-                    <option value="2025-08-12">12.08.2025 (понедельник)</option>
-                    <option value="2025-08-11">11.08.2025 (воскресенье)</option>
-                </select>
+                <input type="date" id="date_select" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-secondary);">
+            </div>
+
+            <!-- Выбор месяца для счетчиков -->
+            <div style="min-width: 200px;">
+                <label for="month_select" style="display: block; margin-bottom: 8px; font-weight: bold;">
+                    Месяц для счетчиков:
+                </label>
+                <input type="month" id="month_select" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-secondary);">
             </div>
             
             <!-- Счетчик проблемных уроков -->
@@ -346,7 +350,7 @@
                         <th>Класс</th>
                         <th>Логин</th>
                         <th>Пароль</th>
-                        <th>ЛКУ</th>
+                        <th>Действия</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -376,14 +380,28 @@
                         <!-- Кнопка ЛКУ -->
                         <td class="action-cell">
                             {% if account.has_student_account %}
-                                <a href="http://127.0.0.1:8080/admin-student/{{ account.student_id }}?token={{ admin_token }}" 
-                                   class="icon-action icon-student" 
-                                   title="Личный кабинет ученика">
-                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="12" cy="7" r="4"></circle>
-                                    </svg>
-                                </a>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <!-- Кнопка копирования -->
+                                    <a onclick="copyLoginPassword('{{ account.student_login }}', '{{ account.student_password }}'); return false;" 
+                                    href="#"
+                                    class="icon-action icon-parent" 
+                                    title="Копировать логин и пароль">
+                                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                    </button>
+                                    
+                                    <!-- Кнопка ЛКУ -->
+                                    <a href="http://127.0.0.1:8080/admin-student/{{ account.student_id }}?token={{ admin_token }}" 
+                                    class="icon-action icon-parent"
+                                    title="Личный кабинет ученика">
+                                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                    </a>
+                                </div>
                             {% else %}
                                 <span class="no-account">—</span>
                             {% endif %}
@@ -411,7 +429,7 @@
                         <th>Дети</th>
                         <th>Логин</th>
                         <th>Пароль</th>
-                        <th>ЛКР</th>
+                        <th>Действия</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -445,16 +463,30 @@
                         <!-- Кнопка ЛКР -->
                         <td class="action-cell">
                             {% if family.has_parent_account %}
-                                <a href="http://127.0.0.1:8080/admin-parent/{{ family.parent_name }}?token={{ admin_token }}" 
-                                   class="icon-action icon-parent" 
-                                   title="Личный кабинет родителя">
-                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                    </svg>
-                                </a>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <!-- Кнопка копирования -->
+                                    <a onclick="copyLoginPassword('{{ family.parent_login }}', '{{ family.parent_password }}'); return false;" 
+                                    href="#"
+                                    class="icon-action icon-parent" 
+                                    title="Копировать логин и пароль">
+                                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                    </button>
+                                    
+                                    <!-- Кнопка ЛКР -->
+                                    <a href="http://127.0.0.1:8080/admin-parent/{{ family.parent_name }}?token={{ admin_token }}" 
+                                    class="icon-action icon-parent" 
+                                    title="Личный кабинет родителя">
+                                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="9" cy="7" r="4"></circle>
+                                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                        </svg>
+                                    </a>
+                                </div>
                             {% else %}
                                 <span class="no-account">—</span>
                             {% endif %}
@@ -468,6 +500,89 @@
         <p style="text-align: center; color: var(--text-muted);">Нет родителей</p>
     {% endif %}
 </div>
+
+<!-- Админ-функции -->
+<div class="card" style="margin-top: 30px; border: 2px solid #ef4444;">
+    <h3 style="text-align: center; margin-bottom: 20px; color: #ffffff; background: var(--danger-gradient); padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">⚠️ Опасные админ-функции</h3>
+    
+    <div style="background: rgba(239, 68, 68, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+        <p style="color: #ffffff; text-align: center; font-weight: bold; margin-bottom: 10px;">
+            🚨 ВНИМАНИЕ! Эти функции удаляют данные без возможности восстановления!
+        </p>
+        <p style="color: var(--text-muted); text-align: center; font-size: 14px;">
+            Используйте только если точно знаете, что делаете
+        </p>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+        
+        <!-- Пересоздать аккаунты -->
+        <div style="text-align: center;">
+            <button onclick="confirmRecreateAccounts()" 
+                    style="background: var(--danger-gradient); color: white; padding: 15px 20px; 
+                           border: none; border-radius: 12px; cursor: pointer; width: 100%; 
+                           font-weight: bold; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                🔄 Пересоздать все аккаунты
+            </button>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+                Удалит все логины/пароли и создаст новые
+            </p>
+        </div>
+        
+        <!-- Удалить отчеты -->
+        <div style="text-align: center;">
+            <button onclick="confirmClearReports()" 
+                    style="background: var(--danger-gradient); color: white; padding: 15px 20px; 
+                           border: none; border-radius: 12px; cursor: pointer; width: 100%; 
+                           font-weight: bold; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                🗑️ Удалить все отчеты
+            </button>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+                Удалит все отчеты по урокам
+            </p>
+        </div>
+        
+        <!-- Удалить домашки -->
+        <div style="text-align: center;">
+            <button onclick="confirmClearHomework()" 
+                    style="background: var(--danger-gradient); color: white; padding: 15px 20px; 
+                           border: none; border-radius: 12px; cursor: pointer; width: 100%; 
+                           font-weight: bold; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                📚 Удалить все домашки
+            </button>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+                Удалит все домашние задания
+            </p>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+function confirmRecreateAccounts() {
+    if (confirm('⚠️ ВЫ УВЕРЕНЫ?\n\nЭто действие:\n- Удалит ВСЕ существующие логины и пароли\n- Создаст новые аккаунты для всех учеников\n- Восстановить старые данные будет НЕВОЗМОЖНО\n\nПродолжить?')) {
+        if (confirm('🔴 ПОСЛЕДНЕЕ ПРЕДУПРЕЖДЕНИЕ!\n\nВсе ученики и родители потеряют доступ к своим аккаунтам!\nВам придется сообщить им новые пароли.\n\nТочно продолжить?')) {
+            window.location.href = '/пересоздать-все-аккаунты';
+        }
+    }
+}
+
+function confirmClearReports() {
+    if (confirm('⚠️ Удалить ВСЕ отчеты по урокам?\n\nЭто действие нельзя отменить!')) {
+        if (confirm('🔴 Точно удалить? Все отчеты будут потеряны навсегда!')) {
+            window.location.href = '/admin/clear-all-reports';
+        }
+    }
+}
+
+function confirmClearHomework() {
+    if (confirm('⚠️ Удалить ВСЕ домашние задания?\n\nЭто действие нельзя отменить!')) {
+        if (confirm('🔴 Точно удалить? Все домашки будут потеряны навсегда!')) {
+            window.location.href = '/admin/clear-all-homework';
+        }
+    }
+}
+</script>
 
 <script>
 // Переменная для хранения выбранного урока
@@ -490,8 +605,6 @@ function switchMode(mode) {
     // Показываем нужную форму
     updateFormsVisibility();
 
-    // Обновляем счетчики
-    updateCounters();
 }
 
 function updateLessonsColors() {
@@ -575,7 +688,18 @@ function updateDateDisplay(selectedDate) {
     const titleElement = document.getElementById('today_lessons_title');
     const dateElement = document.getElementById('today_lessons_date');
     
-    // Форматируем дату для отображения
+    // Обновляем дату "вчера" 
+    const yesterdayElement = document.getElementById('yesterday_date');
+    
+    // Вычисляем вчерашнюю дату относительно выбранной
+    const selectedDateObj = new Date(selectedDate);
+    selectedDateObj.setDate(selectedDateObj.getDate() - 1);
+    const yesterdayFormatted = selectedDateObj.toLocaleDateString('ru-RU');
+    
+    // Обновляем отображение вчерашней даты
+    yesterdayElement.textContent = `(${yesterdayFormatted})`;
+    
+    // Форматируем дату для отображения (остальной код как был)
     let displayDate, displayTitle;
     
     if (selectedDate === '2025-08-15') {
@@ -597,38 +721,42 @@ function updateDateDisplay(selectedDate) {
     dateElement.textContent = displayDate;
 }
 
-function updateCounters() {
-    // Статичные данные для демонстрации
-    // В будущем здесь будут реальные подсчеты из базы
+function loadRealCounters(selectedMonth = null) {
+    console.log('🔢 Загружаем реальные счетчики для месяца:', selectedMonth);
     
-    const homeworkMissing = 3;     // Всегда 3 урока без домашки
-    const homeworkUnchecked = 2;   // Всегда 2 непроверенные домашки  
-    const reportsMissing = 1;      // Всегда 1 урок без отчета
+    // Если месяц не указан, берем текущий
+    if (!selectedMonth) {
+        const today = new Date();
+        selectedMonth = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0');
+    }
     
-    // Обновляем отображение
-    document.getElementById('homework_missing_count').textContent = homeworkMissing;
-    document.getElementById('homework_unchecked_count').textContent = homeworkUnchecked;
-    document.getElementById('reports_missing_count').textContent = reportsMissing;
-}
-
-function updateRealCounters(lessons) {
-    let homeworkMissing = 0;
-    let homeworkUnchecked = 0; 
-    let reportsMissing = 0;
-    
-    lessons.forEach(lesson => {
-        if (lesson.status === 'completed') {
-            if (!lesson.has_report) {
-                reportsMissing++;
-            }
-            // Логику для домашек добавим позже
+    fetch(`/api/get-counters?month=${selectedMonth}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('✅ Счетчики загружены:', data.counters);
+            
+            // Обновляем отображение
+            document.getElementById('homework_missing_count').textContent = data.counters.homework_missing;
+            document.getElementById('homework_unchecked_count').textContent = data.counters.homework_unchecked;
+            document.getElementById('reports_missing_count').textContent = data.counters.reports_missing;
+        } else {
+            console.error('❌ Ошибка загрузки счетчиков:', data.error);
+            
+            // Показываем ошибку вместо цифр
+            document.getElementById('homework_missing_count').textContent = '?';
+            document.getElementById('homework_unchecked_count').textContent = '?';
+            document.getElementById('reports_missing_count').textContent = '?';
         }
+    })
+    .catch(error => {
+        console.error('❌ Сетевая ошибка при загрузке счетчиков:', error);
+        
+        // Показываем ошибку
+        document.getElementById('homework_missing_count').textContent = '!';
+        document.getElementById('homework_unchecked_count').textContent = '!';
+        document.getElementById('reports_missing_count').textContent = '!';
     });
-    
-    // Обновляем отображение
-    document.getElementById('homework_missing_count').textContent = homeworkMissing;
-    document.getElementById('homework_unchecked_count').textContent = homeworkUnchecked;
-    document.getElementById('reports_missing_count').textContent = reportsMissing;
 }
 
 function loadLessonsForDate(date) {
@@ -639,7 +767,6 @@ function loadLessonsForDate(date) {
     .then(data => {
         if (data.success) {
             updateLessonsDisplay(data.lessons, date);
-            updateRealCounters(data.lessons);
         } else {
             console.error('Ошибка загрузки уроков:', data.error);
         }
@@ -908,75 +1035,62 @@ function toggleHomeworkFields() {
     }
 }
 
-// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     
-    // НОВЫЙ КОД - генерируем правильные даты для выпадающего списка
+    // Инициализируем календарь дат
     const dateSelect = document.getElementById('date_select');
-    const todayForSelect = new Date();
+    const monthSelect = document.getElementById('month_select');
+    const today = new Date();
     
-    // Очищаем старые опции
-    dateSelect.innerHTML = '';
+    // Устанавливаем сегодняшнюю дату
+    const todayStr = today.toISOString().split('T')[0];
+    dateSelect.value = todayStr;
     
-    // Создаем 5 дней назад от сегодня
-    for (let i = 0; i < 5; i++) {
-        const date = new Date(todayForSelect);
-        date.setDate(todayForSelect.getDate() - i);
-        
-        const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
-        const displayDate = date.toLocaleDateString('ru-RU'); // DD.MM.YYYY
-        const dayName = date.toLocaleDateString('ru-RU', { weekday: 'long' }); // понедельник, вторник...
-        
-        const option = document.createElement('option');
-        option.value = dateStr;
-        
-        if (i === 0) {
-            option.text = `Сегодня (${displayDate})`;
-        } else if (i === 1) {
-            option.text = `Вчера (${displayDate})`;
-        } else {
-            option.text = `${displayDate} (${dayName})`;
-        }
-        
-        dateSelect.appendChild(option);
-    }
+    // Устанавливаем текущий месяц  
+    const currentMonth = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0');
+    monthSelect.value = currentMonth;
     
+    // Обработчик изменения даты
     dateSelect.addEventListener('change', function() {
         const selectedDate = this.value;
         console.log('Выбрана дата:', selectedDate);
         
-        // Загружаем уроки для выбранной даты
-        loadLessonsForDate(selectedDate);
-        
-        // Загружаем уроки вчера (на день раньше выбранной даты)
-        const selectedDateObj = new Date(selectedDate);
-        selectedDateObj.setDate(selectedDateObj.getDate() - 1);
-        const yesterdayStr = selectedDateObj.toISOString().split('T')[0];
-        loadYesterdayLessons(yesterdayStr);
+        if (selectedDate) {
+            // Загружаем уроки для выбранной даты
+            loadLessonsForDate(selectedDate);
+            
+            // Загружаем уроки вчера (на день раньше выбранной даты)
+            const selectedDateObj = new Date(selectedDate);
+            selectedDateObj.setDate(selectedDateObj.getDate() - 1);
+            const yesterdayStr = selectedDateObj.toISOString().split('T')[0];
+            loadYesterdayLessons(yesterdayStr);
+        }
     });
     
-    // Инициализируем цвета уроков согласно текущему режиму
-    updateLessonsColors();
+    // Обработчик изменения месяца
+    monthSelect.addEventListener('change', function() {
+        const selectedMonth = this.value;
+        console.log('Выбран месяц для счетчиков:', selectedMonth);
+        
+        if (selectedMonth) {
+            // Перезагружаем счетчики для выбранного месяца
+            loadRealCounters(selectedMonth);
+        }
+    });
     
-    // Устанавливаем начальную видимость форм
+    // Остальной код инициализации...
+    updateLessonsColors();
     updateFormsVisibility();
-
-    // Инициализируем счетчики
-    updateCounters();
-
-    // Загружаем уроки для РЕАЛЬНЫХ дат
-    const today = new Date();
+    
+    // Загружаем счетчики для текущего месяца
+    loadRealCounters(currentMonth);
+    
+    // Загружаем уроки для сегодня и вчера
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
-
-    const todayStr = today.toISOString().split('T')[0]; // формат YYYY-MM-DD
     const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-    console.log('Сегодня:', todayStr, 'Вчера:', yesterdayStr);
-
-    // Обновляем статичные даты в заголовках
     updateStaticDates();
-
     loadLessonsForDate(todayStr);
     loadYesterdayLessons(yesterdayStr);
 });
@@ -1264,6 +1378,75 @@ function deleteHomework() {
         console.error('Ошибка:', error);
         alert('❌ Ошибка удаления домашки');
     });
+}
+
+// Функция копирования логина и пароля
+function copyLoginPassword(login, password) {
+    const text = `Логин: ${login}. Пароль: ${password}`;
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+            showCopyNotification('Логин и пароль скопированы!');
+        }).catch(function(err) {
+            console.error('Ошибка копирования: ', err);
+            fallbackCopyToClipboard(text);
+        });
+    } else {
+        fallbackCopyToClipboard(text);
+    }
+}
+
+// Резервный способ копирования
+function fallbackCopyToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showCopyNotification('Логин и пароль скопированы!');
+        }
+    } catch (err) {
+        console.error('Fallback копирование не удалось: ', err);
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+// Показать уведомление о копировании
+function showCopyNotification(message = '✅ Скопировано!') {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--success-color, #10b981);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 10000;
+        font-weight: bold;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 2000);
 }
 
 </script>
