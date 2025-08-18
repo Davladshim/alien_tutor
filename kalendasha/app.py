@@ -342,10 +342,11 @@ def create_lesson(lesson_data):
     result = execute_query(query, lesson_params, fetch_one=True)
     return result['id'] if result else None
 
-def update_lesson(lesson_id, lesson_data):
+def update_lesson(lesson_id, lesson_data, is_system_update=False):
     """Обновить урок"""
     print(f"🔄 Начинаем обновление урока {lesson_id}")
     print(f"🔄 Новые данные: {lesson_data}")
+    print(f"🔄 Системное обновление: {is_system_update}")
     
     # Сначала получаем текущие данные урока
     current_lesson = get_lesson_by_id(lesson_id)
@@ -367,8 +368,12 @@ def update_lesson(lesson_id, lesson_data):
     
     print(f"🔄 Проверяем перенос: статус={current_status}, новая дата={new_date}, новое время={new_time}")
     
-    # Если урок был completed и переносится в будущее - отменяем оплату
-    if current_status == 'completed' and new_date and new_time:
+    # ИСПРАВЛЕНИЕ: Возвращаем оплату ТОЛЬКО если это НЕ системное обновление
+    # И урок действительно переносится пользователем в будущее
+    if (not is_system_update and 
+        current_status == 'completed' and 
+        new_date and new_time):
+        
         try:
             from datetime import datetime, date, time
             
@@ -380,9 +385,9 @@ def update_lesson(lesson_id, lesson_data):
             print(f"🔄 Новое время урока: {new_datetime}")
             print(f"🔄 Текущее время: {datetime.now()}")
             
-            # Если урок переносится в будущее
+            # Если урок переносится в будущее пользователем
             if new_datetime > datetime.now():
-                print(f"🔄 Урок {lesson_id} переносится в будущее - отменяем оплату")
+                print(f"🔄 Урок {lesson_id} переносится пользователем в будущее - отменяем оплату")
                 
                 # Возвращаем оплату - находим платеж за этот урок
                 refund_query = """
@@ -419,7 +424,10 @@ def update_lesson(lesson_id, lesson_data):
             import traceback
             traceback.print_exc()
     else:
-        print(f"🔄 Условия для возврата не выполнены: статус={current_status}, дата={new_date}, время={new_time}")
+        if is_system_update:
+            print(f"🔄 Системное обновление - никаких возвратов/списаний не делаем")
+        else:
+            print(f"🔄 Условия для возврата не выполнены: статус={current_status}, дата={new_date}, время={new_time}")
     
     # Обновляем урок
     query = """
@@ -671,10 +679,11 @@ def update_template_lesson(index, lesson_data):
     print(f"🔄 Новые параметры: {new_day} {new_time}, student_id: {new_student_id}")
     
     # ВАЖНО: Удаляем старые регулярные уроки только если что-то изменилось
+    # НО ТОЛЬКО БУДУЩИЕ УРОКИ! Прошедшие не трогаем!
     if (old_day != new_day or old_time != new_time or old_student_id != new_student_id):
-        print(f"🗑️ Найдены изменения! Удаляем старые регулярные уроки...")
+        print(f"🗑️ Найдены изменения! Удаляем ТОЛЬКО БУДУЩИЕ регулярные уроки...")
         
-        # Удаляем старые регулярные уроки (только будущие, только из шаблона)
+        # ИСПРАВЛЕНИЕ: Удаляем ТОЛЬКО будущие уроки, прошедшие не трогаем
         delete_old_query = """
             DELETE FROM lessons 
             WHERE student_id = %s 
@@ -693,11 +702,27 @@ def update_template_lesson(index, lesson_data):
         }.get(old_day, 1)
         
         deleted_count = execute_query(delete_old_query, (old_student_id, old_time, old_day_num))
-        print(f"🗑️ Удалено старых регулярных уроков: {deleted_count}")
+        print(f"🗑️ Удалено будущих регулярных уроков: {deleted_count}")
+        
+        # КРИТИЧЕСКИ ВАЖНО: НЕ ОБНОВЛЯЕМ ПРОШЕДШИЕ УРОКИ ВООБЩЕ!
+        # Проверяем, есть ли прошедшие уроки с этими параметрами
+        check_past_query = """
+            SELECT COUNT(*) as count FROM lessons 
+            WHERE student_id = %s 
+            AND original_time = %s
+            AND EXTRACT(DOW FROM original_date) = %s
+            AND from_template = true 
+            AND date < CURRENT_DATE
+        """
+        past_lessons_result = execute_query(check_past_query, (old_student_id, old_time, old_day_num), fetch_one=True)
+        past_lessons_count = past_lessons_result['count'] if past_lessons_result else 0
+        
+        if past_lessons_count > 0:
+            print(f"⚠️ ВНИМАНИЕ: Найдено {past_lessons_count} прошедших уроков. Их НЕ ТРОГАЕМ!")
     else:
         print(f"ℹ️ Изменений в расписании нет, старые уроки не удаляем")
     
-    # Обновляем сам шаблон
+    # Обновляем ТОЛЬКО сам шаблон, НЕ ТРОГАЕМ существующие уроки
     query = """
         UPDATE lesson_templates 
         SET day_of_week=%(day)s, time=%(time)s, student_id=%(student_id)s, subject=%(subject)s,
@@ -719,7 +744,7 @@ def update_template_lesson(index, lesson_data):
     }
     
     execute_query(query, template_params)
-    print(f"✅ Шаблон обновлен!")
+    print(f"✅ Шаблон обновлен! Прошедшие уроки остались нетронутыми!")
     
     return True
 
@@ -2171,11 +2196,41 @@ def clear_schedule():
     if not session.get('admin_logged_in'):
         return redirect("http://127.0.0.1:8080/admin-auth")
     """Полная очистка расписания"""
-    success, message = clear_all_lessons()
-    if success:
-        return f"<script>alert('{message}'); window.location.href='/расписание';</script>"
-    else:
-        return f"<script>alert('Ошибка: {message}'); window.location.href='/расписание';</script>"
+    try:
+        # Удаляем ВСЁ - уроки, платежи, отчеты, домашки
+        print("🗑️ Начинаем полную очистку...")
+        
+        # 1. Удаляем все отчеты
+        execute_query("DELETE FROM lesson_reports")
+        print("✅ Удалены все отчеты по урокам")
+        
+        # 2. Удаляем все домашки
+        execute_query("DELETE FROM homework_assignments") 
+        print("✅ Удалены все домашние задания")
+        
+        # 3. Удаляем все результаты экзаменов
+        execute_query("DELETE FROM exam_results")
+        print("✅ Удалены все результаты экзаменов")
+        
+        # 4. Удаляем все платежи
+        execute_query("DELETE FROM payments")
+        print("✅ Удалены все платежи")
+        
+        # 5. Удаляем все уроки
+        execute_query("DELETE FROM lessons")
+        print("✅ Удалены все уроки")
+        
+        # 6. Удаляем весь шаблон недели
+        execute_query("DELETE FROM lesson_templates")
+        print("✅ Удален шаблон недели")
+        
+        print("🎉 ПОЛНАЯ ОЧИСТКА ЗАВЕРШЕНА!")
+        
+        return f"<script>alert('✅ ВСЁ ОЧИЩЕНО!\\n\\n🗑️ Удалены:\\n• Все уроки\\n• Все платежи\\n• Все отчеты\\n• Все домашки\\n• Шаблон недели\\n\\nМожешь начинать заново!'); window.location.href='/расписание';</script>"
+        
+    except Exception as e:
+        print(f"❌ Ошибка при очистке: {e}")
+        return f"<script>alert('❌ Ошибка очистки: {e}'); window.location.href='/расписание';</script>"
 
 @app.route("/добавить-занятие", methods=["GET", "POST"])
 def add_slot():

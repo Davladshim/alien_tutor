@@ -512,12 +512,25 @@
     
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
         
+        <!-- Очистить все расписание -->
+        <div style="text-align: center;">
+            <button onclick="confirmClearSchedule()" 
+                    style="background: var(--danger-gradient); color: white; padding: 15px 20px; 
+                        border: none; border-radius: 12px; cursor: pointer; width: 100%; 
+                        font-weight: bold; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                🗑️ Очистить все расписание
+            </button>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+                Удалит все уроки, платежи и отчеты
+            </p>
+        </div>
+        
         <!-- Пересоздать аккаунты -->
         <div style="text-align: center;">
             <button onclick="confirmRecreateAccounts()" 
                     style="background: var(--danger-gradient); color: white; padding: 15px 20px; 
-                           border: none; border-radius: 12px; cursor: pointer; width: 100%; 
-                           font-weight: bold; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                        border: none; border-radius: 12px; cursor: pointer; width: 100%; 
+                        font-weight: bold; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
                 🔄 Пересоздать все аккаунты
             </button>
             <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
@@ -529,8 +542,8 @@
         <div style="text-align: center;">
             <button onclick="confirmClearReports()" 
                     style="background: var(--danger-gradient); color: white; padding: 15px 20px; 
-                           border: none; border-radius: 12px; cursor: pointer; width: 100%; 
-                           font-weight: bold; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                        border: none; border-radius: 12px; cursor: pointer; width: 100%; 
+                        font-weight: bold; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
                 🗑️ Удалить все отчеты
             </button>
             <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
@@ -542,8 +555,8 @@
         <div style="text-align: center;">
             <button onclick="confirmClearHomework()" 
                     style="background: var(--danger-gradient); color: white; padding: 15px 20px; 
-                           border: none; border-radius: 12px; cursor: pointer; width: 100%; 
-                           font-weight: bold; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                        border: none; border-radius: 12px; cursor: pointer; width: 100%; 
+                        font-weight: bold; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
                 📚 Удалить все домашки
             </button>
             <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
@@ -578,6 +591,21 @@ function confirmClearHomework() {
         }
     }
 }
+
+function confirmClearSchedule() {
+    if (confirm('⚠️ ОЧИСТИТЬ ВСЁ РАСПИСАНИЕ?\n\nЭто действие:\n- Удалит ВСЕ уроки\n- Удалит ВСЕ платежи\n- Удалит ВСЕ отчеты\n- Удалит ВСЕ домашки\n- Удалит шаблон недели\n\nВосстановить данные будет НЕВОЗМОЖНО!\n\nПродолжить?')) {
+        if (confirm('🔴 ПОСЛЕДНЕЕ ПРЕДУПРЕЖДЕНИЕ!\n\nВы точно хотите удалить ВСЁ?\nЭто действие нельзя отменить!')) {
+            // Создаем форму для POST запроса
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/админ/очистить-расписание';
+            form.style.display = 'none';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+}
+
 </script>
 
 <script>

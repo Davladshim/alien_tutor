@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Доступные слоты</title>
+    
+    <!-- Подключаем стили Календаши -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <style>
+        /* СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ СТРАНИЦЫ СКРИНШОТА */
+        body {
+            margin: 0;
+            padding: 20px;
+            max-width: 100vw; /* На всю ширину экрана */
+            background: var(--bg-primary);
+        }
+        
+        .screenshot-container {
+            max-width: 95vw; /* Используем почти всю ширину */
+            margin: 0 auto;
+            background: var(--bg-secondary);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-primary);
+        }
+        
+        .screenshot-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-primary);
+        }
+        
+        .screenshot-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .screenshot-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+        
+        .screenshot-timezone {
+            font-size: 1rem;
+            color: var(--text-accent);
+            font-weight: 600;
+            background: var(--bg-card);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            border: 1px solid var(--border-secondary);
+        }
+        
+        /* НЕДЕЛЬНАЯ СЕТКА ДЛЯ СКРИНШОТА */
+        .screenshot-week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .screenshot-day-header {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 15px 10px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+        
+        .screenshot-day-column {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            min-height: 300px;
+            border: 1px solid var(--border-secondary);
+        }
+        
+        .screenshot-slot {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .screenshot-slot.free {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 95, 70, 0.2));
+            border-left-color: #10b981;
+            color: var(--text-primary);
+        }
+        
+        .screenshot-slot.occupied {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(30, 58, 138, 0.2));
+            border-left-color: #00d4ff;
+            color: var(--text-primary);
+        }
+        
+        .screenshot-slot-time {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        .screenshot-slot-status {
+            font-weight: bold;
+            font-size: 13px;
+        }
+        
+        .screenshot-slot-subject {
+            font-size: 12px;
+            margin-top: 4px;
+            font-style: italic;
+        }
+        
+        /* АДАПТИВНОСТЬ */
+        @media (max-width: 1200px) {
+            .screenshot-week-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .screenshot-week-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .screenshot-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="screenshot-container">
+        
+        <!-- ЗАГОЛОВОК -->
+        <div class="screenshot-header">
+            <h1 class="screenshot-title">{{ title }}</h1>
+            <div class="screenshot-subtitle">{{ week_info }}</div>
+            <div class="screenshot-timezone">Часовой пояс: {{ timezone }}</div>
+        </div>
+        
+        <!-- НЕДЕЛЬНАЯ СЕТКА -->
+        <div id="slotsContainer">
+            <!-- Будет заполнено JavaScript -->
+        </div>
+        
+    </div>
+    
+    <script>
+        // Данные с сервера
+        const availableSlots = {{ available_slots|tojson }};
+        const templateWeek = {{ template_week|tojson }};
+        const currentSchedule = {{ current_schedule|tojson }};
+        const timezone = "{{ timezone }}";
+        const mode = "{{ mode }}";
+        
+        console.log('📸 Данные для скриншота:', {
+            availableSlots: availableSlots.length,
+            templateWeek: templateWeek.length,
+            currentSchedule: currentSchedule.length,
+            timezone,
+            mode
+        });
+        
+        // Функция конвертации времени (упрощенная)
+        function convertTime(timeStr, fromTz, toTz) {
+            const timezoneOffsets = {
+                'КЛД': 2, 'МСК': 3, 'МСК+1': 4, 'ЕКБ': 5, 'ОМС': 6, 
+                'НСК': 7, 'ИРК': 8, 'ЯКТ': 9, 'ВЛД': 10, 'МГД': 11, 'КАМ': 12
+            };
+            
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            const fromOffset = timezoneOffsets[fromTz] || 4;
+            const toOffset = timezoneOffsets[toTz] || 4;
+            const diff = toOffset - fromOffset;
+            
+            const newHours = (hours + diff + 24) % 24;
+            return `${newHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+        
+        // Проверка занятости слота
+        function checkSlotOccupied(slot, dayName) {
+            if (mode === 'regular') {
+                return templateWeek.some(lesson => 
+                    lesson.day === dayName && lesson.time === slot.time
+                );
+            } else {
+                // Для внеплановых пока заглушка
+                return false;
+            }
+        }
+        
+        // Получение предмета для слота (БЕЗ имени ученика!)
+        function getSlotSubject(slot, dayName) {
+            if (mode === 'regular') {
+                const lesson = templateWeek.find(l => 
+                    l.day === dayName && l.time === slot.time
+                );
+                return lesson ? lesson.subject : '';
+            } else {
+                // Для внеплановых пока заглушка
+                return '';
+            }
+        }
+        
+        // Отрисовка слотов
+        function renderSlots() {
+            const container = document.getElementById('slotsContainer');
+            const dayNames = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+            
+            let html = '';
+            
+            // Заголовки дней
+            html += '<div class="screenshot-week-grid">';
+            dayNames.forEach(dayName => {
+                html += `<div class="screenshot-day-header">${dayName}</div>`;
+            });
+            
+            // Колонки с слотами
+            dayNames.forEach(dayName => {
+                html += `<div class="screenshot-day-column">`;
+                
+                // Находим слоты для этого дня
+                const daySlots = availableSlots.filter(slot => 
+                    slot.day === dayName && slot.type === 'permanent'
+                );
+                
+                daySlots.sort((a, b) => a.time.localeCompare(b.time));
+                
+                if (daySlots.length > 0) {
+                    daySlots.forEach(slot => {
+                        const convertedTime = convertTime(slot.time, 'МСК+1', timezone);
+                        const isOccupied = checkSlotOccupied(slot, dayName);
+                        const subject = getSlotSubject(slot, dayName);
+                        
+                        const statusClass = isOccupied ? 'occupied' : 'free';
+                        const statusText = isOccupied ? 'ЗАНЯТ' : 'СВОБОДЕН';
+                        
+                        html += `
+                            <div class="screenshot-slot ${statusClass}">
+                                <div class="screenshot-slot-time">${convertedTime}</div>
+                                <div class="screenshot-slot-status">${statusText}</div>
+                                ${subject ? `<div class="screenshot-slot-subject">${subject}</div>` : ''}
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<div style="text-align: center; color: var(--text-muted); font-style: italic; margin-top: 50px;">Нет слотов</div>';
+                }
+                
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Запускаем отрисовку при загрузке
+        document.addEventListener('DOMContentLoaded', renderSlots);
+    </script>
+</body>
+</html>

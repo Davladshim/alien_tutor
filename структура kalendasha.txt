@@ -18,5 +18,6 @@ Kalendasha/
     ├── payment_history.html         
     ├── raspisanie.html
     ├── setup_slots.html
-    ├── shablon_nedeli.html 
+    ├── shablon_nedeli.html
+    ├── screenshot.html
     └── ucheniki.html   

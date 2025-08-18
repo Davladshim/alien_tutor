@@ -45,8 +45,20 @@
             </div>
         </div>
 
-        <!-- Кнопка настройки слотов -->
-        <div>
+        <!-- Кнопки действий -->
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <!-- Кнопка "Для скрина" -->
+            <span title="Открыть страницу для скриншота" class="icon-action" onclick="openScreenshotPage()" style="color: #10b981;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 12l2 2 4-4"/>
+                    <path d="M21 12c.552 0 1-.448 1-1V5c0-.552-.448-1-1-1h-8c-.552 0-1 .448-1 1v6c0 .552.448 1 1 1h8z"/>
+                    <path d="M3 12c-.552 0-1-.448-1-1V5c0-.552.448-1 1-1h8c.552 0 1 .448 1 1v6c0 .552-.448 1-1 1H3z"/>
+                    <path d="M9 21h6"/>
+                    <path d="M12 17v4"/>
+                </svg>
+            </span>
+            
+            <!-- Кнопка настройки слотов -->
             <span title="Настроить слоты" class="icon-action" onclick="window.location.href='{{ url_for('setup_slots') }}'">
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"/>
@@ -269,6 +281,7 @@ function showError(message) {
     showLoading(false);
 }
 // Отрисовка слотов
+// Отрисовка слотов
 function renderSlots() {
     showLoading(false);
     
@@ -277,17 +290,24 @@ function renderSlots() {
     
     let html = '';
     
-    // Создаем столбцы для каждого дня недели
+    // СНАЧАЛА СОЗДАЕМ ЗАГОЛОВКИ ДНЕЙ НЕДЕЛИ (как в шаблоне недели)
+    weekDates.forEach(dayInfo => {
+        const todayClass = dayInfo.isToday ? 'today' : '';
+        html += `
+            <div class="week-day-header">
+                <div class="week-day-name">${dayInfo.dayName}</div>
+                <div class="week-day-date">${dayInfo.displayDate}</div>
+                ${dayInfo.isToday ? '<div class="today-badge">СЕГОДНЯ</div>' : ''}
+            </div>
+        `;
+    });
+    
+    // ПОТОМ СОЗДАЕМ КОЛОНКИ С СОДЕРЖИМЫМ
     weekDates.forEach(dayInfo => {
         const todayClass = dayInfo.isToday ? 'today' : '';
         
         html += `
-            <div class="week-day-column-nagruzka ${todayClass}">
-                <div class="week-day-header-nagruzka">
-                    <div class="week-day-name-nagruzka">${dayInfo.dayNameShort}</div>
-                    <div class="week-day-date-nagruzka">${dayInfo.displayDate}</div>
-                    ${dayInfo.isToday ? '<div class="today-badge-nagruzka">СЕГОДНЯ</div>' : ''}
-                </div>
+            <div class="week-day-column ${todayClass}">
         `;
         
         // Находим слоты для этого дня
@@ -468,146 +488,222 @@ document.addEventListener('DOMContentLoaded', function() {
 // Автообновление каждые 2 минуты
 setInterval(loadData, 120000);
 
+// Функция для открытия страницы скриншота
+function openScreenshotPage() {
+    // Собираем все параметры
+    const params = new URLSearchParams({
+        timezone: currentTimezone,
+        mode: currentMode,
+        year: currentYear,
+        week: currentWeek
+    });
+    
+    // Открываем в новой вкладке
+    const url = `/для-скрина?${params.toString()}`;
+    console.log('Открываем страницу для скриншота:', url);
+    
+    window.open(url, '_blank');
+}
+
 </script>
 
 <style>
-/* НОВЫЕ СТИЛИ ДЛЯ НАГРУЗКИ - БЕЗ ДВОЙНЫХ ПОДЛОЖЕК */
+/* НОВЫЕ СТИЛИ ДЛЯ НАГРУЗКИ - КАК В ШАБЛОНЕ НЕДЕЛИ */
 .week-grid-nagruzka {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 10px;
+    gap: 15px;
     min-width: 100%;
 }
 
-.week-day-column-nagruzka {
-    background: var(--bg-secondary);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 25px;
-    min-height: 350px;
-    border: 1px solid var(--border-primary);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.week-day-column-nagruzka:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 30px rgba(0, 212, 255, 0.2);
-    border-color: rgba(0, 212, 255, 0.3);
-}
-
-.week-day-column-nagruzka.today {
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(124, 58, 237, 0.2));
-    border: 2px solid #00d4ff;
-    box-shadow: 0 0 25px rgba(0, 212, 255, 0.4);
-}
-
-.week-day-header-nagruzka {
+/* ЗАГОЛОВКИ ДНЕЙ НЕДЕЛИ (отдельно от колонок) */
+.week-day-header {
     background: var(--accent-gradient);
     color: white;
-    padding: 15px;
-    border-radius: 12px;
+    padding: 12px;
+    border-radius: 10px;
     text-align: center;
     font-weight: bold;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
     position: relative;
     overflow: hidden;
 }
 
-.week-day-name-nagruzka {
+.week-day-name {
     font-size: 14px;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
-.week-day-date-nagruzka {
+.week-day-date {
     font-size: 16px;
     font-weight: 700;
 }
 
-.today-badge-nagruzka {
-    font-size: 11px;
+.today-badge {
+    font-size: 10px;
     background: rgba(255, 255, 255, 0.2);
     color: white;
-    padding: 3px 8px;
-    border-radius: 12px;
-    margin-top: 6px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-top: 4px;
     display: inline-block;
 }
 
+/* КОЛОНКИ С СОДЕРЖИМЫМ (без заголовков внутри) */
+.week-day-column {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 15px;
+    min-height: 300px;
+    border: 1px solid var(--border-secondary);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.week-day-column:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0, 212, 255, 0.2);
+    border-color: rgba(0, 212, 255, 0.3);
+}
+
+.week-day-column.today {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(124, 58, 237, 0.2));
+    border: 2px solid #00d4ff;
+    box-shadow: 0 0 25px rgba(0, 212, 255, 0.4);
+}
+
+/* СЛОТЫ ВНУТРИ КОЛОНОК */
+.week-day-column .slot-item {
+    padding: 16px 14px 14px 14px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    border-left: 4px solid;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.week-day-column .slot-item:hover {
+    transform: translateX(5px) translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.week-day-column .slot-time {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    display: inline-block;
+    min-width: 80px;
+    text-align: center;
+}
+
+.week-day-column .slot-status {
+    font-weight: bold;
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+
+.week-day-column .slot-duration {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.week-day-column .slot-lesson {
+    font-size: 13px;
+    font-style: italic;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-top: 6px;
+}
+
+/* СВОБОДНЫЕ И ЗАНЯТЫЕ СЛОТЫ */
+.slot-free {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 95, 70, 0.2));
+    border-left-color: #10b981;
+    color: var(--text-primary);
+}
+
+.slot-occupied {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(30, 58, 138, 0.2));
+    border-left-color: #00d4ff;
+    color: var(--text-primary);
+}
+
+.slot-free:hover {
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+}
+
+.slot-occupied:hover {
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.3);
+}
+
+/* КОМПАКТНАЯ ПАНЕЛЬ УПРАВЛЕНИЯ */
+.card {
+    padding: 15px 25px !important;
+}
+
+#timezoneSelect {
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+.schedule-nav-btn {
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+}
+
+.view-toggle-btn {
+    padding: 12px 20px !important;
+    margin: 8px !important;
+}
+
+/* АДАПТИВНОСТЬ */
 @media (max-width: 768px) {
     .week-grid-nagruzka {
         grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
+        gap: 10px;
     }
     
-    .week-day-column-nagruzka {
-        min-height: 250px;
-        padding: 20px;
+    .week-day-column {
+        min-height: 200px;
+        padding: 12px;
     }
 }
 
 @media (max-width: 480px) {
     .week-grid-nagruzka {
         grid-template-columns: repeat(2, 1fr);
-        gap: 6px;
+        gap: 8px;
     }
     
-    .week-day-column-nagruzka {
-        min-height: 200px;
-        padding: 15px;
+    .week-day-column {
+        min-height: 150px;
+        padding: 10px;
+    }
+    
+    .week-day-column .slot-item {
+        font-size: 11px;
+        padding: 8px 10px;
     }
 }
-
-/* СПЕЦИАЛЬНЫЕ СТИЛИ СЛОТОВ ТОЛЬКО ДЛЯ НАГРУЗКИ */
-.week-day-column-nagruzka .slot-item {
-    padding: 15px 18px;
-}
-
-.week-day-column-nagruzka .slot-time {
-    background: var(--accent-gradient) !important;
-    color: white !important;
-    padding: 8px 12px !important;
-    border-radius: 6px !important;
-    font-size: 14px !important;
-    font-weight: bold !important;
-    margin-bottom: 12px !important;
-    display: inline-block !important;
-    min-width: 63px !important;
-    max-width: 81px !important;
-    text-align: center !important;
-    box-sizing: border-box !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-}
-
-.week-day-column-nagruzka .slot-status {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-/* Компактная панель управления нагрузкой - только для этой страницы */
-.card {
-    padding: 15px 25px !important;
-}
-
-/* Компактные элементы управления - ТОЛЬКО для селекта и навигации */
-#timezoneSelect {
-    padding: 6px 10px !important;
-}
-
-.schedule-nav-btn {
-    padding: 8px 14px !important;
-}
-
-/* Кнопки переключения регулярные/внеплановые оставляем нормального размера */
-.view-toggle-btn {
-    padding: 12px 20px !important;
-    margin: 8px !important;
-}
-
 </style>
 
 <div style="text-align: center; margin-top: 30px;">
