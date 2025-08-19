@@ -170,44 +170,53 @@ function getWeekNumber(date) {
 
 // Отрисовка расписания
 function renderSchedule(data) {
-    const contentDiv = document.getElementById('schedule-content');
+    // Ищем сетку расписания в HTML
+    const scheduleGrid = document.querySelector('.schedule-grid');
     
-    if (!data || !data.week_data) {
-        contentDiv.innerHTML = '<p>Нет данных для отображения</p>';
+    if (!scheduleGrid) {
+        console.error('Элемент .schedule-grid не найден');
         return;
     }
     
-    let html = `
-        <div class="schedule-header-info">
-            <h3>${data.week_info ? data.week_info.title : 'Расписание на неделю'}</h3>
-        </div>
-        <div class="schedule-week-grid">
-    `;
+    if (!data || !data.week_data) {
+        scheduleGrid.innerHTML = '<p>Нет данных для отображения</p>';
+        return;
+    }
+    
+    // Обновляем заголовок недели
+    const currentPeriod = document.getElementById('currentPeriod');
+    if (currentPeriod && data.week_info) {
+        currentPeriod.textContent = data.week_info.title;
+    }
+    
+    // Очищаем и заполняем сетку
+    let html = '';
     
     data.week_data.forEach(day => {
         const todayClass = day.is_today ? 'today' : '';
         
         html += `
-            <div class="schedule-day-card ${todayClass}">
-                <div class="schedule-day-header">
+            <div class="day-column ${todayClass}">
+                <div class="day-header">
                     <div class="day-name">${day.day_name}</div>
-                    <div class="day-date">${day.date}</div>
+                    <div class="day-date">${day.day_number}</div>
                     ${day.is_today ? '<div class="today-badge">Сегодня</div>' : ''}
                 </div>
-                <div class="schedule-lessons">
+                <div class="lessons-list">
         `;
         
         if (day.lessons && day.lessons.length > 0) {
             day.lessons.forEach(lesson => {
                 html += `
-                    <div class="schedule-lesson-item">
+                    <div class="lesson-item-placeholder">
                         <div class="lesson-time">${lesson.time}</div>
                         <div class="lesson-subject">${lesson.subject}</div>
+                        ${lesson.status === 'cancelled' ? '<div class="lesson-status">Отменен</div>' : ''}
                     </div>
                 `;
             });
         } else {
-            html += '<div class="no-lessons-day">Нет занятий</div>';
+            html += '<div class="lesson-placeholder">Нет занятий</div>';
         }
         
         html += `
@@ -216,8 +225,7 @@ function renderSchedule(data) {
         `;
     });
     
-    html += '</div>';
-    contentDiv.innerHTML = html;
+    scheduleGrid.innerHTML = html;
 }
 
 // Загрузка расписания при переключении на вкладку

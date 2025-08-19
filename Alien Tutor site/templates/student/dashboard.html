@@ -3,36 +3,54 @@
 {% block title %}Личный кабинет ученика - Alien Tutor{% endblock %}
 
 {% block styles %}
+<style>
+.logout-button-nav {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 10px 20px !important;
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #ef4444 !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    border-radius: 10px !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    margin-left: 0rem !important;
+}
 
+.logout-button-nav:hover {
+    background: rgba(239, 68, 68, 0.2) !important;
+    transform: translateY(-2px) !important;
+}
+</style>
 {% endblock %}
-
 {% block content %}
     <div class="dashboard-container">
         <!-- Заголовок страницы -->
         <div class="dashboard-header">
-            <div class="header-content">
-                <div class="header-text">
-                    <h1>Личный кабинет ученика</h1>
-                    <p class="welcome-text">Добро пожаловать, {{ student.name }}! Класс: {{ student.class }}</p>
-                </div>
-                <a href="/logout" class="logout-button" title="Выйти из аккаунта">
-                    <i data-lucide="log-out"></i>
-                    <span>Выйти</span>
-                </a>
-            </div>
+            <h1>Личный кабинет ученика</h1>
+            <p class="welcome-text">Добро пожаловать, {{ student.name }}! Класс: {{ student.class }}</p>
         </div>
 
         <!-- Навигация по вкладкам -->
         <div class="tabs-navigation">
-            <button class="tab-button active" data-tab="schedule">
-                <span class="tab-text">Расписание</span>
-            </button>
-            <button class="tab-button" data-tab="progress">
-                <span class="tab-text">Успеваемость</span>
-            </button>
-            <button class="tab-button" data-tab="game">
-                <span class="tab-text">Игра</span>
-            </button>
+            <div class="tabs-group">
+                <button class="tab-button active" data-tab="schedule">
+                    <span class="tab-text">Расписание</span>
+                </button>
+                <button class="tab-button" data-tab="progress">
+                    <span class="tab-text">Успеваемость</span>
+                </button>
+                <button class="tab-button" data-tab="game">
+                    <span class="tab-text">Игра</span>
+                </button>
+            </div>
+            <a href="/logout" class="logout-button-nav" title="Выйти из аккаунта">
+                <i data-lucide="log-out"></i>
+                <span>Выйти</span>
+            </a>
         </div>
 
         <!-- Контент вкладок -->
@@ -102,17 +120,17 @@
                     
                     <!-- Навигация и переключатель -->
                     <div class="schedule-controls">
-                        <button class="nav-btn">← Назад</button>
+                        <button class="nav-btn" id="prevWeekBtn">← Назад</button>
                         
                         <div class="schedule-info">
-                            <span class="current-period">{{ student.schedule.week_info.title }}</span>
+                            <span class="current-period" id="currentPeriod">{{ student.schedule.week_info.title }}</span>
                             <div class="view-toggle">
                                 <button class="toggle-btn active">Неделя</button>
                                 <button class="toggle-btn">Месяц</button>
                             </div>
                         </div>
                         
-                        <button class="nav-btn">Вперед →</button>
+                        <button class="nav-btn" id="nextWeekBtn">Вперед →</button>
                     </div>
 
                     <!-- Календарная сетка -->
@@ -302,11 +320,12 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script>
 // Данные из Python
 const examResults = {{ student.exam_results | tojson | safe }};
 const topicProgress = {{ student.topic_progress | tojson | safe }};
-const currentClass = {{ student.class | tojson | safe }};
+const studentClass = {{ student.class | tojson | safe }};
 
 // Переменные для отслеживания состояния
 let currentSelectedClass = '9';
@@ -468,6 +487,69 @@ document.querySelectorAll('.tab-button').forEach(button => {
         this.classList.add('active');
         document.getElementById(tabName + '-tab').classList.add('active');
     });
+});
+
+// Код навигации по неделям - запускается после загрузки DOM
+document.addEventListener('DOMContentLoaded', function() {
+    // Переменные для отслеживания текущей недели
+    let scheduleYear = new Date().getFullYear();
+    let scheduleWeek = getWeekNumber(new Date());
+
+    // Функция для получения номера недели
+    function getWeekNumber(date) {
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+    }
+
+    // Функция для загрузки расписания
+    function loadWeekSchedule(year, week) {
+        const apiUrl = `/proxy-schedule/${year}/${week}`;
+        
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (typeof renderSchedule === 'function') {
+                    renderSchedule(data);
+                }
+                const periodElement = document.getElementById('currentPeriod');
+                if (periodElement) {
+                    periodElement.textContent = data.week_info ? data.week_info.title : `Неделя ${week}, ${year}`;
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки расписания:', error);
+                alert('Не удалось загрузить расписание');
+            });
+    }
+
+    // Проверяем что элементы существуют
+    const prevBtn = document.getElementById('prevWeekBtn');
+    const nextBtn = document.getElementById('nextWeekBtn');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            scheduleWeek--;
+            if (scheduleWeek < 1) {
+                scheduleWeek = 52;
+                scheduleYear--;
+            }
+            loadWeekSchedule(scheduleYear, scheduleWeek);
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            scheduleWeek++;
+            if (scheduleWeek > 52) {
+                scheduleWeek = 1;
+                scheduleYear++;
+            }
+            loadWeekSchedule(scheduleYear, scheduleWeek);
+        });
+    }
 });
 </script>
 {% endblock %}

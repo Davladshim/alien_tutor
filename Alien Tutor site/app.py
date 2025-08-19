@@ -639,19 +639,98 @@ def game():
     """Космическая игра-лабиринт"""
     return render_template('game/game.html')
 
-@app.route('/proxy-schedule/<int:year>/<int:week>')  # ← ПЕРЕНЕС СЮДА
+@app.route('/proxy-schedule/<int:year>/<int:week>')  
 def proxy_schedule(year, week):
-    """Прокси для получения данных расписания"""
+    """Получить данные расписания для указанной недели"""
     try:
-        api_url = f"http://127.0.0.1:5000/виджет/Ясмина/api/week/{year}/{week}"
-        response = requests.get(api_url, timeout=10)
-        
-        if response.status_code == 200:
-            return response.json()
+        from flask import request
+        import re
+        # Проверяем авторизацию (может быть админ или обычный пользователь)
+        if 'user_id' not in session:
+            return {"error": "Не авторизован"}, 401
+
+        # Получаем ID ученика 
+        student_id = None
+
+        # Проверяем источник запроса
+        referer = request.headers.get('Referer', '')
+        admin_match = re.search(r'/admin-student/(\d+)', referer)
+
+        if admin_match:
+            # Если запрос с админской страницы
+            student_id = int(admin_match.group(1))
+            print(f"Админский запрос для ученика: {student_id}")
         else:
-            return {"error": "API недоступен"}, 500
+            # Обычный пользователь
+            student_id = session.get('student_id')
+            print(f"Обычный пользователь, student_id: {student_id}")
+
+        if not student_id:
+            return {"error": "Ученик не найден"}, 404
             
+        # Вычисляем даты для указанной недели
+        from datetime import datetime, timedelta
+        
+        # Находим первый день указанной недели
+        jan_1 = datetime(year, 1, 1)
+        jan_1_weekday = jan_1.weekday()
+        
+        # Находим понедельник первой недели
+        days_to_monday = -jan_1_weekday if jan_1_weekday != 0 else 0
+        first_monday = jan_1 + timedelta(days=days_to_monday)
+        
+        # Находим понедельник нужной недели
+        target_monday = first_monday + timedelta(weeks=week-1)
+        target_sunday = target_monday + timedelta(days=6)
+        
+        # Получаем уроки на эту неделю
+        query = """
+            SELECT date, time, subject, status, lesson_duration
+            FROM lessons
+            WHERE student_id = %s
+            AND date BETWEEN %s AND %s
+            ORDER BY date, time
+        """
+        result = execute_query(query, (student_id, target_monday.date(), target_sunday.date()), fetch=True)
+        
+        # Создаем структуру недели
+        week_days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+        week_data = []
+        
+        today = datetime.now().date()
+        
+        for i, day_name in enumerate(week_days):
+            current_date = target_monday.date() + timedelta(days=i)
+            day_lessons = []
+            
+            if result:
+                for lesson in result:
+                    if lesson['date'] == current_date:
+                        day_lessons.append({
+                            'time': lesson['time'].strftime('%H:%M'),
+                            'subject': lesson['subject'],
+                            'status': lesson['status']
+                        })
+            
+            week_data.append({
+                'day_name': day_name,
+                'day_number': current_date.day,
+                'date': current_date.strftime('%d.%m'),
+                'full_date': current_date.strftime('%Y-%m-%d'),
+                'is_today': current_date == today,
+                'lessons': day_lessons
+            })
+        
+        return {
+            'week_data': week_data,
+            'week_info': {
+                'title': f'Неделя {week}, {year}',
+                'period': f'с {target_monday.strftime("%d.%m")} по {target_sunday.strftime("%d.%m")}'
+            }
+        }
+        
     except Exception as e:
+        print(f"Ошибка в proxy_schedule: {e}")
         return {"error": str(e)}, 500
 
 @app.errorhandler(404)
