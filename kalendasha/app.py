@@ -379,14 +379,22 @@ def update_lesson(lesson_id, lesson_data, is_system_update=False):
             
             # Парсим новую дату и время
             new_date_obj = datetime.strptime(new_date, '%Y-%m-%d').date()
-            new_time_obj = datetime.strptime(new_time, '%H:%M').time()
+            # Обрабатываем время - может быть с секундами или без
+            if ':' in new_time and new_time.count(':') == 2:
+                new_time_obj = datetime.strptime(new_time, '%H:%M:%S').time()
+            else:
+                new_time_obj = datetime.strptime(new_time, '%H:%M').time()
             new_datetime = datetime.combine(new_date_obj, new_time_obj)
             
             print(f"🔄 Новое время урока: {new_datetime}")
             print(f"🔄 Текущее время: {datetime.now()}")
             
-            # Если урок переносится в будущее пользователем
-            if new_datetime > datetime.now():
+            # Если урок переносится пользователем (неважно куда - в прошлое или будущее)
+            # но время изменилось - возвращаем деньги
+            current_date = datetime.strptime(current_lesson['date'], '%Y-%m-%d').date() if current_lesson.get('date') else None
+            current_time = current_lesson.get('time', '')
+
+            if (str(current_date) != new_date or str(current_time) != new_time):
                 print(f"🔄 Урок {lesson_id} переносится пользователем в будущее - отменяем оплату")
                 
                 # Возвращаем оплату - находим платеж за этот урок
