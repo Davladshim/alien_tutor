@@ -394,7 +394,7 @@ def update_lesson(lesson_id, lesson_data, is_system_update=False):
             current_date = datetime.strptime(current_lesson['date'], '%Y-%m-%d').date() if current_lesson.get('date') else None
             current_time = current_lesson.get('time', '')
 
-            if (str(current_date) != new_date or str(current_time) != new_time):
+            if (str(current_date) != new_date or str(current_time) != str(new_time)):
                 print(f"🔄 Урок {lesson_id} переносится пользователем в будущее - отменяем оплату")
                 
                 # Возвращаем оплату - находим платеж за этот урок
@@ -421,9 +421,12 @@ def update_lesson(lesson_id, lesson_data, is_system_update=False):
                     ))
                     print(f"✅ Создан возврат {refund_amount} руб. за урок {lesson_id}")
                 
-                # Меняем статус на scheduled
-                lesson_data['status'] = 'scheduled'
-                print(f"🔄 Статус изменен на scheduled")
+                # Меняем статус на scheduled только если переносим в будущее
+                if new_datetime > datetime.now():
+                    lesson_data['status'] = 'scheduled'
+                    print(f"🔄 Статус изменен на scheduled")
+                else:
+                    print(f"🔄 Урок переносится в прошлое, статус остается completed")
             else:
                 print(f"🔄 Урок не переносится в будущее, оплату не возвращаем")
         
