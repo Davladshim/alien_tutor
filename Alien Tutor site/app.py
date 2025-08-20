@@ -645,9 +645,13 @@ def proxy_schedule(year, week):
     try:
         from flask import request
         import re
-        # Проверяем авторизацию (может быть админ или обычный пользователь)
-        if 'user_id' not in session:
-            return {"error": "Не авторизован"}, 401
+        # Проверяем авторизацию с дополнительными вариантами
+        if 'user_id' not in session and 'admin_logged_in' not in session:
+            # Для AJAX запросов пробуем альтернативную проверку
+            from flask import request
+            referer = request.headers.get('Referer', '')
+            if not referer or ('student' not in referer and 'admin' not in referer):
+                return {"error": "Не авторизован"}, 401
 
         # Получаем ID ученика 
         student_id = None

@@ -183,10 +183,12 @@ function renderSchedule(data) {
         return;
     }
     
-    // Обновляем заголовок недели
-    const currentPeriod = document.getElementById('currentPeriod');
-    if (currentPeriod && data.week_info) {
-        currentPeriod.textContent = data.week_info.title;
+    // Обновляем заголовок недели ТОЛЬКО в недельном режиме
+    if (currentViewMode === 'week') {
+        const currentPeriod = document.getElementById('currentPeriod');
+        if (currentPeriod && data.week_info) {
+            currentPeriod.textContent = data.week_info.title;
+        }
     }
     
     // Очищаем и заполняем сетку
@@ -766,4 +768,428 @@ function testAddLesson() {
         fullSummary: 'Ученик показал отличное понимание основных тригонометрических функций.',
         homework: 'Решить задачи 15-20'
     });
+}
+
+// ===== ПЕРЕКЛЮЧЕНИЕ РЕЖИМОВ ПРОСМОТРА (НЕДЕЛЯ/МЕСЯЦ) =====
+
+let currentViewMode = 'week'; // 'week' или 'month'
+let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth(); // 0-11 (январь = 0)
+let currentWeek = getWeekNumber(new Date());
+
+// Инициализация обработчиков режимов просмотра
+document.addEventListener('DOMContentLoaded', function() {
+    // Ждем немного, чтобы все элементы загрузились
+    setTimeout(function() {
+        const weekBtn = document.querySelector('.toggle-btn:first-child'); // Кнопка "Неделя"
+        const monthBtn = document.querySelector('.toggle-btn:last-child');  // Кнопка "Месяц"
+        
+        if (weekBtn && monthBtn) {
+            console.log('✅ Кнопки переключения найдены!');
+            
+            // Обработчик кнопки "Неделя"
+            weekBtn.addEventListener('click', function() {
+                console.log('🗓️ Переключение на режим НЕДЕЛЯ');
+                switchToWeekView();
+            });
+            
+            // Обработчик кнопки "Месяц"
+            monthBtn.addEventListener('click', function() {
+                console.log('📅 Переключение на режим МЕСЯЦ');
+                switchToMonthView();
+            });
+            
+        } else {
+            console.log('❌ Кнопки переключения не найдены!');
+        }
+    }, 1000);
+});
+
+// Переключение на недельный вид
+function switchToWeekView() {
+    if (currentViewMode === 'week') {
+        console.log('Уже в режиме недели');
+        return;
+    }
+    
+    currentViewMode = 'week';
+    
+    // Обновляем активную кнопку
+    updateViewButtons();
+    
+    // Показываем недельный календарь, скрываем месячный
+    const weekGrid = document.querySelector('.schedule-grid');
+    const monthCalendar = document.getElementById('monthCalendar');
+    
+    if (weekGrid) {
+        weekGrid.style.display = 'grid';
+    }
+    
+    if (monthCalendar) {
+        monthCalendar.classList.remove('active');
+    }
+    
+    // Обновляем заголовки навигации для недельного режима
+    updateNavigationForWeek();
+    
+    console.log('🗓️ Переключено на недельный вид');
+
+    // Обновляем название периода для недельного режима
+    updatePeriodTitle();
+}
+
+// Переключение на месячный вид
+function switchToMonthView() {
+    if (currentViewMode === 'month') {
+        console.log('Уже в режиме месяца');
+        return;
+    }
+    
+    currentViewMode = 'month';
+    
+    // Обновляем активную кнопку
+    updateViewButtons();
+    
+    // Скрываем недельный календарь, показываем месячный
+    const weekGrid = document.querySelector('.schedule-grid');
+    const monthCalendar = document.getElementById('monthCalendar');
+    
+    if (weekGrid) {
+        weekGrid.style.display = 'none';
+    }
+    
+    if (monthCalendar) {
+        monthCalendar.classList.add('active');
+    }
+    
+    // Загружаем и показываем месячный календарь
+    loadMonthCalendar(currentYear, currentMonth);
+    
+    // Обновляем заголовки навигации для месячного режима
+    updateNavigationForMonth();
+    
+    console.log('📅 Переключено на месячный вид');
+
+    // Обновляем название периода для месячного режима
+    updatePeriodTitle();
+}
+
+// Обновление активной кнопки
+function updateViewButtons() {
+    const weekBtn = document.querySelector('.toggle-btn:first-child');
+    const monthBtn = document.querySelector('.toggle-btn:last-child');
+    
+    if (weekBtn && monthBtn) {
+        // Убираем активный класс у обеих кнопок
+        weekBtn.classList.remove('active');
+        monthBtn.classList.remove('active');
+        
+        // Добавляем активный класс к нужной кнопке
+        if (currentViewMode === 'week') {
+            weekBtn.classList.add('active');
+        } else {
+            monthBtn.classList.add('active');
+        }
+        
+        console.log(`Активная кнопка: ${currentViewMode}`);
+    }
+}
+
+// Обновление навигации для недельного режима
+function updateNavigationForWeek() {
+    const prevBtn = document.getElementById('prevWeekBtn');
+    const nextBtn = document.getElementById('nextWeekBtn');
+    
+    if (prevBtn && nextBtn) {
+        prevBtn.textContent = '← Назад';
+        nextBtn.textContent = 'Вперед →';
+    }
+}
+
+// Обновление навигации для месячного режима  
+function updateNavigationForMonth() {
+    const prevBtn = document.getElementById('prevWeekBtn');
+    const nextBtn = document.getElementById('nextWeekBtn');
+    
+    if (prevBtn && nextBtn) {
+        prevBtn.textContent = '← Предыдущий месяц';
+        nextBtn.textContent = 'Следующий месяц →';
+    }
+}
+
+// Загрузка месячного календаря
+function loadMonthCalendar(year, month) {
+    console.log(`📅 Загружаем календарь: ${getMonthName(month)} ${year}`);
+    
+    // Создаем календарную сетку
+    createMonthGrid(year, month);
+    
+    // Загружаем данные уроков для всего месяца
+    loadMonthLessons(year, month);
+
+    // Обновляем название периода
+    updatePeriodTitle();
+}
+
+// Создание календарной сетки 7x6
+function createMonthGrid(year, month) {
+    const monthGrid = document.getElementById('monthGrid');
+    if (!monthGrid) return;
+    
+    // Находим все ячейки дней (не заголовки)
+    const existingDayCells = monthGrid.querySelectorAll('.month-day-cell');
+    existingDayCells.forEach(cell => cell.remove());
+    
+    // Вычисляем первый день месяца и количество дней
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    
+    // Первый день недели (0=воскресенье, 1=понедельник, ...)
+    // Преобразуем в нашу систему (0=понедельник)
+    let firstDayOfWeek = firstDay.getDay();
+    firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+    
+    // Вычисляем предыдущий месяц
+    const prevMonth = month === 0 ? 11 : month - 1;
+    const prevYear = month === 0 ? year - 1 : year;
+    const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
+    
+    // Сегодняшняя дата для подсветки
+    const today = new Date();
+    const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+    const todayDate = today.getDate();
+    
+    console.log(`📅 Создаем сетку: ${daysInMonth} дней, начинается с ${firstDayOfWeek} дня недели`);
+    
+    // Создаем 42 ячейки (7x6 = максимум недель в месяце)
+    for (let i = 0; i < 42; i++) {
+        const dayCell = document.createElement('div');
+        dayCell.className = 'month-day-cell';
+        
+        let dayNumber, cellMonth, cellYear, isCurrentMonthDay;
+        
+        if (i < firstDayOfWeek) {
+            // Дни предыдущего месяца
+            dayNumber = daysInPrevMonth - firstDayOfWeek + i + 1;
+            cellMonth = prevMonth;
+            cellYear = prevYear;
+            isCurrentMonthDay = false;
+            dayCell.classList.add('other-month');
+        } else if (i < firstDayOfWeek + daysInMonth) {
+            // Дни текущего месяца
+            dayNumber = i - firstDayOfWeek + 1;
+            cellMonth = month;
+            cellYear = year;
+            isCurrentMonthDay = true;
+            
+            // Подсвечиваем сегодняшний день
+            if (isCurrentMonth && dayNumber === todayDate) {
+                dayCell.classList.add('today');
+            }
+        } else {
+            // Дни следующего месяца
+            dayNumber = i - firstDayOfWeek - daysInMonth + 1;
+            cellMonth = month === 11 ? 0 : month + 1;
+            cellYear = month === 11 ? year + 1 : year;
+            isCurrentMonthDay = false;
+            dayCell.classList.add('other-month');
+        }
+        
+        // Создаем содержимое ячейки
+        dayCell.innerHTML = `
+            <div class="month-day-number">${dayNumber}</div>
+            <div class="month-day-lessons" data-date="${cellYear}-${String(cellMonth + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}">
+                <!-- Уроки будут добавлены позже -->
+            </div>
+        `;
+        
+        // Скрываем 6-ю неделю, если она не нужна
+        const weekRow = Math.floor(i / 7);
+        if (weekRow === 5 && i >= firstDayOfWeek + daysInMonth) {
+            dayCell.classList.add('empty-week');
+        }
+        
+        monthGrid.appendChild(dayCell);
+    }
+    
+    console.log('📅 Календарная сетка создана!');
+}
+
+// Загрузка уроков для месяца
+function loadMonthLessons(year, month) {
+    console.log(`📚 Загружаем уроки для ${getMonthName(month)} ${year}`);
+    
+    // Вычисляем первую и последнюю неделю месяца
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    
+    const firstWeek = getWeekNumber(firstDay);
+    const lastWeek = getWeekNumber(lastDay);
+    
+    console.log(`📅 Загружаем недели с ${firstWeek} по ${lastWeek}`);
+    
+    // Загружаем данные для каждой недели
+    const promises = [];
+    for (let week = firstWeek; week <= lastWeek; week++) {
+        const promise = fetch(`/proxy-schedule/${year}/${week}`)
+            .then(response => response.json())
+            .catch(error => {
+                console.error(`Ошибка загрузки недели ${week}:`, error);
+                return { week_data: [] };
+            });
+        promises.push(promise);
+    }
+    
+    // Когда все недели загружены, отображаем уроки
+    Promise.all(promises).then(weekDataArray => {
+        console.log('📚 Все недели загружены, отображаем уроки...');
+        displayMonthLessons(weekDataArray);
+    });
+}
+
+// Отображение уроков в месячном календаре
+function displayMonthLessons(weekDataArray) {
+    weekDataArray.forEach(weekData => {
+        if (!weekData.week_data) return;
+        
+        weekData.week_data.forEach(day => {
+            if (!day.lessons || day.lessons.length === 0) return;
+            
+            // Находим ячейку для этого дня
+            const dateStr = day.full_date; // формат: 2025-02-19
+            const lessonsContainer = document.querySelector(`[data-date="${dateStr}"]`);
+            
+            if (lessonsContainer) {
+                // Очищаем предыдущие уроки
+                lessonsContainer.innerHTML = '';
+                
+                // Добавляем каждый урок
+                day.lessons.forEach(lesson => {
+                    const lessonDiv = document.createElement('div');
+                    lessonDiv.className = 'month-lesson';
+                    lessonDiv.innerHTML = `
+                        <div class="month-lesson-time">${lesson.time}</div>
+                        <div class="month-lesson-subject">${lesson.subject}</div>
+                    `;
+                    lessonsContainer.appendChild(lessonDiv);
+                });
+                
+                console.log(`📚 Добавлены уроки для ${dateStr}: ${day.lessons.length} урок(ов)`);
+            }
+        });
+    });
+    
+    console.log('✅ Все уроки отображены в месячном календаре!');
+}
+
+// Получение названия месяца
+function getMonthName(monthIndex) {
+    const months = [
+        'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+        'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+    ];
+    return months[monthIndex];
+}
+
+// ===== НАВИГАЦИЯ ПО НЕДЕЛЯМ И МЕСЯЦАМ =====
+
+// Универсальная навигация - запускается после загрузки DOM
+document.addEventListener('DOMContentLoaded', function() {
+    // Переменные для отслеживания текущей недели (для недельного режима)
+    let scheduleYear = new Date().getFullYear();
+    let scheduleWeek = getWeekNumber(new Date());
+
+    // Функция для загрузки расписания недели
+    function loadWeekSchedule(year, week) {
+        const apiUrl = `/proxy-schedule/${year}/${week}`;
+        
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (typeof renderSchedule === 'function') {
+                    renderSchedule(data);
+                }
+                // Обновляем название только если мы в недельном режиме
+                if (currentViewMode === 'week') {
+                    const periodElement = document.getElementById('currentPeriod');
+                    if (periodElement) {
+                        periodElement.textContent = data.week_info ? data.week_info.title : `Неделя ${week}, ${year}`;
+                    }
+                }
+            })
+    }
+
+    // Ждем загрузки элементов
+    setTimeout(function() {
+        const prevBtn = document.getElementById('prevWeekBtn');
+        const nextBtn = document.getElementById('nextWeekBtn');
+        
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function() {
+                if (currentViewMode === 'week') {
+                    // Недельный режим
+                    scheduleWeek--;
+                    if (scheduleWeek < 1) {
+                        scheduleWeek = 52;
+                        scheduleYear--;
+                    }
+                    loadWeekSchedule(scheduleYear, scheduleWeek);
+                    
+                } else if (currentViewMode === 'month') {
+                    // Месячный режим
+                    currentMonth--;
+                    if (currentMonth < 0) {
+                        currentMonth = 11;
+                        currentYear--;
+                    }
+                    loadMonthCalendar(currentYear, currentMonth);
+                    console.log(`📅 Предыдущий месяц: ${getMonthName(currentMonth)} ${currentYear}`);
+                }
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function() {
+                if (currentViewMode === 'week') {
+                    // Недельный режим  
+                    scheduleWeek++;
+                    if (scheduleWeek > 52) {
+                        scheduleWeek = 1;
+                        scheduleYear++;
+                    }
+                    loadWeekSchedule(scheduleYear, scheduleWeek);
+                    
+                } else if (currentViewMode === 'month') {
+                    // Месячный режим
+                    currentMonth++;
+                    if (currentMonth > 11) {
+                        currentMonth = 0;
+                        currentYear++;
+                    }
+                    loadMonthCalendar(currentYear, currentMonth);
+                    console.log(`📅 Следующий месяц: ${getMonthName(currentMonth)} ${currentYear}`);
+                }
+            });
+        }
+        
+        console.log('✅ Навигация по неделям и месяцам подключена!');
+        
+    }, 1000); // Ждем 1 секунду для загрузки всех элементов
+});
+
+// Обновление названия текущего периода
+function updatePeriodTitle() {
+    const periodElement = document.getElementById('currentPeriod');
+    if (!periodElement) return;
+    
+    if (currentViewMode === 'week') {
+        // Для недельного режима показываем неделю
+        const now = new Date();
+        const weekNum = getWeekNumber(now);
+        periodElement.textContent = `Неделя ${weekNum}, ${now.getFullYear()}`;
+    } else if (currentViewMode === 'month') {
+        // Для месячного режима показываем месяц и год
+        periodElement.textContent = `${getMonthName(currentMonth)} ${currentYear}`;
+    }
 }
