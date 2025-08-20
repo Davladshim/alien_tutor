@@ -1184,10 +1184,8 @@ function updatePeriodTitle() {
     if (!periodElement) return;
     
     if (currentViewMode === 'week') {
-        // Для недельного режима показываем неделю
-        const now = new Date();
-        const weekNum = getWeekNumber(now);
-        periodElement.textContent = `Неделя ${weekNum}, ${now.getFullYear()}`;
+        // НЕ обновляем тут, пусть это делает loadWeekSchedule
+        return;
     } else if (currentViewMode === 'month') {
         // Для месячного режима показываем месяц и год
         periodElement.textContent = `${getMonthName(currentMonth)} ${currentYear}`;
