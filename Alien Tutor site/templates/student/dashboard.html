@@ -184,22 +184,16 @@
 
             <!-- Вкладка: Успеваемость -->
             <div class="tab-content" id="progress-tab">
-                <!-- Выбор класса (для демо) -->
+                <!-- Заголовок успеваемости -->
                 <div class="class-selector">
                     <h2>Успеваемость</h2>
-                    <div class="class-buttons">
-                        <button class="class-btn active" data-class="9">9 класс</button>
-                        <button class="class-btn" data-class="11">11 класс</button>
-                        <button class="class-btn" data-class="8">8 класс</button>
-                        <button class="class-btn" data-class="7">7 класс</button>
-                    </div>
                 </div>
 
                 <!-- Диаграммы -->
                 <div class="charts-container">
                     <!-- Столбчатая диаграмма (только 9-11 классы) -->
                     <div class="chart-section bar-chart-section">
-                        <h3>Баллы за пробники ОГЭ/ЕГЭ</h3>
+                        <h3 id="barChartTitle">Баллы за пробники ОГЭ/ЕГЭ</h3>
                         <div class="chart-wrapper">
                             <div class="bar-chart" id="barChart">
                                 <!-- Будет заполнено JavaScript -->
@@ -344,8 +338,8 @@ const examResults = {{ student.exam_results | tojson | safe }};
 const topicProgress = {{ student.topic_progress | tojson | safe }};
 const studentClass = {{ student.class | tojson | safe }};
 
-// Переменные для отслеживания состояния
-let currentSelectedClass = '9';
+// Автоматически определяем класс ученика
+const currentSelectedClass = studentClass.replace(' класс', ''); // "9 класс" → "9"
 
 // Функция для отрисовки столбчатой диаграммы
 function renderBarChart() {
@@ -459,37 +453,23 @@ function renderPieChart() {
 
 // Обработчики событий для переключения классов
 document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация диаграмм
-    renderBarChart();
-    renderPieChart();
-    
-    // Обработчики для кнопок классов
-    document.querySelectorAll('.class-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Убираем активный класс у всех кнопок
-            document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
-            // Добавляем активный класс к нажатой кнопке
-            this.classList.add('active');
-            
-            currentSelectedClass = this.dataset.class;
-            
-            // Показываем/скрываем столбчатую диаграмму для 9-11 классов
-            const barChartSection = document.querySelector('.bar-chart-section');
-            if (currentSelectedClass === '9' || currentSelectedClass === '11') {
-                barChartSection.style.display = 'block';
-                renderBarChart();
-            } else {
-                barChartSection.style.display = 'none';
-            }
-        });
-    });
-    
-    // Скрываем столбчатую диаграмму если не 9-11 класс
-    const barChartSection = document.querySelector('.bar-chart-section');
-    if (currentSelectedClass !== '9' && currentSelectedClass !== '11') {
-        barChartSection.style.display = 'none';
-    }
+    // Инициализация диаграмм для класса ученика
+    initChartsForStudentClass();
 });
+
+// Функция инициализации для конкретного ученика
+function initChartsForStudentClass() {
+    const titleElement = document.getElementById('barChartTitle');
+    
+    if (currentSelectedClass === '9' || currentSelectedClass === '11') {
+        if (titleElement) titleElement.textContent = 'Баллы за пробники ОГЭ/ЕГЭ';
+        renderBarChart();
+    } else if (currentSelectedClass === '7' || currentSelectedClass === '8' || currentSelectedClass === '10') {
+        if (titleElement) titleElement.textContent = 'Оценки: Оформление и Решение';
+        renderDoubleBarChart();
+    }
+    renderPieChart();
+}
 
 // Обработчики для переключения вкладок
 document.querySelectorAll('.tab-button').forEach(button => {
@@ -531,9 +511,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (typeof renderSchedule === 'function') {
                     renderSchedule(data);
                 }
-                const periodElement = document.getElementById('currentPeriod');
-                if (periodElement) {
-                    periodElement.textContent = data.week_info ? data.week_info.title : `Неделя ${week}, ${year}`;
+                if (currentViewMode === 'week') {
+                    const periodElement = document.getElementById('currentPeriod');
+                    if (periodElement) {
+                        periodElement.textContent = data.week_info ? data.week_info.title : `Неделя ${week}, ${year}`;
+                    }
                 }
             })
             .catch(error => {

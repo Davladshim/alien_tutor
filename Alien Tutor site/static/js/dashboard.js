@@ -183,7 +183,7 @@ function renderSchedule(data) {
         return;
     }
     
-    // Обновляем заголовок недели ТОЛЬКО в недельном режиме
+    // Обновляем название только в недельном режиме
     if (currentViewMode === 'week') {
         const currentPeriod = document.getElementById('currentPeriod');
         if (currentPeriod && data.week_info) {
