@@ -355,8 +355,6 @@ const progressData = {
     }
 };
 
-let currentClass = '9'; // По умолчанию
-
 // Инициализация диаграмм при загрузке
 document.addEventListener('DOMContentLoaded', function() {
     initProgressCharts();

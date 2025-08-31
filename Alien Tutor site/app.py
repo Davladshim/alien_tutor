@@ -197,7 +197,8 @@ def get_student_lesson_reports(student_id):
 def get_student_homework(student_id):
     """Получить домашние задания ученика"""
     query = """
-        SELECT assignment_date, topic, grade, tasks_solved, tasks_assigned
+        SELECT assignment_date, topic, primary_score, secondary_score, 
+               design_score, solution_score, tasks_solved, tasks_assigned
         FROM homework_assignments
         WHERE student_id = %s
         ORDER BY assignment_date DESC
@@ -205,14 +206,21 @@ def get_student_homework(student_id):
     """
     result = execute_query(query, (student_id,), fetch=True)
     
-    homework = []
+    homework = []  # ← только один раз!
     if result:
         for row in result:
+            # Автоматически копируем первичные баллы во вторичные (пока нет алгоритма)
+            secondary_score = row['secondary_score'] or row['primary_score'] or 0
+            
             homework.append({
                 'date': row['assignment_date'].strftime('%d.%m.%Y'),
-                'description': row['topic'],
-                'status': 'Выполнено' if row['grade'] else 'В работе',
-                'score': f"{row['tasks_solved']}/{row['tasks_assigned']}" if row['tasks_solved'] is not None else ''
+                'topic': row['topic'],
+                'primary_score': row['primary_score'] or 0,
+                'secondary_score': secondary_score,  # ← вот тут копируем
+                'design_score': row['design_score'] or 0,
+                'solution_score': row['solution_score'] or 0,
+                'tasks_solved': row['tasks_solved'] or 0,
+                'tasks_assigned': row['tasks_assigned'] or 0
             })
     
     return homework
@@ -439,7 +447,7 @@ def student_dashboard():
         'planned_lessons': lessons_data.get('planned_lessons', 0),
         'schedule': schedule_data,
         'exam_results': exam_results,
-        'topic_progress': topic_progress,
+        'topic_progress': get_student_topic_progress(student_id),
         'lesson_reports': lesson_reports,  # НОВОЕ
         'homework_data': homework_data     # НОВОЕ
     }

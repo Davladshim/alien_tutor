@@ -9,15 +9,19 @@
     align-items: center !important;
     justify-content: center !important;
     gap: 8px !important;
-    padding: 10px 20px !important;
+    padding: 1rem 2rem !important;
     background: rgba(239, 68, 68, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
     color: #ef4444 !important;
     border: 1px solid rgba(239, 68, 68, 0.3) !important;
-    border-radius: 10px !important;
+    border-radius: 15px !important;
     text-decoration: none !important;
-    font-weight: 600 !important;
-    transition: all 0.3s ease !important;
+    font-weight: 500 !important;
+    font-size: 1.1rem !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
     margin-left: 0rem !important;
+    position: relative !important;
+    overflow: hidden !important;
 }
 
 .logout-button-nav:hover {
@@ -48,7 +52,6 @@
                 </button>
             </div>
             <a href="/logout" class="logout-button-nav" title="Выйти из аккаунта">
-                <i data-lucide="log-out"></i>
                 <span>Выйти</span>
             </a>
         </div>
@@ -278,22 +281,7 @@
                                 </tr>
                             </thead>
                             <tbody id="homeworkTableBody">
-                                {% if student.homework_data %}
-                                    {% for hw in student.homework_data %}
-                                    <tr>
-                                        <td>{{ hw.date }}</td>
-                                        <td>{{ hw.description }}</td>
-                                        <td>{{ hw.status }}</td>
-                                        <td>{{ hw.score }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                {% else %}
-                                    <tr>
-                                        <td colspan="4" style="text-align: center; color: var(--text-muted); font-style: italic;">
-                                            Нет данных о домашних заданиях
-                                        </td>
-                                    </tr>
-                                {% endif %}
+                                <!-- Таблица будет заполнена JavaScript из функции updateHomeworkTable() -->
                             </tbody>
                         </table>
                     </div>
@@ -333,28 +321,32 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script>
-// Данные из Python
-const examResults = {{ student.exam_results | tojson | safe }};
-const topicProgress = {{ student.topic_progress | tojson | safe }};
+
+// Данные из Python (реальные данные из БД)
+const studentHomework = {{ student.homework_data | tojson | safe }};
+const studentExamResults = {{ student.exam_results | tojson | safe }};
 const studentClass = {{ student.class | tojson | safe }};
 
-// Автоматически определяем класс ученика
-const currentSelectedClass = studentClass.replace(' класс', ''); // "9 класс" → "9"
+// Определяем класс ученика (убираем " класс" из строки)
+const currentClass = studentClass.replace(' класс', '');
+
+// Определяем тип диаграммы для класса
+const hasExamScores = (currentClass === '9' || currentClass === '11');
 
 // Функция для отрисовки столбчатой диаграммы
 function renderBarChart() {
     const barChart = document.getElementById('barChart');
     barChart.innerHTML = '';
     
-    if (!examResults || examResults.length === 0) {
+    if (!studentExamResults || studentExamResults.length === 0) {
         barChart.innerHTML = '<div class="no-data">Нет данных о пробниках</div>';
         return;
     }
     
-    const maxScore = Math.max(...examResults.map(item => item.score));
+    const maxScore = Math.max(...studentExamResults.map(item => item.score));
     const chartHeight = 200;
     
-    examResults.forEach(item => {
+    studentExamResults.forEach(item => {
         const barHeight = (item.score / maxScore) * chartHeight;
         
         const barContainer = document.createElement('div');
@@ -405,6 +397,52 @@ function renderBarChart() {
     });
 }
 
+// Отрисовка двойной столбчатой диаграммы для 7, 8, 10 классов
+function renderDoubleBarChart(scores) {
+    const barChart = document.getElementById('barChart');
+    
+    if (!barChart || !scores || scores.length === 0) return;
+    
+    // Очищаем предыдущие столбцы
+    barChart.innerHTML = '';
+    barChart.className = 'double-bar-chart'; // Меняем класс
+    
+    // Находим максимальное значение для масштабирования
+    const maxScore = 100; // Максимум для оценок
+    const chartHeight = 220; // Высота области диаграммы
+    
+    scores.forEach(scoreData => {
+        const barGroup = document.createElement('div');
+        barGroup.className = 'double-bar-group';
+        
+        // Столбец для оформления
+        const designBar = document.createElement('div');
+        designBar.className = 'double-bar-item design-bar';
+        const designHeight = Math.max(20, (scoreData.design / maxScore) * chartHeight);
+        designBar.style.height = designHeight + 'px';
+        
+        const designTooltip = document.createElement('div');
+        designTooltip.className = 'double-bar-tooltip';
+        designTooltip.textContent = `${scoreData.date}: Оформление ${scoreData.design}`;
+        designBar.appendChild(designTooltip);
+        
+        // Столбец для решения
+        const solutionBar = document.createElement('div');
+        solutionBar.className = 'double-bar-item solution-bar';
+        const solutionHeight = Math.max(20, (scoreData.solution / maxScore) * chartHeight);
+        solutionBar.style.height = solutionHeight + 'px';
+        
+        const solutionTooltip = document.createElement('div');
+        solutionTooltip.className = 'double-bar-tooltip';
+        solutionTooltip.textContent = `${scoreData.date}: Решение ${scoreData.solution}`;
+        solutionBar.appendChild(solutionTooltip);
+        
+        barGroup.appendChild(designBar);
+        barGroup.appendChild(solutionBar);
+        barChart.appendChild(barGroup);
+    });
+}
+
 // Функция для отрисовки круговой диаграммы
 function renderPieChart() {
     const pieChart = document.querySelector('#pieChart svg');
@@ -451,25 +489,148 @@ function renderPieChart() {
     pieChart.innerHTML = segments;
 }
 
-// Обработчики событий для переключения классов
-document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация диаграмм для класса ученика
-    initChartsForStudentClass();
-});
+// Новая функция для двойной диаграммы (7-8, 10 классы)
+function renderDoubleBarChart() {
+    const barChart = document.getElementById('barChart');
+    barChart.innerHTML = '';
+    barChart.className = 'double-bar-chart';
+    
+    if (!studentHomework || studentHomework.length === 0) {
+        barChart.innerHTML = '<div class="no-data">Нет данных о домашних заданиях</div>';
+        return;
+    }
+    
+    const maxScore = 5; // Максимальная оценка
+    const chartHeight = 220;
+    
+    studentHomework.forEach(homework => {
+        const barGroup = document.createElement('div');
+        barGroup.className = 'double-bar-group';
+        
+        // Столбец для оформления
+        const designBar = document.createElement('div');
+        designBar.className = 'double-bar-item design-bar';
+        const designHeight = Math.max(20, (homework.design_score / maxScore) * chartHeight);
+        designBar.style.height = designHeight + 'px';
+        
+        const designTooltip = document.createElement('div');
+        designTooltip.className = 'double-bar-tooltip';
+        designTooltip.textContent = `${homework.date}: Оформление ${homework.design_score}`;
+        designBar.appendChild(designTooltip);
+        
+        // Столбец для решения
+        const solutionBar = document.createElement('div');
+        solutionBar.className = 'double-bar-item solution-bar';
+        const solutionHeight = Math.max(20, (homework.solution_score / maxScore) * chartHeight);
+        solutionBar.style.height = solutionHeight + 'px';
+        
+        const solutionTooltip = document.createElement('div');
+        solutionTooltip.className = 'double-bar-tooltip';
+        solutionTooltip.textContent = `${homework.date}: Решение ${homework.solution_score}`;
+        solutionBar.appendChild(solutionTooltip);
+        
+        barGroup.appendChild(designBar);
+        barGroup.appendChild(solutionBar);
+        barChart.appendChild(barGroup);
+    });
+}
 
 // Функция инициализации для конкретного ученика
 function initChartsForStudentClass() {
     const titleElement = document.getElementById('barChartTitle');
     
-    if (currentSelectedClass === '9' || currentSelectedClass === '11') {
+    if (hasExamScores) {
+        // Для 9 и 11 классов - показываем пробники
         if (titleElement) titleElement.textContent = 'Баллы за пробники ОГЭ/ЕГЭ';
         renderBarChart();
-    } else if (currentSelectedClass === '7' || currentSelectedClass === '8' || currentSelectedClass === '10') {
+    } else {
+        // Для 7, 8, 10 классов - показываем домашки
         if (titleElement) titleElement.textContent = 'Оценки: Оформление и Решение';
         renderDoubleBarChart();
     }
+    
+    // Круговая диаграмма для всех классов
     renderPieChart();
+    
+    // Обновляем таблицу домашних заданий
+    updateHomeworkTable();
 }
+
+function updateHomeworkTable() {
+    const headerElement = document.getElementById('homeworkTableHeader');
+    const bodyElement = document.getElementById('homeworkTableBody');
+    
+    if (!headerElement || !bodyElement) return;
+    
+    // Очищаем таблицу
+    headerElement.innerHTML = '';
+    bodyElement.innerHTML = '';
+    
+    if (hasExamScores) {
+        // Заголовки для 9 и 11 классов (пробники)
+        headerElement.innerHTML = `
+            <tr>
+                <th>Дата домашнего задания</th>
+                <th>Тема</th>
+                <th>Первичные баллы за пробник</th>
+                <th>Вторичные баллы за пробник</th>
+                <th>Количество решенных заданий</th>
+            </tr>
+        `;
+        
+        // Заполняем данными из БД
+        if (studentHomework && studentHomework.length > 0) {
+            studentHomework.forEach(homework => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${homework.date}</td>
+                    <td>${homework.topic}</td>
+                    <td class="score-cell">${homework.primary_score}</td>
+                    <td class="score-cell">${homework.secondary_score}</td>
+                    <td>${homework.tasks_solved}/${homework.tasks_assigned}</td>
+                `;
+                bodyElement.appendChild(row);
+            });
+        } else {
+            bodyElement.innerHTML = '<tr><td colspan="5" style="text-align: center; font-style: italic;">Нет данных о домашних заданиях</td></tr>';
+        }
+        
+    } else {
+        // Заголовки для 7, 8, 10 классов (обычные задания)
+        headerElement.innerHTML = `
+            <tr>
+                <th>Дата домашнего задания</th>
+                <th>Тема</th>
+                <th>Оформление</th>
+                <th>Решение</th>
+                <th>Количество решенных заданий</th>
+            </tr>
+        `;
+        
+        // Заполняем данными из БД
+        if (studentHomework && studentHomework.length > 0) {
+            studentHomework.forEach(homework => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${homework.date}</td>
+                    <td>${homework.topic}</td>
+                    <td class="score-cell">${homework.design_score}</td>
+                    <td class="score-cell">${homework.solution_score}</td>
+                    <td>${homework.tasks_solved}/${homework.tasks_assigned}</td>
+                `;
+                bodyElement.appendChild(row);
+            });
+        } else {
+            bodyElement.innerHTML = '<tr><td colspan="5" style="text-align: center; font-style: italic;">Нет данных о домашних заданиях</td></tr>';
+        }
+    }
+}
+
+// Обработчики событий для переключения классов
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация диаграмм для класса ученика
+    initChartsForStudentClass();
+});
 
 // Обработчики для переключения вкладок
 document.querySelectorAll('.tab-button').forEach(button => {
@@ -550,5 +711,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Запускаем инициализацию после загрузки страницы
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Инициализация диаграмм...');
+    console.log('Данные домашек:', studentHomework);
+    console.log('Данные экзаменов:', studentExamResults);
+    console.log('Класс ученика:', currentClass);
+    
+    initChartsForStudentClass();
+});
+
 </script>
 {% endblock %}
