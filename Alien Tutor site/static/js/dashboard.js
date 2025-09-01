@@ -420,14 +420,18 @@ function updateChartsForClass(classNum) {
     // Обновляем круговую диаграмму на основе реальных данных из таблицы
     const realProgress = calculateProgressFromTable();
     renderPieChart(realProgress);
-    
-    // Обновляем таблицу домашних заданий
+
+    // Также обновляем таблицу домашних заданий
     updateHomeworkTable(classNum);
 }
 
 // Обновление таблицы домашних заданий
 function updateHomeworkTable(classNum) {
-    const data = progressData[classNum];
+    // Если classNum не передан, берем из window.studentData
+    if (!classNum && window.studentData) {
+        classNum = window.studentData.currentClass;
+    }
+    
     const headerElement = document.getElementById('homeworkTableHeader');
     const bodyElement = document.getElementById('homeworkTableBody');
     
@@ -437,56 +441,64 @@ function updateHomeworkTable(classNum) {
     headerElement.innerHTML = '';
     bodyElement.innerHTML = '';
     
-    if (data.hasExamScores) {
+    // Определяем, есть ли экзамены для этого класса
+    const hasExamScores = (classNum === '9' || classNum === '11');
+    
+    // Получаем реальные данные из window.studentData
+    const homeworkData = window.studentData ? window.studentData.homework : [];
+    
+    if (hasExamScores) {
         // Заголовки для 9 и 11 классов (пробники)
         headerElement.innerHTML = `
             <tr>
                 <th>Дата домашнего задания</th>
+                <th>Тема</th>
                 <th>Первичные баллы за пробник</th>
                 <th>Вторичные баллы за пробник</th>
                 <th>Количество решенных заданий</th>
-                <th>Оценка за пробник</th>
             </tr>
         `;
-        
-        // Заполняем данными
-        data.homeworkData.forEach(homework => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${homework.date}</td>
-                <td class="score-cell">${homework.primary}</td>
-                <td class="score-cell">${homework.secondary}</td>
-                <td>${homework.solved}</td>
-                <td class="score-cell">${homework.grade}</td>
-            `;
-            bodyElement.appendChild(row);
-        });
     } else {
-        // Заголовки для 7, 8, 10 классов (обычные задания)
+        // Заголовки для 7, 8, 10 классов (обычные задания) - БЕЗ "Сколько задач было задано"
         headerElement.innerHTML = `
             <tr>
                 <th>Дата домашнего задания</th>
                 <th>Оформление</th>
                 <th>Решение</th>
                 <th>Тема</th>
-                <th>Сколько задач было задано</th>
                 <th>Сколько решено из них</th>
             </tr>
         `;
-        
-        // Заполняем данными
-        data.homeworkData.forEach(homework => {
+    }
+    
+    // Заполняем данными из БД
+    if (homeworkData && homeworkData.length > 0) {
+        homeworkData.forEach(homework => {
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${homework.date}</td>
-                <td class="score-cell">${homework.design}</td>
-                <td class="score-cell">${homework.solution}</td>
-                <td>${homework.topic}</td>
-                <td>${homework.assigned}</td>
-                <td>${homework.solved}</td>
-            `;
+            
+            if (hasExamScores) {
+                row.innerHTML = `
+                    <td>${homework.date}</td>
+                    <td>${homework.topic || ''}</td>
+                    <td class="score-cell">${homework.primary_score || ''}</td>
+                    <td class="score-cell">${homework.secondary_score || ''}</td>
+                    <td>${homework.tasks_solved || ''}/${homework.tasks_assigned || ''}</td>
+                `;
+            } else {
+                row.innerHTML = `
+                    <td>${homework.date}</td>
+                    <td class="score-cell">${homework.design_score || ''}</td>
+                    <td class="score-cell">${homework.solution_score || ''}</td>
+                    <td>${homework.topic || ''}</td>
+                    <td>${homework.tasks_solved || ''}/${homework.tasks_assigned || ''}</td>
+                `;
+            }
+            
             bodyElement.appendChild(row);
         });
+    } else {
+        // Если данных нет - показываем сообщение
+        bodyElement.innerHTML = '<tr><td colspan="5" style="text-align: center; font-style: italic; color: var(--text-muted);">Нет данных о домашних заданиях</td></tr>';
     }
 }
 
@@ -527,6 +539,10 @@ function calculateProgressFromTable() {
 
 // Отрисовка двойной столбчатой диаграммы для 7, 8, 10 классов
 function renderDoubleBarChart(scores) {
+    // Если scores не переданы, берем из window.studentData
+    if (!scores && window.studentData) {
+        scores = window.studentData.homework;
+    }
     const barChart = document.getElementById('barChart');
     
     if (!barChart) return;
@@ -573,12 +589,23 @@ function renderDoubleBarChart(scores) {
 
 // Отрисовка столбчатой диаграммы
 function renderBarChart(scores) {
+    // Если scores не переданы, берем из window.studentData
+    if (!scores && window.studentData) {
+        scores = window.studentData.examResults;
+    }
+    
     const barChart = document.getElementById('barChart');
     
     if (!barChart) return;
     
     // Очищаем предыдущие столбцы
     barChart.innerHTML = '';
+    
+    // Если нет данных - показываем сообщение
+    if (!scores || scores.length === 0) {
+        barChart.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 50px;">Нет данных о пробниках</div>';
+        return;
+    }
     
     // Находим максимальное значение для масштабирования
     const maxScore = Math.max(...scores.map(s => s.score));
@@ -1188,4 +1215,31 @@ function updatePeriodTitle() {
         // Для месячного режима показываем месяц и год
         periodElement.textContent = `${getMonthName(currentMonth)} ${currentYear}`;
     }
+}
+
+// Функция инициализации для конкретного ученика
+function initChartsForStudentClass() {
+    // Получаем данные из window.studentData
+    const data = window.studentData;
+    if (!data) return;
+    
+    const hasExamScores = data.hasExamScores;
+    const titleElement = document.getElementById('barChartTitle');
+    
+    if (hasExamScores) {
+        // Для 9 и 11 классов - показываем пробники
+        if (titleElement) titleElement.textContent = 'Баллы за пробники ОГЭ/ЕГЭ';
+        renderBarChart();
+    } else {
+        // Для 7, 8, 10 классов - показываем домашки
+        if (titleElement) titleElement.textContent = 'Оценки: Оформление и Решение';
+        renderDoubleBarChart();
+    }
+    
+    // Круговая диаграмма для всех классов
+    const topicProgress = window.studentData.topicProgress || { fully: 0, questions: 0, needWork: 0 };
+    renderPieChart(topicProgress);
+    
+    // Обновляем таблицу домашних заданий
+    updateHomeworkTable();
 }

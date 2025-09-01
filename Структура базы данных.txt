@@ -43,12 +43,13 @@ assignment_date - дата задания
 primary_score - первичные баллы
 secondary_score - вторичные баллы
 tasks_solved - решенных задач
-grade - оценка
+solution_score
 topic - тема
 tasks_assigned - всего задач
 created_at
 is_checked
 checked_date
+design_score
 
 5. lesson_reports - отчеты по урокам
 

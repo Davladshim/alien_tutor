@@ -3379,7 +3379,7 @@ def save_homework():
             primary_score = int(primary_score) if primary_score else None
             secondary_score = int(secondary_score) if secondary_score else None
             solution_score = int(solution_score) if solution_score else None
-            formatting_score = int(formatting_score) if formatting_score else None
+            design_score = int(formatting_score) if formatting_score else None
         except (ValueError, TypeError):
             primary_score = secondary_score = solution_score = formatting_score = None
         
@@ -3392,24 +3392,24 @@ def save_homework():
             homework_query = """
                 UPDATE homework_assignments 
                 SET assignment_date = NOW()::date, primary_score = %s, secondary_score = %s, 
-                    tasks_solved = %s, grade = %s, topic = %s
+                    solution_score = %s, design_score = %s, topic = %s
                 WHERE lesson_id = %s
                 RETURNING id
             """
             result = execute_query(homework_query, (
-                primary_score, secondary_score, solution_score, formatting_score, description, lesson_id
+                primary_score, secondary_score, solution_score, design_score, description, lesson_id
             ), fetch_one=True)
         else:
             # Создаем новую домашку
             homework_query = """
                 INSERT INTO homework_assignments (lesson_id, student_id, assignment_date, primary_score, 
-                                                secondary_score, tasks_solved, grade, topic, created_at)
+                                                secondary_score, solution_score, design_score, topic, created_at)
                 VALUES (%s, %s, NOW()::date, %s, %s, %s, %s, %s, NOW())
                 RETURNING id
             """
             result = execute_query(homework_query, (
                 lesson_id, student['id'], primary_score, secondary_score, 
-                solution_score, formatting_score, description
+                solution_score, design_score, description
             ), fetch_one=True)
         
         return jsonify({"success": True, "message": "Домашнее задание успешно сохранено"})
