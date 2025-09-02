@@ -3293,7 +3293,7 @@ def delete_homework():
 
 @app.route("/api/get-lessons/<date>")
 def get_lessons_by_date(date):
-    """Получить уроки по дате"""
+    """Получить уроки по дате с данными отчетов и домашек"""
     if not session.get('admin_logged_in'):
         return jsonify({"success": False, "error": "Не авторизован"}), 401
     
@@ -3302,38 +3302,82 @@ def get_lessons_by_date(date):
         from datetime import datetime
         lesson_date = datetime.strptime(date, '%Y-%m-%d').date()
         
-        # Получаем уроки за дату
+        # Получаем уроки за дату с данными отчетов и домашек
         query = """
-            SELECT l.id, l.date, l.time, l.subject, l.status, l.lesson_type, 
-                   s.name as student_name, s.id as student_id
+            SELECT 
+                l.id, l.date, l.time, l.subject, l.status, l.lesson_type, 
+                s.name as student_name, s.id as student_id,
+                
+                -- Данные отчета
+                lr.id as report_id,
+                lr.topic as report_topic,
+                lr.understanding_level as report_understanding,
+                lr.teacher_comment as report_comment,
+                
+                -- Данные домашки
+                ha.id as homework_id,
+                ha.topic as homework_description,
+                ha.primary_score as homework_primary_score,
+                ha.secondary_score as homework_secondary_score,
+                ha.solution_score as homework_solution_score,
+                ha.design_score as homework_design_score,
+                ha.is_checked as homework_checked,
+                ha.checked_date as homework_checked_date
+                
             FROM lessons l
             JOIN students s ON l.student_id = s.id
+            LEFT JOIN lesson_reports lr ON l.id = lr.lesson_id
+            LEFT JOIN homework_assignments ha ON l.id = ha.lesson_id
             WHERE l.date = %s
             ORDER BY l.time
         """
         lessons = execute_query(query, (lesson_date,), fetch=True)
         
-        # Для каждого урока проверяем наличие отчета и домашки
+        # Формируем данные для отправки
         lessons_data = []
         for lesson in lessons:
-            # Проверяем отчет
-            report_query = "SELECT id FROM lesson_reports WHERE lesson_id = %s"
-            has_report = execute_query(report_query, (lesson['id'],), fetch_one=True)
-            
-            # Проверяем домашку
-            homework_query = "SELECT id FROM homework_assignments WHERE lesson_id = %s"
-            has_homework = execute_query(homework_query, (lesson['id'],), fetch_one=True)
-            
-            lessons_data.append({
+            lesson_data = {
                 'id': lesson['id'],
                 'time': lesson['time'].strftime('%H:%M'),
                 'student': lesson['student_name'],
                 'subject': lesson['subject'],
                 'status': lesson['status'],
                 'lesson_type': lesson['lesson_type'],
-                'has_report': bool(has_report),
-                'has_homework': bool(has_homework)
-            })
+                'has_report': bool(lesson['report_id']),
+                'has_homework': bool(lesson['homework_id']),
+                
+                # Данные отчета (если есть)
+                'report_data': {
+                    'topic': lesson['report_topic'] or '',
+                    'understanding_level': lesson['report_understanding'] or '',
+                    'teacher_comment': lesson['report_comment'] or ''
+                } if lesson['report_id'] else None,
+                
+                # Данные домашки (если есть)
+                'homework_data': {
+                    'description': lesson['homework_description'] or '',
+                    'primary_score': lesson['homework_primary_score'] or '',
+                    'secondary_score': lesson['homework_secondary_score'] or '',
+                    'solution_score': lesson['homework_solution_score'] or '',
+                    'design_score': lesson['homework_design_score'] or '',
+                    'is_checked': bool(lesson['homework_checked']),
+                    'homework_type': 'tasks' if lesson['homework_id'] else ''  # определяем тип
+                } if lesson['homework_id'] else None
+            }
+            
+            # Определяем статус проверки домашки для эмодзи
+            if lesson['homework_id']:
+                if lesson['homework_description'] == 'Не задавать домашку':
+                    lesson_data['homework_type'] = 'none'
+                else:
+                    lesson_data['homework_type'] = 'tasks'
+                    
+                lesson_data['homework_checked'] = bool(lesson['homework_checked'])
+            else:
+                lesson_data['homework_checked'] = False
+                lesson_data['homework_type'] = ''
+            
+            lessons_data.append(lesson_data)
         
         return jsonify({"success": True, "lessons": lessons_data})
         

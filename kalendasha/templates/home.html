@@ -13,27 +13,12 @@
 </div>
 
 <!-- НОВАЯ СИСТЕМА ОТЧЕТОВ И ДОМАШЕК -->
-<div class="card" style="margin-bottom: 30px;">
+<div style="margin-bottom: 30px;">
     <h2 style="margin-bottom: 25px; text-align: center;">Отчеты по урокам и домашние задания</h2>
     
     <!-- Блок выбора даты со счетчиком -->
     <div style="background: var(--bg-card); border-radius: 12px; padding: 20px; margin-bottom: 25px; border: 1px solid var(--border-secondary);">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-            
-            <!-- Переключатель режимов -->
-            <div style="min-width: 200px;">
-                <label style="display: block; margin-bottom: 18px; font-weight: bold;">
-                    Режим работы:
-                </label>
-                <div class="view-toggle">
-                    <button class="view-toggle-btn active" id="report_mode" onclick="switchMode('report')">
-                        <span>Отчет</span>
-                    </button>
-                    <button class="view-toggle-btn" id="homework_mode" onclick="switchMode('homework')">
-                        <span>ДЗ</span>
-                    </button>
-                </div>
-            </div>
 
             <!-- Выбор даты -->
             <div style="flex: 1; min-width: 200px;">
@@ -199,24 +184,27 @@
     </table>
 </div>
 <!-- Формы для работы с выбранным уроком -->
-    <div id="lesson_forms" style="border: 2px solid var(--accent-color, #00d4ff); border-radius: 15px; padding: 25px; display: none;">
-        <div id="selected_lesson_info" style="background: var(--accent-gradient); color: white; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: center; font-weight: bold; font-size: 18px;">
-            Выберите урок для работы
-        </div>
+<div id="lesson_forms" style="border: 2px solid var(--accent-color, #00d4ff); border-radius: 15px; padding: 25px; display: none;">
+    <div id="selected_lesson_info" style="background: var(--accent-gradient); color: white; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: center; font-weight: bold; font-size: 18px;">
+        Выберите урок для работы
+    </div>
+    
+    <!-- ОБЪЕДИНЕННАЯ ФОРМА -->
+    <div class="combined-form">
         
-        <!-- Форма отчета по уроку -->
-        <div class="report-form" style="margin-bottom: 30px;">
-            <h3 style="color: var(--text-accent); margin-bottom: 20px;">Отчет по уроку</h3>
+        <!-- СЕКЦИЯ ОТЧЕТА -->
+        <div class="report-section" style="margin-bottom: 40px;">
+            <h3 style="color: var(--text-accent); margin-bottom: 20px;">📝 Отчет по уроку</h3>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px;">
                 <div>
                     <label>Тема урока:</label>
-                    <input type="text" placeholder="Например: Квадратные уравнения" style="width: 100%;">
+                    <input type="text" id="report_topic" placeholder="Например: Квадратные уравнения" style="width: 100%;">
                 </div>
                 
                 <div>
                     <label>Понимание темы:</label>
-                    <select style="width: 100%;">
+                    <select id="report_understanding" style="width: 100%;">
                         <option value="">-- Выберите уровень --</option>
                         <option value="Тема разобрана полностью">Тема разобрана полностью</option>
                         <option value="Есть вопросы по теме">Есть вопросы по теме</option>
@@ -227,36 +215,39 @@
             
             <div style="margin-bottom: 20px;">
                 <label>Комментарий преподавателя:</label>
-                <textarea rows="3" placeholder="Подробный отзыв о работе ученика на уроке" style="width: 100%;"></textarea>
+                <textarea id="report_comment" rows="3" placeholder="Подробный отзыв о работе ученика на уроке" style="width: 100%;"></textarea>
             </div>
 
             <!-- Кнопка пробник и баллы в одной строке -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
                 <div>
                     <label style="visibility: hidden;">Пробник</label>
-                    <button class="btn warning" onclick="openProbnikModal('report')" style="width: 100%;">Пробник</button>
+                    <button type="button" class="btn warning" onclick="openProbnikModal('report')" style="width: 100%;">Пробник</button>
                 </div>
                 
                 <div>
                     <label>Первичные баллы:</label>
-                    <input type="number" min="0" max="50" placeholder="0-50" style="width: 100%;">
+                    <input type="number" id="report_primary_score" min="0" max="50" placeholder="0-50" style="width: 100%;">
                 </div>
                 
                 <div>
                     <label>Вторичные баллы:</label>
-                    <input type="number" min="0" max="100" placeholder="0-100" style="width: 100%;">
+                    <input type="number" id="report_secondary_score" min="0" max="100" placeholder="0-100" style="width: 100%;">
                 </div>
             </div>
             
             <div style="text-align: center;">
-                <button class="btn success" style="margin-right: 10px;" onclick="saveReport()">Сохранить отчет</button>
-                <button class="btn danger" onclick="deleteReport()">Удалить отчет</button>
+                <button type="button" class="btn success" style="margin-right: 10px;" onclick="saveReport()">Сохранить отчет</button>
+                <button type="button" class="btn danger" onclick="deleteReport()">Удалить отчет</button>
             </div>
         </div>
         
-        <!-- Форма домашнего задания -->
-        <div class="homework-form" style="border-top: 2px solid var(--border-secondary); padding-top: 25px;">
-            <h3 style="color: var(--text-accent); margin-bottom: 20px;">Домашнее задание</h3>
+        <!-- РАЗДЕЛИТЕЛЬ -->
+        <div style="border-top: 2px solid var(--border-secondary); margin: 30px 0;"></div>
+        
+        <!-- СЕКЦИЯ ДОМАШКИ -->
+        <div class="homework-section">
+            <h3 style="color: var(--text-accent); margin-bottom: 20px;">📚 Домашнее задание</h3>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
                 <div>
@@ -269,25 +260,25 @@
                 </div>
                 
                 <div id="homework_evaluation_fields" style="display: none;">
-                        <label>Решение:</label>
-                        <select style="width: 100%;">
-                            <option value="">-- Выберите --</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                            <option value="7">7</option>
-                            <option value="8">8</option>
-                            <option value="9">9</option>
-                            <option value="10">10</option>
-                        </select>
+                    <label>Решение:</label>
+                    <select id="homework_solution_score" style="width: 100%;">
+                        <option value="">-- Выберите --</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
                 </div>
                 
                 <div id="homework_formatting_fields" style="display: none;">
                     <label>Оформление:</label>
-                    <select style="width: 100%;">
+                    <select id="homework_formatting_score" style="width: 100%;">
                         <option value="">-- Выберите --</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
@@ -306,35 +297,36 @@
             <div id="homework_content_fields" style="display: none;">
                 <div style="margin-bottom: 20px;">
                     <label>Описание домашнего задания:</label>
-                    <textarea rows="3" placeholder="Подробное описание заданий" style="width: 100%;"></textarea>
+                    <textarea id="homework_description" rows="3" placeholder="Подробное описание заданий" style="width: 100%;"></textarea>
                 </div>
 
                 <!-- Кнопка пробник и баллы под описанием -->
                 <div id="homework_probnik_fields" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; display: none;">
                     <div>
                         <label style="visibility: hidden;">Пробник</label>
-                        <button class="btn warning" onclick="openProbnikModal('homework')" style="width: 100%;">Пробник</button>
+                        <button type="button" class="btn warning" onclick="openProbnikModal('homework')" style="width: 100%;">Пробник</button>
                     </div>
                     
                     <div>
                         <label>Первичные баллы:</label>
-                        <input type="number" min="0" max="50" placeholder="0-50" style="width: 100%;">
+                        <input type="number" id="homework_primary_score" min="0" max="50" placeholder="0-50" style="width: 100%;">
                     </div>
                     
                     <div>
                         <label>Вторичные баллы:</label>
-                        <input type="number" min="0" max="100" placeholder="0-100" style="width: 100%;">
+                        <input type="number" id="homework_secondary_score" min="0" max="100" placeholder="0-100" style="width: 100%;">
                     </div>
                 </div>
             </div>
             
             <div style="text-align: center;">
-                <button class="btn success" style="margin-right: 10px;" onclick="saveHomework()">Сохранить домашку</button>
-                <button class="btn warning" style="margin-right: 10px;" onclick="markHomeworkChecked()">Отметить как проверенную</button>
-                <button class="btn danger" onclick="deleteHomework()">Удалить Д/З</button>
+                <button type="button" class="btn success" style="margin-right: 10px;" onclick="saveHomework()">Сохранить домашку</button>
+                <button type="button" class="btn warning" style="margin-right: 10px;" onclick="markHomeworkChecked()">Отметить как проверенную</button>
+                <button type="button" class="btn danger" onclick="deleteHomework()">Удалить Д/З</button>
             </div>
         </div>
-    </div>
+        
+    </div> <!-- конец combined-form -->
 </div>
 
 <!-- Таблица учеников -->
@@ -638,7 +630,7 @@ function updateLessonsColors() {
     const selectedDate = document.getElementById('date_select').value;
     
     if (selectedDate) {
-        console.log('Перекрашиваем уроки в режим:', currentMode);
+        console.log('Перекрашиваем уроки');
         loadLessonsForDate(selectedDate);
         
         // И загружаем вчерашние если это сегодня
@@ -814,6 +806,9 @@ function loadYesterdayLessons(date) {
 }
 
 function updateYesterdayLessonsDisplay(lessons) {
+    // ДОБАВЬ ЭТУ СТРОКУ В САМОЕ НАЧАЛО:
+    window.yesterdayLessonsData = lessons; // сохраняем вчерашние данные
+    
     console.log('Вчерашние уроки:', lessons);
     
     // Находим таблицу вчерашних уроков
@@ -865,6 +860,9 @@ function updateYesterdayLessonsDisplay(lessons) {
 }
 
 function updateLessonsDisplay(lessons, date) {
+    // ДОБАВЬ ЭТУ СТРОКУ В САМОЕ НАЧАЛО:
+    window.currentLessonsData = lessons; // сохраняем данные для заполнения форм
+    
     // Обновляем заголовок
     updateDateDisplay(date);
     
@@ -918,71 +916,42 @@ function updateLessonsDisplay(lessons, date) {
 
 function getLessonStatusInfo(lesson) {
     if (lesson.status === 'scheduled') {
-        // Синий для запланированных (во всех режимах)
+        // Синий для запланированных
         return {
             color: '#0ea5e9',
-            text: 'Запланирован',
+            text: '⏰ Запланирован',
             background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(2, 132, 199, 0.15))',
             borderColor: '#0ea5e9'
         };
     }
     
     if (lesson.status === 'completed') {
-        if (currentMode === 'report') {
-            // РЕЖИМ ОТЧЕТОВ
-            if (lesson.has_report) {
-                // Зеленый - отчет есть
-                return {
-                    color: '#10b981',
-                    text: 'Отчет готов',
-                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15))',
-                    borderColor: '#10b981'
-                };
-            } else {
-                // Красный - отчета нет
-                return {
-                    color: '#ef4444',
-                    text: 'Нет отчета',
-                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.15))',
-                    borderColor: '#ef4444'
-                };
-            }
-        } else {
-            // РЕЖИМ ДОМАШЕК
-            if (!lesson.has_homework) {
-                // Красный - домашки нет
-                return {
-                    color: '#ef4444',
-                    text: 'Нет домашки',
-                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.15))',
-                    borderColor: '#ef4444'
-                };
-            } else if (lesson.homework_type === 'none') {
-                // Зеленый - выбрано "не задавать"
-                return {
-                    color: '#10b981',
-                    text: 'Не задавать',
-                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15))',
-                    borderColor: '#10b981'
-                };
+        // Определяем статус отчета
+        let reportEmoji = lesson.has_report ? '✅' : '❌';
+        
+        // Определяем статус домашки
+        let homeworkEmoji = '❌'; // по умолчанию нет домашки
+        
+        if (lesson.has_homework) {
+            if (lesson.homework_type === 'none') {
+                // Осознанно не задано - галочка
+                homeworkEmoji = '✅';
             } else if (lesson.homework_checked) {
-                // Зеленый - домашка проверена
-                return {
-                    color: '#10b981',
-                    text: 'Проверена',
-                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15))',
-                    borderColor: '#10b981'
-                };
+                // Задано и проверено - галочка
+                homeworkEmoji = '✅';
             } else {
-                // Оранжевый - домашка не проверена
-                return {
-                    color: '#f97316',
-                    text: 'Не проверена',
-                    background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(234, 88, 12, 0.15))',
-                    borderColor: '#f97316'
-                };
+                // Задано, но не проверено - песочные часы
+                homeworkEmoji = '⏳';
             }
         }
+        
+        // Голубой цвет для всех завершенных уроков
+        return {
+            color: '#D9F6F4', // светлый цвет из твоих CSS переменных
+            text: `${reportEmoji} Отчет  ${homeworkEmoji} Домашка`,
+            background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(30, 58, 138, 0.2))',
+            borderColor: '#00d4ff'
+        };
     }
     
     // Серый для отмененных
@@ -992,6 +961,77 @@ function getLessonStatusInfo(lesson) {
         background: 'linear-gradient(135deg, rgba(107, 114, 128, 0.15), rgba(75, 85, 99, 0.15))',
         borderColor: '#6b7280'
     };
+}
+
+function fillFormWithExistingData(lesson) {
+    console.log('Заполняем форму данными урока:', lesson);
+    
+    // === ОЧИЩАЕМ ВСЕ ПОЛЯ СНАЧАЛА ===
+    clearAllFormFields();
+    
+    // === ЗАПОЛНЯЕМ ОТЧЕТ ===
+    if (lesson.report_data) {
+        console.log('Найден отчет, заполняем поля:', lesson.report_data);
+        
+        document.getElementById('report_topic').value = lesson.report_data.topic || '';
+        document.getElementById('report_understanding').value = lesson.report_data.understanding_level || '';
+        document.getElementById('report_comment').value = lesson.report_data.teacher_comment || '';
+        
+        // Пока баллы не добавляем - добавим потом если нужно
+        // document.getElementById('report_primary_score').value = lesson.report_data.primary_score || '';
+        // document.getElementById('report_secondary_score').value = lesson.report_data.secondary_score || '';
+    }
+    
+    // === ЗАПОЛНЯЕМ ДОМАШКУ ===
+    if (lesson.homework_data) {
+        console.log('Найдена домашка, заполняем поля:', lesson.homework_data);
+        
+        // Определяем тип домашки
+        let homeworkType = 'tasks'; // по умолчанию
+        if (lesson.homework_data.description === 'Не задавать домашку' || 
+            lesson.homework_data.description.toLowerCase().includes('не задавать')) {
+            homeworkType = 'none';
+        }
+        
+        // Устанавливаем тип
+        document.getElementById('homework_type').value = homeworkType;
+        
+        // Заполняем описание
+        if (homeworkType === 'tasks') {
+            document.getElementById('homework_description').value = lesson.homework_data.description || '';
+            
+            // Заполняем баллы если есть
+            document.getElementById('homework_solution_score').value = lesson.homework_data.solution_score || '';
+            document.getElementById('homework_formatting_score').value = lesson.homework_data.design_score || '';
+            
+            // Пока эти баллы не добавляем
+            // document.getElementById('homework_primary_score').value = lesson.homework_data.primary_score || '';
+            // document.getElementById('homework_secondary_score').value = lesson.homework_data.secondary_score || '';
+        }
+        
+        // Показываем нужные поля
+        toggleHomeworkFields();
+    }
+}
+
+function clearAllFormFields() {
+    // Очищаем поля отчета
+    document.getElementById('report_topic').value = '';
+    document.getElementById('report_understanding').value = '';
+    document.getElementById('report_comment').value = '';
+    document.getElementById('report_primary_score').value = '';
+    document.getElementById('report_secondary_score').value = '';
+    
+    // Очищаем поля домашки
+    document.getElementById('homework_type').value = '';
+    document.getElementById('homework_description').value = '';
+    document.getElementById('homework_solution_score').value = '';
+    document.getElementById('homework_formatting_score').value = '';
+    document.getElementById('homework_primary_score').value = '';
+    document.getElementById('homework_secondary_score').value = '';
+    
+    // Скрываем поля домашки
+    toggleHomeworkFields();
 }
 
 function selectLesson(lessonId) {
@@ -1019,9 +1059,10 @@ function selectLesson(lessonId) {
         const student = studentElement.textContent.trim();
         const subject = subjectElement.textContent.trim();
         
-        // Получаем дату из таблицы
-        const today = new Date();
-        const dateStr = today.toLocaleDateString('ru-RU');
+        // Получаем дату из input
+        const selectedDate = document.getElementById('date_select').value;
+        const dateObj = new Date(selectedDate);
+        const dateStr = dateObj.toLocaleDateString('ru-RU');
         
         document.getElementById('selected_lesson_info').innerHTML = 
             `Работаем с уроком: ${student} - ${subject} (${time}, ${dateStr})`;
@@ -1030,8 +1071,28 @@ function selectLesson(lessonId) {
             `Работаем с уроком ID: ${lessonId}`;
     }
 
-    // Обновляем видимость форм согласно текущему режиму
-    updateFormsVisibility();
+    // === НОВАЯ ЧАСТЬ: Ищем данные урока и заполняем форму ===
+    console.log('Ищем данные для урока ID:', lessonId);
+
+    // Ищем урок в сегодняшних данных
+    let lesson = null;
+    if (window.currentLessonsData) {
+        lesson = window.currentLessonsData.find(l => l.id === lessonId);
+    }
+
+    // Если не найден в сегодняшних, ищем во вчерашних
+    if (!lesson && window.yesterdayLessonsData) {
+        lesson = window.yesterdayLessonsData.find(l => l.id === lessonId);
+        console.log('Ищем во вчерашних данных...');
+    }
+
+    if (lesson) {
+        console.log('Найден урок с данными:', lesson);
+        fillFormWithExistingData(lesson);
+    } else {
+        console.log('Урок не найден ни в текущих, ни во вчерашних данных');
+        clearAllFormFields();
+    }
 }
 
 // Функция переключения полей домашки
@@ -1183,11 +1244,11 @@ function saveReport() {
     // Собираем данные формы
     const reportData = {
         lesson_id: selectedLesson,
-        topic: document.querySelector('.report-form input[placeholder*="Квадратные"]').value,
-        understanding_level: document.querySelector('.report-form select').value,
-        teacher_comment: document.querySelector('.report-form textarea').value,
-        primary_score: document.querySelector('.report-form input[placeholder="0-50"]').value,
-        secondary_score: document.querySelector('.report-form input[placeholder="0-100"]').value
+        topic: document.getElementById('report_topic').value,
+        understanding_level: document.getElementById('report_understanding').value,
+        teacher_comment: document.getElementById('report_comment').value,
+        primary_score: document.getElementById('report_primary_score').value,
+        secondary_score: document.getElementById('report_secondary_score').value
     };
     
     // Проверяем обязательные поля
@@ -1209,12 +1270,9 @@ function saveReport() {
         if (data.success) {
             alert('✅ Отчет успешно сохранен!');
             
-            // Очищаем форму
-            document.querySelector('.report-form input[placeholder*="Квадратные"]').value = '';
-            document.querySelector('.report-form select').value = '';
-            document.querySelector('.report-form textarea').value = '';
-            document.querySelector('.report-form input[placeholder="0-50"]').value = '';
-            document.querySelector('.report-form input[placeholder="0-100"]').value = '';
+            // === НОВАЯ ЧАСТЬ: Автоматическое обновление ===
+            refreshLessonData();
+            
         } else {
             alert('❌ Ошибка: ' + data.error);
         }
@@ -1235,11 +1293,11 @@ function saveHomework() {
     const homeworkData = {
         lesson_id: selectedLesson,
         homework_type: document.getElementById('homework_type').value,
-        description: document.querySelector('.homework-form textarea').value,
-        primary_score: document.querySelector('.homework-form input[placeholder="0-50"]').value,
-        secondary_score: document.querySelector('.homework-form input[placeholder="0-100"]').value,
-        solution_score: document.querySelector('#homework_evaluation_fields select').value,
-        formatting_score: document.querySelector('#homework_formatting_fields select').value
+        description: document.getElementById('homework_description').value,
+        primary_score: document.getElementById('homework_primary_score').value,
+        secondary_score: document.getElementById('homework_secondary_score').value,
+        solution_score: document.getElementById('homework_solution_score').value,
+        formatting_score: document.getElementById('homework_formatting_score').value
     };
     
     // Проверяем обязательные поля
@@ -1261,16 +1319,9 @@ function saveHomework() {
         if (data.success) {
             alert('✅ Домашнее задание успешно сохранено!');
             
-            // Очищаем форму
-            document.getElementById('homework_type').value = '';
-            document.querySelector('.homework-form textarea').value = '';
-            document.querySelector('.homework-form input[placeholder="0-50"]').value = '';
-            document.querySelector('.homework-form input[placeholder="0-100"]').value = '';
-            document.querySelector('#homework_evaluation_fields select').value = '';
-            document.querySelector('#homework_formatting_fields select').value = '';
+            // === НОВАЯ ЧАСТЬ: Автоматическое обновление ===
+            refreshLessonData();
             
-            // Скрываем поля
-            toggleHomeworkFields();
         } else {
             alert('❌ Ошибка: ' + data.error);
         }
@@ -1313,7 +1364,7 @@ function deleteReport() {
             document.querySelector('.report-form input[placeholder="0-100"]').value = '';
             
             // Обновляем отображение урока (убираем галочку)
-            updateLessonsColors();
+            refreshLessonData();
         } else {
             alert('❌ Ошибка: ' + data.error);
         }
@@ -1344,7 +1395,7 @@ function markHomeworkChecked() {
             alert('✅ Домашнее задание отмечено как проверенное!');
             
             // Обновляем отображение урока
-            updateLessonsColors();
+            refreshLessonData();
         } else {
             alert('❌ Ошибка: ' + data.error);
         }
@@ -1391,7 +1442,7 @@ function deleteHomework() {
             toggleHomeworkFields();
             
             // Обновляем отображение урока
-            updateLessonsColors();
+            refreshLessonData();
         } else {
             alert('❌ Ошибка: ' + data.error);
         }
@@ -1469,6 +1520,48 @@ function showCopyNotification(message = '✅ Скопировано!') {
             }
         }, 300);
     }, 2000);
+}
+
+function refreshLessonData() {
+    console.log('🔄 Обновляем данные уроков автоматически');
+    
+    // Получаем текущую выбранную дату
+    const selectedDate = document.getElementById('date_select').value;
+    const selectedMonth = document.getElementById('month_select').value;
+    
+    if (selectedDate) {
+        // 1. Перезагружаем уроки для текущей даты
+        loadLessonsForDate(selectedDate);
+        
+        // 2. Если это вчерашняя дата тоже, обновляем вчерашние
+        const today = new Date().toISOString().split('T')[0];
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        
+        if (selectedDate === yesterdayStr) {
+            // Перезагружаем вчерашние уроки
+            loadYesterdayLessons(selectedDate);
+        }
+        
+        // 3. Обновляем счетчики для текущего месяца
+        if (selectedMonth) {
+            loadRealCounters(selectedMonth);
+        }
+        
+        console.log('✅ Данные уроков обновлены');
+        
+        // 4. Через небольшую задержку выбираем урок заново (чтобы форма обновилась)
+        setTimeout(() => {
+            if (selectedLesson && window.currentLessonsData) {
+                const lesson = window.currentLessonsData.find(l => l.id === selectedLesson);
+                if (lesson) {
+                    fillFormWithExistingData(lesson);
+                    console.log('✅ Форма обновлена с новыми данными');
+                }
+            }
+        }, 500); // задержка 500мс чтобы данные успели загрузиться
+    }
 }
 
 </script>
