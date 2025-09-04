@@ -3321,6 +3321,8 @@ def get_lessons_by_date(date):
                 ha.secondary_score as homework_secondary_score,
                 ha.solution_score as homework_solution_score,
                 ha.design_score as homework_design_score,
+                ha.tasks_assigned as homework_tasks_assigned,
+                ha.tasks_solved as homework_tasks_solved,
                 ha.is_checked as homework_checked,
                 ha.checked_date as homework_checked_date
                 
@@ -3360,8 +3362,9 @@ def get_lessons_by_date(date):
                     'secondary_score': lesson['homework_secondary_score'] or '',
                     'solution_score': lesson['homework_solution_score'] or '',
                     'design_score': lesson['homework_design_score'] or '',
-                    'is_checked': bool(lesson['homework_checked']),
-                    'homework_type': 'tasks' if lesson['homework_id'] else ''  # определяем тип
+                    'tasks_assigned': lesson['homework_tasks_assigned'] or '',
+                    'tasks_solved': lesson['homework_tasks_solved'] or '',
+                    'is_checked': bool(lesson['homework_checked'])
                 } if lesson['homework_id'] else None
             }
             
