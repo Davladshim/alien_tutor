@@ -1731,3 +1731,127 @@ main {
     background-size: contain;
     background-repeat: no-repeat;
 }
+
+/* ============================================================================
+   СТИЛИ ДЛЯ НОВОЙ СЕТКИ УРОКОВ
+   ============================================================================ */
+
+.lessons-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2px;
+    padding: 0;
+    background: var(--border-secondary);
+}
+
+.lesson-cell {
+    background: var(--bg-card);
+    padding: 15px;
+    min-height: 120px;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: default;
+    position: relative;
+}
+
+.lesson-cell.empty-lesson {
+    background: var(--bg-card);
+    opacity: 0.6;
+}
+
+.lesson-cell.has-lesson {
+    cursor: pointer;
+    border-left: 4px solid;
+}
+
+.lesson-cell.has-lesson:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.empty-lesson-text {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 14px;
+}
+
+.lesson-time {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    min-width: 70px;
+}
+
+.lesson-student {
+    font-weight: bold;
+    margin-bottom: 6px;
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+.lesson-subject {
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+}
+
+.lesson-status {
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: auto;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .lessons-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .lesson-cell {
+        padding: 10px;
+        min-height: 100px;
+    }
+    
+    .lesson-time {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+    
+    .lesson-student {
+        font-size: 14px;
+    }
+    
+    .lesson-subject {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .lessons-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .lesson-cell {
+        padding: 8px;
+        min-height: 80px;
+    }
+}
+
+/* ============================================================================
+   СТИЛЬ ДЛЯ ИКОНКИ СОХРАНЕНИЯ (ЗЕЛЕНАЯ ГАЛОЧКА)
+   ============================================================================ */
+
+.icon-action.icon-save:hover, .icon-action.icon-save:focus {
+    color: #10b981;
+    transform: scale(1.2);
+}
+

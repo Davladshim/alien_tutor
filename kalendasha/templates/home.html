@@ -72,116 +72,106 @@
             </div>
         </div>
     </div>
-<!-- Блоки с уроками - заполняются из БД -->
-<div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 30px;">
+<!-- Блоки с уроками - НОВАЯ ВЕРСИЯ -->
+<div style="margin-bottom: 30px;">
     
-    <!-- Уроки вчера - до 12 уроков (динамически 1-2 строки) -->
-    <table style="width: 100%; border-collapse: collapse;">
-        <tr>
-            <!-- Левая колонка - заголовок на 2 строки -->
-            <td rowspan="2" style="width: 200px; background: var(--accent-gradient); color: white; padding: 20px; 
-                    font-weight: bold; font-size: 18px; text-align: center; vertical-align: middle; 
-                    border-right: 2px solid var(--border-secondary);">
-                Уроки вчера<br>
-                <span id="yesterday_date" style="font-size: 14px; font-weight: normal;">(загрузка...)</span>
-            </td>
-            
-            <!-- Первая строка: 6 пустых ячеек - JavaScript их заполнит -->
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-        </tr>
-        <tr id="yesterday_row_2" style="display: none;">
-            <!-- Вторая строка: еще 6 пустых ячеек (скрыта по умолчанию) -->
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-        </tr>
-    </table>
+    <!-- УРОКИ ВЧЕРА -->
+    <div style="margin-bottom: 25px; border: 1px solid var(--border-secondary); border-radius: 12px; overflow: hidden;">
+        <!-- Заголовок вчера -->
+        <div style="background: var(--accent-gradient); color: white; padding: 12px; text-align: center; font-weight: bold; font-size: 18px;">
+            Уроки вчера <span id="yesterday_date" style="font-size: 16px; font-weight: normal;">(загрузка...)</span>
+        </div>
+        
+        <!-- Сетка уроков вчера -->
+        <div class="lessons-grid" id="yesterday_lessons_grid">
+            <!-- 12 ячеек для уроков (заполняются JavaScript) -->
+            <div class="lesson-cell empty-lesson">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson" style="display: none;">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson" style="display: none;">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson" style="display: none;">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson" style="display: none;">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson" style="display: none;">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson" style="display: none;">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+        </div>
+    </div>
     
-    <!-- Уроки сегодня - до 12 уроков (2 строки по 6) -->
-    <table style="width: 100%; border-collapse: collapse;">
-        <tr>
-            <!-- Левая колонка - заголовок на 2 строки -->
-            <td rowspan="2" style="width: 200px; background: var(--accent-gradient); color: white; padding: 20px; 
-                    font-weight: bold; font-size: 18px; text-align: center; vertical-align: middle; 
-                    border-right: 2px solid var(--border-secondary);">
-                <span id="today_lessons_title">Уроки сегодня</span><br>
-                <span id="today_lessons_date" style="font-size: 14px; font-weight: normal;">(загрузка...)</span>
-            </td>
-            
-            <!-- Первая строка: 6 пустых ячеек - JavaScript их заполнит -->
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-        </tr>
-        <tr id="today_row_2">
-            <!-- Вторая строка: еще 6 пустых ячеек - JavaScript их заполнит -->
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; border-right: 1px solid var(--border-secondary); width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-            <td style="background: var(--bg-card); padding: 15px; width: 200px;">
-                <div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>
-            </td>
-        </tr>
-    </table>
+    <!-- УРОКИ СЕГОДНЯ -->
+    <div style="border: 1px solid var(--border-secondary); border-radius: 12px; overflow: hidden;">
+        <!-- Заголовок сегодня -->
+        <div style="background: var(--accent-gradient); color: white; padding: 12px; text-align: center; font-weight: bold; font-size: 18px;">
+            <span id="today_lessons_title">Уроки сегодня</span> <span id="today_lessons_date" style="font-size: 16px; font-weight: normal;">(загрузка...)</span>
+        </div>
+        
+        <!-- Сетка уроков сегодня -->
+        <div class="lessons-grid" id="today_lessons_grid">
+            <!-- 12 ячеек для уроков (заполняются JavaScript) -->
+            <div class="lesson-cell empty-lesson">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson" style="display: none;">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson" style="display: none;">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson" style="display: none;">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson" style="display: none;">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson" style="display: none;">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+            <div class="lesson-cell empty-lesson" style="display: none;">
+                <div class="empty-lesson-text">Нет урока</div>
+            </div>
+        </div>
+    </div>
 </div>
 <!-- Формы для работы с выбранным уроком -->
 <div id="lesson_forms" style="border: 2px solid var(--accent-color, #00d4ff); border-radius: 15px; padding: 25px; display: none;">
@@ -194,9 +184,9 @@
         
         <!-- СЕКЦИЯ ОТЧЕТА -->
         <div class="report-section" style="margin-bottom: 40px;">
-            <h3 style="color: var(--text-accent); margin-bottom: 20px;">📝 Отчет по уроку</h3>
+            <h3 style="color: var(--text-accent); margin-bottom: 20px;">Отчет по уроку</h3>
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 20px; align-items: end; margin-bottom: 20px;">
                 <div>
                     <label>Тема урока:</label>
                     <input type="text" id="report_topic" placeholder="Например: Квадратные уравнения" style="width: 100%;">
@@ -211,6 +201,18 @@
                         <option value="Тему нужно закрепить">Тему нужно закрепить</option>
                     </select>
                 </div>
+                
+                <div>
+                    <label style="visibility: hidden;">Удалить</label>
+                    <span class="icon-action icon-delete" onclick="deleteReport()" title="Удалить отчет" style="cursor: pointer; align-self: center; margin-bottom: 23px; margin-left: 15px;">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3,6 5,6 21,6"></polyline>
+                            <path d="M19,6V20a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6M8,6V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"></path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                    </span>
+                </div>
             </div>
             
             <div style="margin-bottom: 20px;">
@@ -219,44 +221,70 @@
             </div>
 
             <!-- Кнопка пробник и баллы в одной строке -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                <div>
-                    <label style="visibility: hidden;">Пробник</label>
-                    <button type="button" class="btn warning" onclick="openProbnikModal('report')" style="width: 100%;">Пробник</button>
+            <div style="display: flex; justify-content: space-between; align-items: end; margin-bottom: 20px;">
+                <div style="display: flex; gap: 15px; align-items: end;">
+                    <div>
+                        <label style="visibility: hidden;">Пробник</label>
+                        <span class="icon-action" onclick="openProbnikModal('report')" title="Открыть пробник" style="cursor: pointer; align-self: center; margin-bottom: 23px; display: flex; justify-content: center;">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="M21 21l-4.35-4.35"></path>
+                            </svg>
+                        </span>
+                    </div>
+                    
+                    <div>
+                        <label>Первичные баллы:</label>
+                        <input type="number" id="report_primary_score" min="0" max="50" placeholder="0-50" style="width: 200px;">
+                    </div>
+                    
+                    <div>
+                        <label>Вторичные баллы:</label>
+                        <input type="number" id="report_secondary_score" min="0" max="100" placeholder="0-100" style="width: 200px;">
+                    </div>
                 </div>
                 
                 <div>
-                    <label>Первичные баллы:</label>
-                    <input type="number" id="report_primary_score" min="0" max="50" placeholder="0-50" style="width: 100%;">
-                </div>
-                
-                <div>
-                    <label>Вторичные баллы:</label>
-                    <input type="number" id="report_secondary_score" min="0" max="100" placeholder="0-100" style="width: 100%;">
+                    <label style="visibility: hidden;">Сохранить</label>
+                    <span class="icon-action icon-save" onclick="saveReport()" title="Сохранить отчет" style="cursor: pointer; align-self: center; margin-bottom: 23px; margin-left: 40px;">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20,6 9,17 4,12"></polyline>
+                        </svg>
+                    </span>
                 </div>
             </div>
-            
-            <div style="text-align: center;">
-                <button type="button" class="btn success" style="margin-right: 10px;" onclick="saveReport()">Сохранить отчет</button>
-                <button type="button" class="btn danger" onclick="deleteReport()">Удалить отчет</button>
-            </div>
-        </div>
         
         <!-- РАЗДЕЛИТЕЛЬ -->
         <div style="border-top: 2px solid var(--border-secondary); margin: 30px 0;"></div>
         
         <!-- СЕКЦИЯ ДОМАШКИ -->
         <div class="homework-section">
-            <h3 style="color: var(--text-accent); margin-bottom: 20px;">📚 Домашнее задание</h3>
-            
-            <!-- ВЫБОР ТИПА ДОМАШКИ -->
-            <div style="margin-bottom: 20px;">
-                <label>Тип домашнего задания:</label>
-                <select id="homework_type" onchange="toggleHomeworkFields()" style="width: 100%;">
-                    <option value="">-- Выберите тип --</option>
-                    <option value="tasks">Дать задачи</option>
-                    <option value="none">Не задавать домашку</option>
-                </select>
+            <!-- Заголовок и выбор типа в одной строке -->
+            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px;">
+                <div style="display: flex; align-items: baseline; gap: 30px;">
+                    <h3 style="color: var(--text-accent); margin: 0;">Домашнее задание</h3>
+                    
+                    <div style="display: flex; gap: 40px; align-items: baseline;">
+                        <label style="display: flex; align-items: baseline; cursor: pointer; white-space: nowrap;">
+                            <input type="radio" name="homework_type" value="tasks" id="homework_type_tasks" onchange="toggleHomeworkFields()" checked style="margin-right: 10px; margin-top: 0; vertical-align: baseline; width: 15px; height: 15px;">
+                            <span>Дать задания</span>
+                        </label>
+                        
+                        <label style="display: flex; align-items: baseline; cursor: pointer; white-space: nowrap;">
+                            <input type="radio" name="homework_type" value="none" id="homework_type_none" onchange="toggleHomeworkFields()" style="margin-right: 10px; margin-top: 0; vertical-align: baseline; width: 15px; height: 15px;">
+                            <span>Не задавать ДЗ</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <span class="icon-action icon-delete" onclick="deleteHomework()" title="Удалить домашнее задание" style="cursor: pointer;">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3,6 5,6 21,6"></polyline>
+                        <path d="M19,6V20a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6M8,6V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                </span>
             </div>
             
             <!-- ПОЛЯ ОЦЕНОК (отдельный блок) -->
@@ -350,28 +378,50 @@
                 </div>
 
                 <!-- Кнопка пробник и баллы под описанием -->
-                <div id="homework_probnik_fields" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; display: none;">
-                    <div>
-                        <label style="visibility: hidden;">Пробник</label>
-                        <button type="button" class="btn warning" onclick="openProbnikModal('homework')" style="width: 100%;">Пробник</button>
+                <div id="homework_probnik_fields" style="display: flex; justify-content: space-between; align-items: end; margin-bottom: 20px;">
+                    <div style="display: flex; gap: 15px; align-items: end;">
+                        <div>
+                            <label style="visibility: hidden;">Пробник</label>
+                            <span class="icon-action" onclick="openProbnikModal('homework')" title="Открыть пробник" style="cursor: pointer; margin-bottom: 12px; display: flex; justify-content: center;">
+                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="M21 21l-4.35-4.35"></path>
+                                </svg>
+                            </span>
+                        </div>
+                        
+                        <div>
+                            <label>Первичные баллы:</label>
+                            <input type="number" id="homework_primary_score" min="0" max="50" placeholder="0-50" style="width: 200px;">
+                        </div>
+                        
+                        <div>
+                            <label>Вторичные баллы:</label>
+                            <input type="number" id="homework_secondary_score" min="0" max="100" placeholder="0-100" style="width: 200px;">
+                        </div>
                     </div>
                     
-                    <div>
-                        <label>Первичные баллы:</label>
-                        <input type="number" id="homework_primary_score" min="0" max="50" placeholder="0-50" style="width: 100%;">
-                    </div>
-                    
-                    <div>
-                        <label>Вторичные баллы:</label>
-                        <input type="number" id="homework_secondary_score" min="0" max="100" placeholder="0-100" style="width: 100%;">
+                    <div style="display: flex; gap: 20px; align-items: end;">
+                        <div>
+                            <label style="visibility: hidden;">Сохранить</label>
+                            <span class="icon-action" onclick="saveHomework()" title="Сохранить домашнее задание" style="cursor: pointer; margin-bottom: 8px;">
+                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="19" x2="12" y2="5"></line>
+                                    <polyline points="5,12 12,5 19,12"></polyline>
+                                </svg>
+                            </span>
+                        </div>
+                        
+                        <div>
+                            <label style="visibility: hidden;">Проверить</label>
+                            <span class="icon-action icon-save" onclick="markHomeworkChecked()" title="Отметить как проверенную" style="cursor: pointer; margin-bottom: 8px;">
+                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                            </span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div style="text-align: center;">
-                <button type="button" class="btn success" style="margin-right: 10px;" onclick="saveHomework()">Сохранить домашку</button>
-                <button type="button" class="btn warning" style="margin-right: 10px;" onclick="markHomeworkChecked()">Отметить как проверенную</button>
-                <button type="button" class="btn danger" onclick="deleteHomework()">Удалить Д/З</button>
             </div>
         </div>
         
@@ -766,13 +816,15 @@ function updateDateDisplay(selectedDate) {
     // Обновляем отображение вчерашней даты
     yesterdayElement.textContent = `(${yesterdayFormatted})`;
     
-    // Форматируем дату для отображения (остальной код как был)
+    // Форматируем дату для отображения
     let displayDate, displayTitle;
     
-    if (selectedDate === '2025-08-15') {
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (selectedDate === today) {
         // Это сегодня
         displayTitle = 'Уроки сегодня';
-        displayDate = '(15.08.2025)';
+        displayDate = '(сегодня)';
     } else {
         // Другая дата
         const dateObj = new Date(selectedDate);
@@ -780,7 +832,7 @@ function updateDateDisplay(selectedDate) {
         const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
         const year = dateObj.getFullYear();
         
-        displayTitle = 'Уроки в';
+        displayTitle = 'Уроки';
         displayDate = `(${day}.${month}.${year})`;
     }
     
@@ -855,49 +907,53 @@ function loadYesterdayLessons(date) {
 }
 
 function updateYesterdayLessonsDisplay(lessons) {
-    // ДОБАВЬ ЭТУ СТРОКУ В САМОЕ НАЧАЛО:
-    window.yesterdayLessonsData = lessons; // сохраняем вчерашние данные
+    // Сохраняем вчерашние данные
+    window.yesterdayLessonsData = lessons;
     
     console.log('Вчерашние уроки:', lessons);
     
-    // Находим таблицу вчерашних уроков
-    const yesterdayTable = document.querySelector('div[style*="grid-template-columns"] table');
-    const yesterdayRows = yesterdayTable.querySelectorAll('tr');
-    const yesterdayFirstRowCells = yesterdayRows[0].querySelectorAll('td:not(:first-child)'); // первая строка, кроме заголовка
-    const yesterdaySecondRowCells = yesterdayRows[1].querySelectorAll('td'); // вторая строка, все ячейки
-    const allYesterdayCells = [...yesterdayFirstRowCells, ...yesterdaySecondRowCells];
+    // Находим сетку вчерашних уроков
+    const yesterdayGrid = document.getElementById('yesterday_lessons_grid');
+    const yesterdayCells = yesterdayGrid.querySelectorAll('.lesson-cell');
     
-    // Скрываем вторую строку по умолчанию
-    const yesterdayRow2 = document.getElementById('yesterday_row_2');
-    yesterdayRow2.style.display = 'none';
-    
-    // Очищаем все ячейки вчера
-    allYesterdayCells.forEach(cell => {
-        cell.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>';
-        cell.style.background = 'var(--bg-card)';
-        cell.style.borderLeftColor = 'var(--border-secondary)';
-        cell.onclick = null;
+    // Сначала скрываем все ячейки после 6-й
+    yesterdayCells.forEach((cell, index) => {
+        if (index >= 6) {
+            cell.style.display = 'none';
+        } else {
+            cell.style.display = 'flex';
+        }
     });
     
     // Показываем вторую строку если уроков больше 6
     if (lessons.length > 6) {
-        yesterdayRow2.style.display = 'table-row';
+        yesterdayCells.forEach((cell, index) => {
+            if (index >= 6) {
+                cell.style.display = 'flex';
+            }
+        });
     }
+    
+    // Очищаем все ячейки
+    yesterdayCells.forEach(cell => {
+        cell.className = 'lesson-cell empty-lesson';
+        cell.innerHTML = '<div class="empty-lesson-text">Нет урока</div>';
+        cell.onclick = null;
+        cell.style.cursor = 'default';
+    });
     
     // Заполняем реальными уроками (максимум 12)
     lessons.slice(0, 12).forEach((lesson, index) => {
-        const cell = allYesterdayCells[index];
+        const cell = yesterdayCells[index];
         if (cell) {
             const statusInfo = getLessonStatusInfo(lesson);
             
+            cell.className = 'lesson-cell has-lesson';
             cell.innerHTML = `
-                <div style="background: var(--accent-gradient); color: white; padding: 8px 12px; border-radius: 6px; 
-                           font-size: 16px; font-weight: bold; margin-bottom: 10px; text-align: center; min-width: 70px;">
-                    ${lesson.time}
-                </div>
-                <div style="font-weight: bold; margin-bottom: 6px; font-size: 16px;">${lesson.student}</div>
-                <div style="font-size: 14px; margin-bottom: 6px;">${lesson.subject}</div>
-                <div style="font-size: 12px; color: ${statusInfo.color}; font-weight: bold;">${statusInfo.text}</div>
+                <div class="lesson-time">${lesson.time}</div>
+                <div class="lesson-student">${lesson.student}</div>
+                <div class="lesson-subject">${lesson.subject}</div>
+                <div class="lesson-status" style="color: ${statusInfo.color};">${statusInfo.text}</div>
             `;
             
             cell.style.background = statusInfo.background;
@@ -909,50 +965,54 @@ function updateYesterdayLessonsDisplay(lessons) {
 }
 
 function updateLessonsDisplay(lessons, date) {
-    // ДОБАВЬ ЭТУ СТРОКУ В САМОЕ НАЧАЛО:
-    window.currentLessonsData = lessons; // сохраняем данные для заполнения форм
+    // Сохраняем данные для заполнения форм
+    window.currentLessonsData = lessons;
     
     // Обновляем заголовок
     updateDateDisplay(date);
     
-    // Находим вторую таблицу (уроки сегодня)
-    const todayTable = document.querySelectorAll('div[style*="grid-template-columns"] table')[1];
-    const todayRows = todayTable.querySelectorAll('tr');
-    const todayFirstRowCells = todayRows[0].querySelectorAll('td:not(:first-child)'); // первая строка, кроме заголовка
-    const todaySecondRowCells = todayRows[1].querySelectorAll('td'); // вторая строка, все ячейки
-    const allTodayCells = [...todayFirstRowCells, ...todaySecondRowCells];
+    // Находим сетку сегодняшних уроков
+    const todayGrid = document.getElementById('today_lessons_grid');
+    const todayCells = todayGrid.querySelectorAll('.lesson-cell');
     
-    // Скрываем вторую строку по умолчанию
-    const todayRow2 = document.getElementById('today_row_2');
-    todayRow2.style.display = 'none';
-    
-    // Очищаем все ячейки
-    allTodayCells.forEach(cell => {
-        cell.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-style: italic;">Нет урока</div>';
-        cell.style.background = 'var(--bg-card)';
-        cell.style.borderLeftColor = 'var(--border-secondary)';
-        cell.onclick = null;
+    // Сначала скрываем все ячейки после 6-й
+    todayCells.forEach((cell, index) => {
+        if (index >= 6) {
+            cell.style.display = 'none';
+        } else {
+            cell.style.display = 'flex';
+        }
     });
     
     // Показываем вторую строку если уроков больше 6
     if (lessons.length > 6) {
-        todayRow2.style.display = 'table-row';
+        todayCells.forEach((cell, index) => {
+            if (index >= 6) {
+                cell.style.display = 'flex';
+            }
+        });
     }
+    
+    // Очищаем все ячейки
+    todayCells.forEach(cell => {
+        cell.className = 'lesson-cell empty-lesson';
+        cell.innerHTML = '<div class="empty-lesson-text">Нет урока</div>';
+        cell.onclick = null;
+        cell.style.cursor = 'default';
+    });
     
     // Заполняем реальными уроками (максимум 12)
     lessons.slice(0, 12).forEach((lesson, index) => {
-        const cell = allTodayCells[index];
+        const cell = todayCells[index];
         if (cell) {
             const statusInfo = getLessonStatusInfo(lesson);
             
+            cell.className = 'lesson-cell has-lesson';
             cell.innerHTML = `
-                <div style="background: var(--accent-gradient); color: white; padding: 8px 12px; border-radius: 6px; 
-                           font-size: 16px; font-weight: bold; margin-bottom: 10px; text-align: center; min-width: 70px;">
-                    ${lesson.time}
-                </div>
-                <div style="font-weight: bold; margin-bottom: 6px; font-size: 16px;">${lesson.student}</div>
-                <div style="font-size: 14px; margin-bottom: 6px;">${lesson.subject}</div>
-                <div style="font-size: 12px; color: ${statusInfo.color}; font-weight: bold;">${statusInfo.text}</div>
+                <div class="lesson-time">${lesson.time}</div>
+                <div class="lesson-student">${lesson.student}</div>
+                <div class="lesson-subject">${lesson.subject}</div>
+                <div class="lesson-status" style="color: ${statusInfo.color};">${statusInfo.text}</div>
             `;
             
             cell.style.background = statusInfo.background;
@@ -1042,8 +1102,14 @@ function fillFormWithExistingData(lesson) {
             homeworkType = 'none';
         }
         
-        // Устанавливаем тип
-        document.getElementById('homework_type').value = homeworkType;
+        // Устанавливаем тип в радио-кнопках
+        if (homeworkType === 'none') {
+            document.getElementById('homework_type_none').checked = true;
+            document.getElementById('homework_type_tasks').checked = false;
+        } else {
+            document.getElementById('homework_type_tasks').checked = true;
+            document.getElementById('homework_type_none').checked = false;
+        }
         
         // Заполняем описание
         if (homeworkType === 'tasks') {
@@ -1080,7 +1146,9 @@ function clearAllFormFields() {
     document.getElementById('report_secondary_score').value = '';
     
     // Очищаем поля домашки
-    document.getElementById('homework_type').value = '';
+    // Сбрасываем радио-кнопки на "Дать задания" по умолчанию
+    document.getElementById('homework_type_tasks').checked = true;
+    document.getElementById('homework_type_none').checked = false;
     document.getElementById('homework_description').value = '';
     document.getElementById('homework_solution_score').value = '';
     document.getElementById('homework_formatting_score').value = '';
@@ -1103,7 +1171,7 @@ function selectLesson(lessonId) {
     selectedLesson = lessonId;
     
     // Убираем выделение со всех уроков
-    document.querySelectorAll('td[style*="cursor: pointer"]').forEach(lesson => {
+    document.querySelectorAll('.lesson-cell.has-lesson').forEach(lesson => {
         lesson.classList.remove('lesson-selected');
     });
     
@@ -1162,7 +1230,10 @@ function selectLesson(lessonId) {
 
 // Функция переключения полей домашки
 function toggleHomeworkFields() {
-    const homeworkType = document.getElementById('homework_type').value;
+    // Получаем выбранный тип из радио-кнопок
+    const homeworkTypeRadio = document.querySelector('input[name="homework_type"]:checked');
+    const homeworkType = homeworkTypeRadio ? homeworkTypeRadio.value : 'tasks';
+    
     const contentFields = document.getElementById('homework_content_fields');
     const probnikFields = document.getElementById('homework_probnik_fields');
     const evaluationFields = document.getElementById('homework_evaluation_fields');
@@ -1379,7 +1450,7 @@ function saveHomework() {
     // Собираем данные формы домашки
     const homeworkData = {
         lesson_id: selectedLesson,
-        homework_type: document.getElementById('homework_type').value,
+        homework_type: document.querySelector('input[name="homework_type"]:checked').value,
         description: document.getElementById('homework_description').value,
         primary_score: document.getElementById('homework_primary_score').value,
         secondary_score: document.getElementById('homework_secondary_score').value,
