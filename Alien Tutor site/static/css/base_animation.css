@@ -1496,9 +1496,10 @@ p {
     background: rgba(94, 217, 215, 0.2);
     color: inherit;
     padding: 1rem 0.8rem;
-    text-align: left;
+    text-align: center;
     font-weight: 600;
     border-bottom: 2px solid rgba(94, 217, 215, 0.3);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -1507,7 +1508,8 @@ p {
 .lessons-table td {
     padding: 1rem 0.8rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    vertical-align: top;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    vertical-align: middle;
     line-height: 1.4;
     text-align: left;
 }
@@ -2030,102 +2032,173 @@ p {
     height: 18px;
 }
 
-/* ===== ИСПРАВЛЕННАЯ ИНТЕРАКТИВНАЯ ШКАЛА ===== */
+/* ===== НОВАЯ ИНТЕГРИРОВАННАЯ ШКАЛА ===== */
 
-/* Контейнер для диаграммы с шкалой */
-.chart-with-scale {
-    position: relative;
+/* Контейнер диаграммы с местом для шкалы */
+.double-bar-chart {
     display: flex;
-    align-items: end;
-    justify-content: center;
-    height: 100%;
+    align-items: flex-end;
+    justify-content: flex-start; /* Изменили с center на flex-start */
+    gap: 8px;
+    height: 250px;
     width: 100%;
-    padding-left: 50px; /* Добавляем отступ слева для шкалы */
+    padding: 1rem;
+    position: relative;
 }
 
-/* Вертикальная шкала слева */
-.vertical-scale {
-    position: absolute;
-    left: 0; /* Изменили с -40px на 0 */
-    bottom: 30px; /* ИСПРАВЛЕНИЕ: Поднимаем шкалу вверх, чтобы совпадала с диаграммой */
-    height: 220px; /* Точно такая же высота как chartHeight */
-    width: 40px;
+/* Контейнер шкалы - первый элемент в flex */
+.chart-scale {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 220px; /* Точная высота области диаграммы */
+    width: 50px;
+    margin-right: 15px;
     opacity: 0;
     transition: opacity 0.3s ease;
-    pointer-events: none;
-    z-index: 5;
+    position: relative;
+    flex-shrink: 0; /* Не сжимать шкалу */
 }
 
 /* Показываем шкалу при наведении на диаграмму */
-.chart-with-scale:hover .vertical-scale {
+.double-bar-chart:hover .chart-scale {
     opacity: 1;
 }
 
-/* Деления на шкале */
-.scale-mark {
-    position: absolute;
-    right: 5px; /* Изменили с 0 на 5px для отступа */
-    width: 12px; /* Увеличили длину деления */
-    height: 2px; /* Сделали чуть толще */
-    background: var(--text-accent, #5ED9D7);
+/* Элемент шкалы (цифра + засечка) */
+.scale-item {
     display: flex;
     align-items: center;
-}
-
-/* Подписи к делениям */
-.scale-label {
-    position: absolute;
-    right: 20px; /* Увеличили отступ */
-    font-size: 12px; /* Чуть больше шрифт */
-    font-weight: 600;
-    color: var(--text-accent, #5ED9D7);
-    white-space: nowrap;
-    transform: translateY(-50%);
-}
-
-/* Горизонтальная пунктирная линия */
-.horizontal-guide-line {
-    position: absolute;
-    left: -50px; /* ИСПРАВЛЕНИЕ: Увеличили влево, чтобы доходила до шкалы */
-    right: -10px; /* Немного выходит за правый край */
-    height: 2px;
-    background: repeating-linear-gradient(
-        to right,
-        var(--text-accent, #5ED9D7) 0px,
-        var(--text-accent, #5ED9D7) 8px, /* Увеличили длину штриха */
-        transparent 8px,
-        transparent 14px /* Увеличили промежуток */
-    );
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
-    z-index: 10;
-    box-shadow: 0 0 10px rgba(94, 217, 215, 0.6); /* Увеличили свечение */
-}
-
-/* Обновляем позиционирование двойной диаграммы */
-.double-bar-chart {
+    justify-content: flex-end;
+    height: 0; /* Элемент без высоты, чтобы цифры располагались точно на уровнях */
     position: relative;
-    margin-left: 0; /* Убираем старые отступы */
 }
 
-/* Адаптивность для мобильных */
+/* Цифра на шкале */
+.scale-number {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(94, 217, 215, 0.9);
+    margin-right: 8px;
+    text-shadow: 0 0 6px rgba(94, 217, 215, 0.4);
+}
+
+/* Засечка */
+.scale-tick {
+    width: 10px;
+    height: 2px;
+    background: rgba(94, 217, 215, 0.8);
+    box-shadow: 0 0 4px rgba(94, 217, 215, 0.6);
+}
+
+/* Область для столбцов */
+.chart-bars-area {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 15px;
+    flex: 1;
+    height: 220px;
+}
+
+/* Группа столбцов остается без изменений */
+.double-bar-group {
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
+    position: relative;
+}
+
+.double-bar-item {
+    position: relative;
+    border-radius: 4px 4px 0 0;
+    width: 20px;
+    min-height: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.double-bar-item.design-bar {
+    background: linear-gradient(to top, #f472b6, #fb7185);
+    box-shadow: 0 2px 8px rgba(244, 114, 182, 0.3);
+}
+
+.double-bar-item.solution-bar {
+    background: linear-gradient(to top, #60a5fa, #93c5fd);
+    box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
+}
+
+.double-bar-item:hover {
+    transform: scaleX(1.2) scaleY(1.05);
+    box-shadow: 0 4px 15px rgba(94, 217, 215, 0.5);
+}
+
+/* Тултипы остаются без изменений */
+.double-bar-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    margin-top: 5px;
+    z-index: 10;
+}
+
+.double-bar-item:hover .double-bar-tooltip {
+    opacity: 1;
+}
+
+.double-bar-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Стили для светлой темы */
+
+.theme-light .scale-number {
+    color: rgba(44, 62, 80, 0.9);
+    text-shadow: 0 0 6px rgba(44, 62, 80, 0.4);
+}
+
+.theme-light .scale-tick {
+    background: rgba(44, 62, 80, 0.8);
+    box-shadow: 0 0 4px rgba(44, 62, 80, 0.6);
+}
+
+/* Адаптивность */
 @media (max-width: 768px) {
-    .chart-with-scale {
-        padding-left: 40px;
+    .chart-scale {
+        width: 40px;
+        margin-right: 10px;
     }
     
-    .vertical-scale {
-        width: 35px;
-        left: 0;
-    }
-    
-    .scale-label {
+    .scale-number {
         font-size: 10px;
-        right: 15px;
+        margin-right: 6px;
     }
     
-    .horizontal-guide-line {
-        left: -40px;
+    .scale-tick {
+        width: 8px;
+    }
+    
+    .double-bar-group {
+        gap: 2px;
+    }
+    
+    .double-bar-item {
+        width: 15px;
     }
 }

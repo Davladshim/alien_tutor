@@ -411,7 +411,7 @@ function updateChartsForClass(classNum) {
         
         // Обновляем заголовок
         if (barChartTitle) {
-            barChartTitle.textContent = 'Оценки: Оформление и Решение';
+            barChartTitle.textContent = 'Оформление и Решение';
         }
         
         renderDoubleBarChart(data.doubleScores);
@@ -451,7 +451,7 @@ function updateHomeworkTable(classNum) {
         // Заголовки для 9 и 11 классов (пробники)
         headerElement.innerHTML = `
             <tr>
-                <th>Дата домашнего задания</th>
+                <th>Дата</th>
                 <th>Тема</th>
                 <th>Первичные баллы за пробник</th>
                 <th>Вторичные баллы за пробник</th>
@@ -459,14 +459,14 @@ function updateHomeworkTable(classNum) {
             </tr>
         `;
     } else {
-        // Заголовки для 7, 8, 10 классов (обычные задания) - БЕЗ "Сколько задач было задано"
+        // Заголовки для 7, 8, 10 классов (НОВЫЙ ПОРЯДОК)
         headerElement.innerHTML = `
             <tr>
-                <th>Дата домашнего задания</th>
-                <th>Оформление</th>
+                <th>Дата</th>
+                <th>Домашнее задание</th>
+                <th>Решено/задано</th>
                 <th>Решение</th>
-                <th>Тема</th>
-                <th>Сколько решено из них</th>
+                <th>Оформление</th>
             </tr>
         `;
     }
@@ -482,15 +482,16 @@ function updateHomeworkTable(classNum) {
                     <td>${homework.topic || ''}</td>
                     <td class="score-cell">${homework.primary_score || ''}</td>
                     <td class="score-cell">${homework.secondary_score || ''}</td>
-                    <td>${homework.tasks_solved || ''}/${homework.tasks_assigned || ''}</td>
+                    <td>${homework.tasks_solved ? `${homework.tasks_solved}/${homework.tasks_assigned || ''}` : `задано ${homework.tasks_assigned || ''}`}</td>
                 `;
             } else {
+                // НОВЫЙ ПОРЯДОК: Дата → Тема → Задано/решено → Решение → Оформление
                 row.innerHTML = `
                     <td>${homework.date}</td>
-                    <td class="score-cell">${homework.design_score || ''}</td>
-                    <td class="score-cell">${homework.solution_score || ''}</td>
                     <td>${homework.topic || ''}</td>
-                    <td>${homework.tasks_solved || ''}/${homework.tasks_assigned || ''}</td>
+                    <td>${homework.tasks_solved ? `${homework.tasks_solved}/${homework.tasks_assigned || ''}` : `задано ${homework.tasks_assigned || ''}`}</td>
+                    <td class="score-cell">${homework.solution_score || ''}</td>
+                    <td class="score-cell">${homework.design_score || ''}</td>
                 `;
             }
             
@@ -550,7 +551,7 @@ function renderDoubleBarChart(scores) {
     
     // Очищаем предыдущие столбцы
     barChart.innerHTML = '';
-    barChart.className = 'double-bar-chart chart-with-scale'; // Добавляем класс для шкалы
+    barChart.className = 'double-bar-chart';
     
     // Если нет данных - показываем сообщение
     if (!scores || scores.length === 0) {
@@ -560,50 +561,39 @@ function renderDoubleBarChart(scores) {
     
     console.log('🔍 ОТЛАДКА: Данные для двойной диаграммы:', scores);
     
-    // Находим максимальное значение среди РЕАЛЬНЫХ данных
-    let maxDesignScore = 0;
-    let maxSolutionScore = 0;
-    
-    scores.forEach(scoreData => {
-        const designScore = parseInt(scoreData.design_score) || 0;
-        const solutionScore = parseInt(scoreData.solution_score) || 0;
-        
-        if (designScore > maxDesignScore) maxDesignScore = designScore;
-        if (solutionScore > maxSolutionScore) maxSolutionScore = solutionScore;
-    });
-    
-    // Используем фиксированную шкалу от 0 до 10 для удобства
+    // Используем фиксированную шкалу от 0 до 10
     const maxScore = 10;
     const chartHeight = 220;
     
-    console.log(`📊 Используем шкалу от 0 до ${maxScore}`);
+    // 1. Создаем шкалу как первый элемент диаграммы
+    const chartScale = document.createElement('div');
+    chartScale.className = 'chart-scale';
     
-    // Создаем вертикальную шкалу
-    const verticalScale = document.createElement('div');
-    verticalScale.className = 'vertical-scale';
-    
-    // Создаем деления от 0 до 10
-    for (let i = 0; i <= maxScore; i++) {
-        const scaleMark = document.createElement('div');
-        scaleMark.className = 'scale-mark';
+    // Создаем элементы шкалы от 10 до 0 (сверху вниз)
+    for (let i = maxScore; i >= 0; i--) {
+        const scaleItem = document.createElement('div');
+        scaleItem.className = 'scale-item';
         
-        // Позиционируем деление (снизу вверх)
-        const positionFromBottom = (i / maxScore) * chartHeight;
-        scaleMark.style.bottom = positionFromBottom + 'px';
+        const scaleNumber = document.createElement('span');
+        scaleNumber.className = 'scale-number';
+        scaleNumber.textContent = i;
         
-        // Добавляем подпись
-        const scaleLabel = document.createElement('div');
-        scaleLabel.className = 'scale-label';
-        scaleLabel.textContent = i;
-        scaleMark.appendChild(scaleLabel);
+        const scaleTick = document.createElement('div');
+        scaleTick.className = 'scale-tick';
         
-        verticalScale.appendChild(scaleMark);
+        scaleItem.appendChild(scaleNumber);
+        scaleItem.appendChild(scaleTick);
+        chartScale.appendChild(scaleItem);
     }
     
-    barChart.appendChild(verticalScale);
+    barChart.appendChild(chartScale);
     
-    // Создаем столбцы
-    scores.forEach(scoreData => {
+    // 2. Создаем область для столбцов
+    const barsArea = document.createElement('div');
+    barsArea.className = 'chart-bars-area';
+    
+    // 3. Создаем столбцы
+    scores.forEach((scoreData, index) => {
         const barGroup = document.createElement('div');
         barGroup.className = 'double-bar-group';
         
@@ -613,16 +603,12 @@ function renderDoubleBarChart(scores) {
         // Столбец для оформления (розовый)
         const designBar = document.createElement('div');
         designBar.className = 'double-bar-item design-bar';
-        const designHeight = Math.max(10, (designScore / maxScore) * chartHeight);
+        
+        // Расчет высоты: пропорционально от 0 до chartHeight
+        const designHeight = Math.max(8, (designScore / maxScore) * chartHeight);
         designBar.style.height = designHeight + 'px';
         
-        // Создаем горизонтальную линию для столбца оформления
-        const designGuideLine = document.createElement('div');
-        designGuideLine.className = 'horizontal-guide-line';
-        designGuideLine.style.top = '0px';
-        designBar.appendChild(designGuideLine);
-        
-        // СТАРЫЙ тултип (как был)
+        // Тултип для столбца оформления
         const designTooltip = document.createElement('div');
         designTooltip.className = 'double-bar-tooltip';
         designTooltip.textContent = `${scoreData.date}: Оформление ${designScore}`;
@@ -631,16 +617,12 @@ function renderDoubleBarChart(scores) {
         // Столбец для решения (синий)
         const solutionBar = document.createElement('div');
         solutionBar.className = 'double-bar-item solution-bar';
-        const solutionHeight = Math.max(10, (solutionScore / maxScore) * chartHeight);
+        
+        // Расчет высоты
+        const solutionHeight = Math.max(8, (solutionScore / maxScore) * chartHeight);
         solutionBar.style.height = solutionHeight + 'px';
         
-        // Создаем горизонтальную линию для столбца решения
-        const solutionGuideLine = document.createElement('div');
-        solutionGuideLine.className = 'horizontal-guide-line';
-        solutionGuideLine.style.top = '0px';
-        solutionBar.appendChild(solutionGuideLine);
-        
-        // СТАРЫЙ тултип (как был)
+        // Тултип для столбца решения
         const solutionTooltip = document.createElement('div');
         solutionTooltip.className = 'double-bar-tooltip';
         solutionTooltip.textContent = `${scoreData.date}: Решение ${solutionScore}`;
@@ -648,10 +630,14 @@ function renderDoubleBarChart(scores) {
         
         barGroup.appendChild(designBar);
         barGroup.appendChild(solutionBar);
-        barChart.appendChild(barGroup);
+        barsArea.appendChild(barGroup);
         
-        console.log(`📊 Создан столбец: оформление=${designHeight}px (${designScore}/10), решение=${solutionHeight}px (${solutionScore}/10)`);
+        console.log(`📊 Создан столбец ${index + 1}: оформление=${designHeight}px (${designScore}/${maxScore}), решение=${solutionHeight}px (${solutionScore}/${maxScore})`);
     });
+    
+    barChart.appendChild(barsArea);
+    
+    console.log('✅ Двойная диаграмма с интегрированной шкалой отрисована!');
 }
 
 // Отрисовка столбчатой диаграммы
@@ -748,7 +734,7 @@ function renderPieChart(progress) {
     values.forEach((value, index) => {
         if (value > 0) {
             const percentage = value / total;
-            const angle = percentage * 360; // Убираем вычитание зазора
+            const angle = Math.min(percentage * 360, 359.99); // Ограничиваем максимум
             
             // Создаем path для сектора
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -1306,7 +1292,7 @@ function initChartsForStudentClass() {
         renderBarChart();
     } else {
         // Для 7, 8, 10 классов - показываем домашки
-        if (titleElement) titleElement.textContent = 'Оценки: Оформление и Решение';
+        if (titleElement) titleElement.textContent = 'Оформление и Решение';
         
         // ИСПРАВЛЕНИЕ: Передаем правильные данные
         if (data.homework && data.homework.length > 0) {
