@@ -1321,6 +1321,9 @@ function saveReport() {
         return;
     }
     
+    // ДОБАВЛЯЕМ получение даты урока
+    const selectedDate = document.getElementById('date_select').value;
+    
     // Собираем данные формы
     const reportData = {
         lesson_id: selectedLesson,
@@ -1328,7 +1331,8 @@ function saveReport() {
         understanding_level: document.getElementById('report_understanding').value,
         teacher_comment: document.getElementById('report_comment').value,
         primary_score: document.getElementById('report_primary_score').value,
-        secondary_score: document.getElementById('report_secondary_score').value
+        secondary_score: document.getElementById('report_secondary_score').value,
+        lesson_date: selectedDate  // ДОБАВЛЯЕМ дату урока
     };
     
     // Проверяем обязательные поля
@@ -1369,6 +1373,9 @@ function saveHomework() {
         return;
     }
     
+    // ДОБАВЛЯЕМ получение даты урока
+    const selectedDate = document.getElementById('date_select').value;
+    
     // Собираем данные формы домашки
     const homeworkData = {
         lesson_id: selectedLesson,
@@ -1379,7 +1386,8 @@ function saveHomework() {
         solution_score: document.getElementById('homework_solution_score').value,
         formatting_score: document.getElementById('homework_formatting_score').value,
         tasks_assigned: getTasksAssignedValue(),
-        tasks_solved: getTasksSolvedValue()
+        tasks_solved: getTasksSolvedValue(),
+        lesson_date: selectedDate  // ДОБАВЛЯЕМ дату урока
     };
     
     // ОТЛАДКА: Выводим что собрали
@@ -1469,6 +1477,9 @@ function markHomeworkChecked() {
     
     console.log('📝 ОТЛАДКА: Отмечаем домашку как проверенную');
     
+    // ДОБАВЛЯЕМ получение даты урока
+    const selectedDate = document.getElementById('date_select').value;
+    
     // СНАЧАЛА сохраняем текущие значения полей (как в saveHomework)
     const homeworkData = {
         lesson_id: selectedLesson,
@@ -1479,7 +1490,8 @@ function markHomeworkChecked() {
         solution_score: document.getElementById('homework_solution_score').value,
         formatting_score: document.getElementById('homework_formatting_score').value,
         tasks_assigned: getTasksAssignedValue(),
-        tasks_solved: getTasksSolvedValue()
+        tasks_solved: getTasksSolvedValue(),
+        lesson_date: selectedDate  // ДОБАВЛЯЕМ дату урока
     };
     
     console.log('📝 ОТЛАДКА: Сохраняем данные перед отметкой:', homeworkData);

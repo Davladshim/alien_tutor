@@ -2029,3 +2029,103 @@ p {
     width: 18px;
     height: 18px;
 }
+
+/* ===== ИСПРАВЛЕННАЯ ИНТЕРАКТИВНАЯ ШКАЛА ===== */
+
+/* Контейнер для диаграммы с шкалой */
+.chart-with-scale {
+    position: relative;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    padding-left: 50px; /* Добавляем отступ слева для шкалы */
+}
+
+/* Вертикальная шкала слева */
+.vertical-scale {
+    position: absolute;
+    left: 0; /* Изменили с -40px на 0 */
+    bottom: 30px; /* ИСПРАВЛЕНИЕ: Поднимаем шкалу вверх, чтобы совпадала с диаграммой */
+    height: 220px; /* Точно такая же высота как chartHeight */
+    width: 40px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Показываем шкалу при наведении на диаграмму */
+.chart-with-scale:hover .vertical-scale {
+    opacity: 1;
+}
+
+/* Деления на шкале */
+.scale-mark {
+    position: absolute;
+    right: 5px; /* Изменили с 0 на 5px для отступа */
+    width: 12px; /* Увеличили длину деления */
+    height: 2px; /* Сделали чуть толще */
+    background: var(--text-accent, #5ED9D7);
+    display: flex;
+    align-items: center;
+}
+
+/* Подписи к делениям */
+.scale-label {
+    position: absolute;
+    right: 20px; /* Увеличили отступ */
+    font-size: 12px; /* Чуть больше шрифт */
+    font-weight: 600;
+    color: var(--text-accent, #5ED9D7);
+    white-space: nowrap;
+    transform: translateY(-50%);
+}
+
+/* Горизонтальная пунктирная линия */
+.horizontal-guide-line {
+    position: absolute;
+    left: -50px; /* ИСПРАВЛЕНИЕ: Увеличили влево, чтобы доходила до шкалы */
+    right: -10px; /* Немного выходит за правый край */
+    height: 2px;
+    background: repeating-linear-gradient(
+        to right,
+        var(--text-accent, #5ED9D7) 0px,
+        var(--text-accent, #5ED9D7) 8px, /* Увеличили длину штриха */
+        transparent 8px,
+        transparent 14px /* Увеличили промежуток */
+    );
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 0 10px rgba(94, 217, 215, 0.6); /* Увеличили свечение */
+}
+
+/* Обновляем позиционирование двойной диаграммы */
+.double-bar-chart {
+    position: relative;
+    margin-left: 0; /* Убираем старые отступы */
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .chart-with-scale {
+        padding-left: 40px;
+    }
+    
+    .vertical-scale {
+        width: 35px;
+        left: 0;
+    }
+    
+    .scale-label {
+        font-size: 10px;
+        right: 15px;
+    }
+    
+    .horizontal-guide-line {
+        left: -40px;
+    }
+}

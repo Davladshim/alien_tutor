@@ -342,6 +342,9 @@ window.studentData = {
     topicProgress: {{ student.topic_progress | tojson | safe }}
 };
 
+// Добавь отладочный вывод:
+console.log('🔍 ОТЛАДКА: Данные домашек для диаграммы:', studentHomework);
+
 // Запускаем инициализацию после загрузки страницы
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Инициализация диаграмм...');

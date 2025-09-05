@@ -3127,6 +3127,7 @@ def save_report():
         teacher_comment = data.get('teacher_comment', '').strip()
         primary_score = data.get('primary_score')
         secondary_score = data.get('secondary_score')
+        lesson_date = data.get('lesson_date')  # ДОБАВЛЯЕМ получение даты урока
         
         # Проверяем обязательные поля
         if not lesson_id:
@@ -3145,6 +3146,13 @@ def save_report():
         if not student:
             return jsonify({"success": False, "error": "Ученик не найден"}), 404
         
+        # ИСПРАВЛЕНИЕ: Используем дату урока вместо NOW()
+        if lesson_date:
+            report_date = datetime.strptime(lesson_date, '%Y-%m-%d').date()
+        else:
+            # Fallback - берем дату из урока
+            report_date = datetime.strptime(lesson['date'], '%Y-%m-%d').date()
+        
         # Преобразуем баллы
         try:
             primary_score = int(primary_score) if primary_score else None
@@ -3154,12 +3162,11 @@ def save_report():
             secondary_score = None
         
         # Сохраняем отчет
-        # Сначала проверяем, есть ли уже отчет для этого урока
         check_query = "SELECT id FROM lesson_reports WHERE lesson_id = %s"
         existing_report = execute_query(check_query, (lesson_id,), fetch_one=True)
 
         if existing_report:
-            # Обновляем существующий отчет
+            # Обновляем существующий отчет (НЕ МЕНЯЕМ created_at!)
             report_query = """
                 UPDATE lesson_reports 
                 SET topic = %s, understanding_level = %s, teacher_comment = %s
@@ -3168,22 +3175,21 @@ def save_report():
             """
             result = execute_query(report_query, (topic, understanding_level, teacher_comment, lesson_id), fetch_one=True)
         else:
-            # Создаем новый отчет
+            # Создаем новый отчет с ДАТОЙ УРОКА
             report_query = """
                 INSERT INTO lesson_reports (lesson_id, student_id, topic, understanding_level, teacher_comment, created_at)
-                VALUES (%s, %s, %s, %s, %s, NOW())
+                VALUES (%s, %s, %s, %s, %s, %s)
                 RETURNING id
             """
-            result = execute_query(report_query, (lesson_id, student['id'], topic, understanding_level, teacher_comment), fetch_one=True)
+            result = execute_query(report_query, (lesson_id, student['id'], topic, understanding_level, teacher_comment, report_date), fetch_one=True)
         
-        # Если есть баллы за экзамен - сохраняем их отдельно
+        # Если есть баллы за экзамен - используем ДАТУ УРОКА
         if secondary_score is not None:
             exam_query = """
                 INSERT INTO exam_results (student_id, exam_date, primary_score, secondary_score, created_at)
-                VALUES (%s, %s, %s, %s, NOW())
+                VALUES (%s, %s, %s, %s, %s)
             """
-            lesson_date = datetime.strptime(lesson['date'], '%Y-%m-%d').date()
-            execute_query(exam_query, (student['id'], lesson_date, primary_score, secondary_score))
+            execute_query(exam_query, (student['id'], report_date, primary_score, secondary_score, report_date))
         
         return jsonify({"success": True, "message": "Отчет успешно сохранен"})
         
@@ -3406,12 +3412,11 @@ def save_homework():
         secondary_score = data.get('secondary_score')
         solution_score = data.get('solution_score')
         formatting_score = data.get('formatting_score')
-        
-        # ДОБАВЛЕНО: Получаем новые поля
         tasks_assigned = data.get('tasks_assigned')
         tasks_solved = data.get('tasks_solved')
+        lesson_date = data.get('lesson_date')  # ДОБАВЛЯЕМ получение даты урока
         
-        print(f"🔍 ОТЛАДКА: Получены данные - tasks_assigned: {tasks_assigned}, tasks_solved: {tasks_solved}")
+        print(f"🔍 ОТЛАДКА: Получены данные - lesson_date: {lesson_date}")
         
         # Проверяем обязательные поля
         if not lesson_id:
@@ -3430,29 +3435,32 @@ def save_homework():
         if not student:
             return jsonify({"success": False, "error": "Ученик не найден"}), 404
         
+        # ИСПРАВЛЕНИЕ: Используем дату урока
+        if lesson_date:
+            assignment_date = datetime.strptime(lesson_date, '%Y-%m-%d').date()
+        else:
+            # Fallback - берем дату из урока
+            assignment_date = datetime.strptime(lesson['date'], '%Y-%m-%d').date()
+            
+        print(f"🔍 ОТЛАДКА: Используем дату урока: {assignment_date}")
+        
         # Преобразуем баллы
         try:
             primary_score = int(primary_score) if primary_score else None
             secondary_score = int(secondary_score) if secondary_score else None
             solution_score = int(solution_score) if solution_score else None
             design_score = int(formatting_score) if formatting_score else None
-            
-            # ДОБАВЛЕНО: Преобразуем новые поля
             tasks_assigned = int(tasks_assigned) if tasks_assigned else None
             tasks_solved = int(tasks_solved) if tasks_solved else None
         except (ValueError, TypeError):
             primary_score = secondary_score = solution_score = design_score = None
-            # Оставляем tasks_assigned и tasks_solved как есть, если не число
         
         # Проверяем, есть ли уже домашка для этого урока
         check_query = "SELECT id FROM homework_assignments WHERE lesson_id = %s"
         existing_homework = execute_query(check_query, (lesson_id,), fetch_one=True)
         
         if existing_homework:
-            # Получаем дату урока для правильной записи
-            lesson_date = datetime.strptime(lesson['date'], '%Y-%m-%d').date()
-            
-            # ИСПРАВЛЕНО: Обновляем существующую домашку с новыми полями
+            # Обновляем существующую домашку с ДАТОЙ УРОКА
             homework_query = """
                 UPDATE homework_assignments 
                 SET assignment_date = %s, primary_score = %s, secondary_score = %s, 
@@ -3462,11 +3470,11 @@ def save_homework():
                 RETURNING id
             """
             result = execute_query(homework_query, (
-                lesson_date, primary_score, secondary_score, solution_score, design_score, description,
+                assignment_date, primary_score, secondary_score, solution_score, design_score, description,
                 tasks_assigned, tasks_solved, lesson_id
             ), fetch_one=True)
         else:
-            # Создаем новую домашку
+            # Создаем новую домашку с ДАТОЙ УРОКА
             homework_query = """
                 INSERT INTO homework_assignments (lesson_id, student_id, assignment_date, primary_score, 
                                                 secondary_score, solution_score, design_score, topic, 
@@ -3475,11 +3483,11 @@ def save_homework():
                 RETURNING id
             """
             result = execute_query(homework_query, (
-                lesson_id, student['id'], lesson_date, primary_score, secondary_score, 
-                solution_score, design_score, description, tasks_assigned, tasks_solved, lesson_date
+                lesson_id, student['id'], assignment_date, primary_score, secondary_score, 
+                solution_score, design_score, description, tasks_assigned, tasks_solved, assignment_date
             ), fetch_one=True)
         
-        print(f"✅ ОТЛАДКА: Домашка сохранена с tasks_assigned={tasks_assigned}, tasks_solved={tasks_solved}")
+        print(f"✅ ОТЛАДКА: Домашка сохранена с датой урока: {assignment_date}")
         
         return jsonify({"success": True, "message": "Домашнее задание успешно сохранено"})
         

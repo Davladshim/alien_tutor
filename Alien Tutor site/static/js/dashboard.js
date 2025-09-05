@@ -543,47 +543,114 @@ function renderDoubleBarChart(scores) {
     if (!scores && window.studentData) {
         scores = window.studentData.homework;
     }
+    
     const barChart = document.getElementById('barChart');
     
     if (!barChart) return;
     
     // Очищаем предыдущие столбцы
     barChart.innerHTML = '';
-    barChart.className = 'double-bar-chart'; // Меняем класс
+    barChart.className = 'double-bar-chart chart-with-scale'; // Добавляем класс для шкалы
     
-    // Находим максимальное значение для масштабирования
-    const maxScore = 100; // Максимум для оценок
-    const chartHeight = 220; // Высота области диаграммы
+    // Если нет данных - показываем сообщение
+    if (!scores || scores.length === 0) {
+        barChart.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 50px;">Нет данных о домашних заданиях</div>';
+        return;
+    }
     
+    console.log('🔍 ОТЛАДКА: Данные для двойной диаграммы:', scores);
+    
+    // Находим максимальное значение среди РЕАЛЬНЫХ данных
+    let maxDesignScore = 0;
+    let maxSolutionScore = 0;
+    
+    scores.forEach(scoreData => {
+        const designScore = parseInt(scoreData.design_score) || 0;
+        const solutionScore = parseInt(scoreData.solution_score) || 0;
+        
+        if (designScore > maxDesignScore) maxDesignScore = designScore;
+        if (solutionScore > maxSolutionScore) maxSolutionScore = solutionScore;
+    });
+    
+    // Используем фиксированную шкалу от 0 до 10 для удобства
+    const maxScore = 10;
+    const chartHeight = 220;
+    
+    console.log(`📊 Используем шкалу от 0 до ${maxScore}`);
+    
+    // Создаем вертикальную шкалу
+    const verticalScale = document.createElement('div');
+    verticalScale.className = 'vertical-scale';
+    
+    // Создаем деления от 0 до 10
+    for (let i = 0; i <= maxScore; i++) {
+        const scaleMark = document.createElement('div');
+        scaleMark.className = 'scale-mark';
+        
+        // Позиционируем деление (снизу вверх)
+        const positionFromBottom = (i / maxScore) * chartHeight;
+        scaleMark.style.bottom = positionFromBottom + 'px';
+        
+        // Добавляем подпись
+        const scaleLabel = document.createElement('div');
+        scaleLabel.className = 'scale-label';
+        scaleLabel.textContent = i;
+        scaleMark.appendChild(scaleLabel);
+        
+        verticalScale.appendChild(scaleMark);
+    }
+    
+    barChart.appendChild(verticalScale);
+    
+    // Создаем столбцы
     scores.forEach(scoreData => {
         const barGroup = document.createElement('div');
         barGroup.className = 'double-bar-group';
         
-        // Столбец для оформления
+        const designScore = parseInt(scoreData.design_score) || 0;
+        const solutionScore = parseInt(scoreData.solution_score) || 0;
+        
+        // Столбец для оформления (розовый)
         const designBar = document.createElement('div');
         designBar.className = 'double-bar-item design-bar';
-        const designHeight = Math.max(20, (scoreData.design / maxScore) * chartHeight);
+        const designHeight = Math.max(10, (designScore / maxScore) * chartHeight);
         designBar.style.height = designHeight + 'px';
         
+        // Создаем горизонтальную линию для столбца оформления
+        const designGuideLine = document.createElement('div');
+        designGuideLine.className = 'horizontal-guide-line';
+        designGuideLine.style.top = '0px';
+        designBar.appendChild(designGuideLine);
+        
+        // СТАРЫЙ тултип (как был)
         const designTooltip = document.createElement('div');
         designTooltip.className = 'double-bar-tooltip';
-        designTooltip.textContent = `${scoreData.date}: Оформление ${scoreData.design}`;
+        designTooltip.textContent = `${scoreData.date}: Оформление ${designScore}`;
         designBar.appendChild(designTooltip);
         
-        // Столбец для решения
+        // Столбец для решения (синий)
         const solutionBar = document.createElement('div');
         solutionBar.className = 'double-bar-item solution-bar';
-        const solutionHeight = Math.max(20, (scoreData.solution / maxScore) * chartHeight);
+        const solutionHeight = Math.max(10, (solutionScore / maxScore) * chartHeight);
         solutionBar.style.height = solutionHeight + 'px';
         
+        // Создаем горизонтальную линию для столбца решения
+        const solutionGuideLine = document.createElement('div');
+        solutionGuideLine.className = 'horizontal-guide-line';
+        solutionGuideLine.style.top = '0px';
+        solutionBar.appendChild(solutionGuideLine);
+        
+        // СТАРЫЙ тултип (как был)
         const solutionTooltip = document.createElement('div');
         solutionTooltip.className = 'double-bar-tooltip';
-        solutionTooltip.textContent = `${scoreData.date}: Решение ${scoreData.solution}`;
+        solutionTooltip.textContent = `${scoreData.date}: Решение ${solutionScore}`;
         solutionBar.appendChild(solutionTooltip);
         
         barGroup.appendChild(designBar);
         barGroup.appendChild(solutionBar);
         barChart.appendChild(barGroup);
+        
+        console.log(`📊 Создан столбец: оформление=${designHeight}px (${designScore}/10), решение=${solutionHeight}px (${solutionScore}/10)`);
     });
 }
 
@@ -1221,10 +1288,17 @@ function updatePeriodTitle() {
 function initChartsForStudentClass() {
     // Получаем данные из window.studentData
     const data = window.studentData;
-    if (!data) return;
+    if (!data) {
+        console.error('❌ Нет данных ученика');
+        return;
+    }
     
     const hasExamScores = data.hasExamScores;
     const titleElement = document.getElementById('barChartTitle');
+    
+    console.log('🔍 ОТЛАДКА: Инициализация диаграмм, hasExamScores:', hasExamScores);
+    console.log('🔍 ОТЛАДКА: Данные домашек:', data.homework);
+    console.log('🔍 ОТЛАДКА: Данные экзаменов:', data.examResults);
     
     if (hasExamScores) {
         // Для 9 и 11 классов - показываем пробники
@@ -1233,11 +1307,19 @@ function initChartsForStudentClass() {
     } else {
         // Для 7, 8, 10 классов - показываем домашки
         if (titleElement) titleElement.textContent = 'Оценки: Оформление и Решение';
-        renderDoubleBarChart();
+        
+        // ИСПРАВЛЕНИЕ: Передаем правильные данные
+        if (data.homework && data.homework.length > 0) {
+            console.log('📊 Отрисовываем двойную диаграмму с данными:', data.homework);
+            renderDoubleBarChart(data.homework);
+        } else {
+            console.log('⚠️ Нет данных домашек для двойной диаграммы');
+            renderDoubleBarChart([]);
+        }
     }
     
     // Круговая диаграмма для всех классов
-    const topicProgress = window.studentData.topicProgress || { fully: 0, questions: 0, needWork: 0 };
+    const topicProgress = data.topicProgress || { fully: 0, questions: 0, needWork: 0 };
     renderPieChart(topicProgress);
     
     // Обновляем таблицу домашних заданий

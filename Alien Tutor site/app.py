@@ -206,23 +206,29 @@ def get_student_homework(student_id):
     """
     result = execute_query(query, (student_id,), fetch=True)
     
-    homework = []  # ← только один раз!
+    homework = []
     if result:
         for row in result:
             # Автоматически копируем первичные баллы во вторичные (пока нет алгоритма)
             secondary_score = row['secondary_score'] or row['primary_score'] or 0
             
-            homework.append({
+            homework_item = {
                 'date': row['assignment_date'].strftime('%d.%m.%Y'),
                 'topic': row['topic'],
                 'primary_score': row['primary_score'] or 0,
-                'secondary_score': secondary_score,  # ← вот тут копируем
-                'design_score': row['design_score'] or 0,
-                'solution_score': row['solution_score'] or 0,
+                'secondary_score': secondary_score,
+                'design_score': row['design_score'] or 0,  # ← ВАЖНО: это поле для диаграммы
+                'solution_score': row['solution_score'] or 0,  # ← ВАЖНО: это поле для диаграммы
                 'tasks_solved': row['tasks_solved'] or 0,
                 'tasks_assigned': row['tasks_assigned'] or 0
-            })
+            }
+            
+            homework.append(homework_item)
+            
+            # Добавь отладку
+            print(f"🔍 ДОМАШКА: {homework_item['date']} - Оформление: {homework_item['design_score']}, Решение: {homework_item['solution_score']}")
     
+    print(f"🔍 ВСЕГО ДОМАШЕК: {len(homework)}")
     return homework
 
 def get_student_exam_results(student_id):
