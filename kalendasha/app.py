@@ -1904,9 +1904,12 @@ def add_lesson_report():
             return f"<script>alert('Ученик не найден!'); window.location.href='/';</script>"
         
         # Сохраняем отчет по уроку
+        # Получаем дату урока
+        lesson_date = datetime.strptime(lesson['date'], '%Y-%m-%d').date()
+
         report_query = """
-            INSERT INTO lesson_reports (lesson_id, student_id, topic, understanding_level, teacher_comment, homework_assigned, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s, NOW())
+            INSERT INTO lesson_reports (lesson_id, student_id, topic, understanding_level, teacher_comment, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """
         execute_query(report_query, (lesson_id, student['id'], topic, understanding_level, teacher_comment, homework_assigned))
         
@@ -3404,6 +3407,12 @@ def save_homework():
         solution_score = data.get('solution_score')
         formatting_score = data.get('formatting_score')
         
+        # ДОБАВЛЕНО: Получаем новые поля
+        tasks_assigned = data.get('tasks_assigned')
+        tasks_solved = data.get('tasks_solved')
+        
+        print(f"🔍 ОТЛАДКА: Получены данные - tasks_assigned: {tasks_assigned}, tasks_solved: {tasks_solved}")
+        
         # Проверяем обязательные поля
         if not lesson_id:
             return jsonify({"success": False, "error": "ID урока не указан"}), 400
@@ -3427,37 +3436,50 @@ def save_homework():
             secondary_score = int(secondary_score) if secondary_score else None
             solution_score = int(solution_score) if solution_score else None
             design_score = int(formatting_score) if formatting_score else None
+            
+            # ДОБАВЛЕНО: Преобразуем новые поля
+            tasks_assigned = int(tasks_assigned) if tasks_assigned else None
+            tasks_solved = int(tasks_solved) if tasks_solved else None
         except (ValueError, TypeError):
-            primary_score = secondary_score = solution_score = formatting_score = None
+            primary_score = secondary_score = solution_score = design_score = None
+            # Оставляем tasks_assigned и tasks_solved как есть, если не число
         
         # Проверяем, есть ли уже домашка для этого урока
         check_query = "SELECT id FROM homework_assignments WHERE lesson_id = %s"
         existing_homework = execute_query(check_query, (lesson_id,), fetch_one=True)
         
         if existing_homework:
-            # Обновляем существующую домашку
+            # Получаем дату урока для правильной записи
+            lesson_date = datetime.strptime(lesson['date'], '%Y-%m-%d').date()
+            
+            # ИСПРАВЛЕНО: Обновляем существующую домашку с новыми полями
             homework_query = """
                 UPDATE homework_assignments 
-                SET assignment_date = NOW()::date, primary_score = %s, secondary_score = %s, 
-                    solution_score = %s, design_score = %s, topic = %s
+                SET assignment_date = %s, primary_score = %s, secondary_score = %s, 
+                    solution_score = %s, design_score = %s, topic = %s,
+                    tasks_assigned = %s, tasks_solved = %s
                 WHERE lesson_id = %s
                 RETURNING id
             """
             result = execute_query(homework_query, (
-                primary_score, secondary_score, solution_score, design_score, description, lesson_id
+                lesson_date, primary_score, secondary_score, solution_score, design_score, description,
+                tasks_assigned, tasks_solved, lesson_id
             ), fetch_one=True)
         else:
             # Создаем новую домашку
             homework_query = """
                 INSERT INTO homework_assignments (lesson_id, student_id, assignment_date, primary_score, 
-                                                secondary_score, solution_score, design_score, topic, created_at)
-                VALUES (%s, %s, NOW()::date, %s, %s, %s, %s, %s, NOW())
+                                                secondary_score, solution_score, design_score, topic, 
+                                                tasks_assigned, tasks_solved, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
             """
             result = execute_query(homework_query, (
-                lesson_id, student['id'], primary_score, secondary_score, 
-                solution_score, design_score, description
+                lesson_id, student['id'], lesson_date, primary_score, secondary_score, 
+                solution_score, design_score, description, tasks_assigned, tasks_solved, lesson_date
             ), fetch_one=True)
+        
+        print(f"✅ ОТЛАДКА: Домашка сохранена с tasks_assigned={tasks_assigned}, tasks_solved={tasks_solved}")
         
         return jsonify({"success": True, "message": "Домашнее задание успешно сохранено"})
         

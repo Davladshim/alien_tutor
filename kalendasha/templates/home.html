@@ -249,99 +249,100 @@
         <div class="homework-section">
             <h3 style="color: var(--text-accent); margin-bottom: 20px;">📚 Домашнее задание</h3>
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
-                <div>
-                    <label>Тип домашнего задания:</label>
-                    <select id="homework_type" onchange="toggleHomeworkFields()" style="width: 100%;">
-                        <option value="">-- Выберите тип --</option>
-                        <option value="tasks">Дать задачи</option>
-                        <option value="none">Не задавать домашку</option>
-                    </select>
-                </div>
-                
-                <div id="homework_evaluation_fields" style="display: none;">
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px;">
-                        <!-- Решение -->
-                        <div>
-                            <label>Решение:</label>
-                            <select id="homework_solution_score" style="width: 100%;">
-                                <option value="">-- Выберите --</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                                <option value="8">8</option>
-                                <option value="9">9</option>
-                                <option value="10">10</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Оформление -->
-                        <div>
-                            <label>Оформление:</label>
-                            <select id="homework_formatting_score" style="width: 100%;">
-                                <option value="">-- Выберите --</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                                <option value="8">8</option>
-                                <option value="9">9</option>
-                                <option value="10">10</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Сколько задано -->
-                        <div>
-                            <label>Сколько задано:</label>
-                            <select id="homework_tasks_assigned" onchange="handleTasksAssignedChange()" style="width: 100%;">
-                                <option value="">-- Выберите --</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                                <option value="8">8</option>
-                                <option value="9">9</option>
-                                <option value="10">10</option>
-                                <option value="other">Другое</option>
-                            </select>
-                            <input type="number" id="homework_tasks_assigned_custom" placeholder="Введите число" 
-                                style="width: 100%; margin-top: 5px; display: none;" min="1" max="100">
-                        </div>
-                        
-                        <!-- Сколько решено -->
-                        <div>
-                            <label>Сколько решено:</label>
-                            <select id="homework_tasks_solved" onchange="handleTasksSolvedChange()" style="width: 100%;">
-                                <option value="">-- Выберите --</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                                <option value="8">8</option>
-                                <option value="9">9</option>
-                                <option value="10">10</option>
-                                <option value="other">Другое</option>
-                            </select>
-                            <input type="number" id="homework_tasks_solved_custom" placeholder="Введите число" 
-                                style="width: 100%; margin-top: 5px; display: none;" min="0" max="100">
-                        </div>
+            <!-- ВЫБОР ТИПА ДОМАШКИ -->
+            <div style="margin-bottom: 20px;">
+                <label>Тип домашнего задания:</label>
+                <select id="homework_type" onchange="toggleHomeworkFields()" style="width: 100%;">
+                    <option value="">-- Выберите тип --</option>
+                    <option value="tasks">Дать задачи</option>
+                    <option value="none">Не задавать домашку</option>
+                </select>
+            </div>
+            
+            <!-- ПОЛЯ ОЦЕНОК (отдельный блок) -->
+            <div id="homework_evaluation_fields" style="display: none;">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px;">
+                    <!-- Решение -->
+                    <div>
+                        <label>Решение:</label>
+                        <select id="homework_solution_score" style="width: 100%;">
+                            <option value="">-- Выберите --</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Оформление -->
+                    <div>
+                        <label>Оформление:</label>
+                        <select id="homework_formatting_score" style="width: 100%;">
+                            <option value="">-- Выберите --</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Сколько задано -->
+                    <div>
+                        <label>Сколько задано:</label>
+                        <select id="homework_tasks_assigned" onchange="handleTasksAssignedChange()" style="width: 100%;">
+                            <option value="">-- Выберите --</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="other">Другое</option>
+                        </select>
+                        <input type="number" id="homework_tasks_assigned_custom" placeholder="Введите число" 
+                            style="width: 100%; margin-top: 5px; display: none;" min="1" max="100">
+                    </div>
+                    
+                    <!-- Сколько решено -->
+                    <div>
+                        <label>Сколько решено:</label>
+                        <select id="homework_tasks_solved" onchange="handleTasksSolvedChange()" style="width: 100%;">
+                            <option value="">-- Выберите --</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="other">Другое</option>
+                        </select>
+                        <input type="number" id="homework_tasks_solved_custom" placeholder="Введите число" 
+                            style="width: 100%; margin-top: 5px; display: none;" min="0" max="100">
                     </div>
                 </div>
             </div>
             
+            <!-- ОПИСАНИЕ ДОМАШКИ (отдельный блок) -->
             <div id="homework_content_fields" style="display: none;">
                 <div style="margin-bottom: 20px;">
                     <label>Описание домашнего задания:</label>
@@ -1165,20 +1166,35 @@ function toggleHomeworkFields() {
     const contentFields = document.getElementById('homework_content_fields');
     const probnikFields = document.getElementById('homework_probnik_fields');
     const evaluationFields = document.getElementById('homework_evaluation_fields');
-    const formattingFields = document.getElementById('homework_formatting_fields');
+    
+    // ДОБАВИМ ПРОВЕРКИ НА СУЩЕСТВОВАНИЕ ЭЛЕМЕНТОВ
+    if (!contentFields) {
+        console.warn('Элемент homework_content_fields не найден');
+        return;
+    }
+    
+    if (!evaluationFields) {
+        console.warn('Элемент homework_evaluation_fields не найден');
+        return;
+    }
     
     if (homeworkType === 'tasks') {
         // Показываем все поля для "дать задачи"
         contentFields.style.display = 'block';
-        probnikFields.style.display = 'grid';
         evaluationFields.style.display = 'block';
-        formattingFields.style.display = 'block';
+        
+        // probnikFields может не существовать в текущей версии HTML
+        if (probnikFields) {
+            probnikFields.style.display = 'grid';
+        }
     } else {
         // Скрываем все поля
         contentFields.style.display = 'none';
-        probnikFields.style.display = 'none';
         evaluationFields.style.display = 'none';
-        formattingFields.style.display = 'none';
+        
+        if (probnikFields) {
+            probnikFields.style.display = 'none';
+        }
     }
 }
 
@@ -1361,10 +1377,15 @@ function saveHomework() {
         primary_score: document.getElementById('homework_primary_score').value,
         secondary_score: document.getElementById('homework_secondary_score').value,
         solution_score: document.getElementById('homework_solution_score').value,
-        formatting_score: document.getElementById('homework_formatting_score').value
+        formatting_score: document.getElementById('homework_formatting_score').value,
         tasks_assigned: getTasksAssignedValue(),
         tasks_solved: getTasksSolvedValue()
     };
+    
+    // ОТЛАДКА: Выводим что собрали
+    console.log('📚 ОТЛАДКА: Отправляем данные домашки:', homeworkData);
+    console.log('📚 tasks_assigned:', homeworkData.tasks_assigned);
+    console.log('📚 tasks_solved:', homeworkData.tasks_solved);
     
     // Проверяем обязательные поля
     if (!homeworkData.homework_type) {
@@ -1382,12 +1403,11 @@ function saveHomework() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('📚 ОТЛАДКА: Ответ сервера:', data);
+        
         if (data.success) {
             alert('✅ Домашнее задание успешно сохранено!');
-            
-            // === НОВАЯ ЧАСТЬ: Автоматическое обновление ===
             refreshLessonData();
-            
         } else {
             alert('❌ Ошибка: ' + data.error);
         }
@@ -1422,12 +1442,12 @@ function deleteReport() {
         if (data.success) {
             alert('✅ Отчет успешно удален!');
             
-            // Очищаем форму
-            document.querySelector('.report-form input[placeholder*="Квадратные"]').value = '';
-            document.querySelector('.report-form select').value = '';
-            document.querySelector('.report-form textarea').value = '';
-            document.querySelector('.report-form input[placeholder="0-50"]').value = '';
-            document.querySelector('.report-form input[placeholder="0-100"]').value = '';
+            // ИСПРАВЛЕНО: Очищаем форму с правильными селекторами
+            document.getElementById('report_topic').value = '';
+            document.getElementById('report_understanding').value = '';
+            document.getElementById('report_comment').value = '';
+            document.getElementById('report_primary_score').value = '';
+            document.getElementById('report_secondary_score').value = '';
             
             // Обновляем отображение урока (убираем галочку)
             refreshLessonData();
@@ -1447,20 +1467,52 @@ function markHomeworkChecked() {
         return;
     }
     
-    // Отправляем AJAX запрос
-    fetch('/api/mark-homework-checked', {
+    console.log('📝 ОТЛАДКА: Отмечаем домашку как проверенную');
+    
+    // СНАЧАЛА сохраняем текущие значения полей (как в saveHomework)
+    const homeworkData = {
+        lesson_id: selectedLesson,
+        homework_type: document.getElementById('homework_type').value,
+        description: document.getElementById('homework_description').value,
+        primary_score: document.getElementById('homework_primary_score').value,
+        secondary_score: document.getElementById('homework_secondary_score').value,
+        solution_score: document.getElementById('homework_solution_score').value,
+        formatting_score: document.getElementById('homework_formatting_score').value,
+        tasks_assigned: getTasksAssignedValue(),
+        tasks_solved: getTasksSolvedValue()
+    };
+    
+    console.log('📝 ОТЛАДКА: Сохраняем данные перед отметкой:', homeworkData);
+    
+    // ПЕРВЫЙ запрос - сохраняем данные
+    fetch('/api/save-homework', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({lesson_id: selectedLesson})
+        body: JSON.stringify(homeworkData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('📝 ОТЛАДКА: Данные сохранены, теперь отмечаем как проверенную');
+            
+            // ВТОРОЙ запрос - отмечаем как проверенную
+            return fetch('/api/mark-homework-checked', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({lesson_id: selectedLesson})
+            });
+        } else {
+            throw new Error('Ошибка сохранения данных: ' + data.error);
+        }
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             alert('✅ Домашнее задание отмечено как проверенное!');
-            
-            // Обновляем отображение урока
             refreshLessonData();
         } else {
             alert('❌ Ошибка: ' + data.error);
@@ -1468,7 +1520,7 @@ function markHomeworkChecked() {
     })
     .catch(error => {
         console.error('Ошибка:', error);
-        alert('❌ Ошибка отметки домашки');
+        alert('❌ Ошибка отметки домашки: ' + error.message);
     });
 }
 
@@ -1496,13 +1548,17 @@ function deleteHomework() {
         if (data.success) {
             alert('✅ Домашнее задание успешно удалено!');
             
-            // Очищаем форму
+            // ИСПРАВЛЕНО: Очищаем форму с правильными селекторами
             document.getElementById('homework_type').value = '';
-            document.querySelector('.homework-form textarea').value = '';
-            document.querySelector('.homework-form input[placeholder="0-50"]').value = '';
-            document.querySelector('.homework-form input[placeholder="0-100"]').value = '';
-            document.querySelector('#homework_evaluation_fields select').value = '';
-            document.querySelector('#homework_formatting_fields select').value = '';
+            document.getElementById('homework_description').value = '';
+            document.getElementById('homework_primary_score').value = '';
+            document.getElementById('homework_secondary_score').value = '';
+            document.getElementById('homework_solution_score').value = '';
+            document.getElementById('homework_formatting_score').value = '';
+            document.getElementById('homework_tasks_assigned').value = '';
+            document.getElementById('homework_tasks_solved').value = '';
+            document.getElementById('homework_tasks_assigned_custom').value = '';
+            document.getElementById('homework_tasks_solved_custom').value = '';
             
             // Скрываем поля
             toggleHomeworkFields();
@@ -1627,34 +1683,6 @@ function refreshLessonData() {
                 }
             }
         }, 500); // задержка 500мс чтобы данные успели загрузиться
-    }
-}
-
-// Обработка выбора "Сколько задано"
-function handleTasksAssignedChange() {
-    const select = document.getElementById('homework_tasks_assigned');
-    const customInput = document.getElementById('homework_tasks_assigned_custom');
-    
-    if (select.value === 'other') {
-        customInput.style.display = 'block';
-        customInput.focus();
-    } else {
-        customInput.style.display = 'none';
-        customInput.value = '';
-    }
-}
-
-// Обработка выбора "Сколько решено"
-function handleTasksSolvedChange() {
-    const select = document.getElementById('homework_tasks_solved');
-    const customInput = document.getElementById('homework_tasks_solved_custom');
-    
-    if (select.value === 'other') {
-        customInput.style.display = 'block';
-        customInput.focus();
-    } else {
-        customInput.style.display = 'none';
-        customInput.value = '';
     }
 }
 
