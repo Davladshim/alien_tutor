@@ -174,9 +174,8 @@
     </div>
 </div>
 <!-- Формы для работы с выбранным уроком -->
-<div id="lesson_forms" style="border: 2px solid var(--accent-color, #00d4ff); border-radius: 15px; padding: 25px; display: none;">
     <div id="selected_lesson_info" style="background: var(--accent-gradient); color: white; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: center; font-weight: bold; font-size: 18px;">
-        Выберите урок для работы
+        Работа с уроками (выберите урок для автозаполнения)
     </div>
     
     <!-- ОБЪЕДИНЕННАЯ ФОРМА -->
@@ -288,7 +287,7 @@
             </div>
             
             <!-- ПОЛЯ ОЦЕНОК (отдельный блок) -->
-            <div id="homework_evaluation_fields" style="display: none;">
+            <div id="homework_evaluation_fields">
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px;">
                     <!-- Решение -->
                     <div>
@@ -371,7 +370,7 @@
             </div>
             
             <!-- ОПИСАНИЕ ДОМАШКИ (отдельный блок) -->
-            <div id="homework_content_fields" style="display: none;">
+            <div id="homework_content_fields">
                 <div style="margin-bottom: 20px;">
                     <label>Описание домашнего задания:</label>
                     <textarea id="homework_description" rows="3" placeholder="Подробное описание заданий" style="width: 100%;"></textarea>
