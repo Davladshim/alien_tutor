@@ -3687,6 +3687,95 @@ def screenshot_page():
                          title=title,
                          week_info=week_info)
 
+@app.route("/админ/выборочное-удаление", methods=["POST"])
+def selective_delete():
+    if not session.get('admin_logged_in'):
+        return redirect("http://127.0.0.1:8080/admin-auth")
+    
+    try:
+        data = request.get_json()
+        students = data.get('students', [])
+        delete_lessons = data.get('delete_lessons', False)
+        delete_payments = data.get('delete_payments', False)
+        delete_reports = data.get('delete_reports', False)
+        delete_homework = data.get('delete_homework', False)
+        
+        if not students:
+            return {"success": False, "error": "Не выбраны ученики"}, 400
+        
+        deleted_items = []
+        
+        # Получаем ID учеников по именам
+        student_ids = []
+        for student_name in students:
+            student = get_student_by_name(student_name)
+            if student:
+                student_ids.append(student['id'])
+        
+        if not student_ids:
+            return {"success": False, "error": "Ученики не найдены"}, 404
+        
+        # Создаем плейсхолдеры для IN запроса
+        placeholders = ','.join(['%s'] * len(student_ids))
+        
+        # Удаляем данные в правильном порядке (от зависимых к основным)
+        
+        if delete_reports:
+            # Удаляем отчеты по урокам
+            reports_query = f"DELETE FROM lesson_reports WHERE student_id IN ({placeholders})"
+            result = execute_query(reports_query, student_ids)
+            deleted_items.append(f"отчеты: {result if result else 0}")
+        
+        if delete_homework:
+            # Удаляем домашние задания
+            homework_query = f"DELETE FROM homework_assignments WHERE student_id IN ({placeholders})"
+            result = execute_query(homework_query, student_ids)
+            deleted_items.append(f"домашки: {result if result else 0}")
+        
+        if delete_lessons:
+            # Удаляем результаты экзаменов
+            exams_query = f"DELETE FROM exam_results WHERE student_id IN ({placeholders})"
+            execute_query(exams_query, student_ids)
+            
+            # Удаляем прогресс по темам
+            topics_query = f"DELETE FROM topic_progress WHERE student_id IN ({placeholders})"
+            execute_query(topics_query, student_ids)
+            
+            # Удаляем уроки
+            lessons_query = f"DELETE FROM lessons WHERE student_id IN ({placeholders})"
+            result = execute_query(lessons_query, student_ids)
+            deleted_items.append(f"уроки: {result if result else 0}")
+            
+            # Удаляем шаблоны уроков
+            templates_query = f"DELETE FROM lesson_templates WHERE student_id IN ({placeholders})"
+            result = execute_query(templates_query, student_ids)
+            deleted_items.append(f"шаблоны: {result if result else 0}")
+        
+        if delete_payments:
+            # Удаляем платежи
+            payments_query = f"DELETE FROM payments WHERE student_id IN ({placeholders})"
+            result = execute_query(payments_query, student_ids)
+            deleted_items.append(f"платежи: {result if result else 0}")
+        
+        students_text = ", ".join(students)
+        items_text = ", ".join(deleted_items)
+        
+        print(f"✅ Выборочное удаление завершено:")
+        print(f"   Ученики: {students_text}")
+        print(f"   Удалено: {items_text}")
+        
+        return {
+            "success": True, 
+            "message": f"Успешно удалены данные для: {students_text}",
+            "details": items_text
+        }
+        
+    except Exception as e:
+        print(f"❌ Ошибка выборочного удаления: {e}")
+        import traceback
+        traceback.print_exc()
+        return {"success": False, "error": str(e)}, 500
+
 # Запуск приложения
 if __name__ == "__main__":
     initialize_app()
