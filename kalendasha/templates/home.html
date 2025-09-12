@@ -1188,9 +1188,6 @@ function selectLesson(lessonId) {
     // Выделяем выбранный урок
     event.currentTarget.classList.add('lesson-selected');
     
-    // Показываем формы
-    document.getElementById('lesson_forms').style.display = 'block';
-    
     // Получаем данные урока из DOM элемента
     const lessonElement = event.currentTarget;
     const timeElement = lessonElement.querySelector('div:first-child');
@@ -1564,7 +1561,7 @@ function markHomeworkChecked() {
     // СНАЧАЛА сохраняем текущие значения полей (как в saveHomework)
     const homeworkData = {
         lesson_id: selectedLesson,
-        homework_type: document.getElementById('homework_type').value,
+        homework_type: document.querySelector('input[name="homework_type"]:checked').value,
         description: document.getElementById('homework_description').value,
         primary_score: document.getElementById('homework_primary_score').value,
         secondary_score: document.getElementById('homework_secondary_score').value,
