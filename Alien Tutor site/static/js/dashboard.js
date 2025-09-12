@@ -545,6 +545,11 @@ function renderDoubleBarChart(scores) {
         scores = window.studentData.homework;
     }
     
+    // Ограничиваем до 5 последних записей
+    if (scores && scores.length > 5) {
+        scores = scores.slice(0, 5);
+    }
+    
     const barChart = document.getElementById('barChart');
     
     if (!barChart) return;
@@ -1286,13 +1291,17 @@ function initChartsForStudentClass() {
     console.log('🔍 ОТЛАДКА: Данные домашек:', data.homework);
     console.log('🔍 ОТЛАДКА: Данные экзаменов:', data.examResults);
     
+    const subtitleElement = document.getElementById('chartSubtitle');
+
     if (hasExamScores) {
         // Для 9 и 11 классов - показываем пробники
         if (titleElement) titleElement.textContent = 'Баллы за пробники ОГЭ/ЕГЭ';
+        if (subtitleElement) subtitleElement.style.display = 'none';
         renderBarChart();
     } else {
         // Для 7, 8, 10 классов - показываем домашки
         if (titleElement) titleElement.textContent = 'Оформление и Решение';
+        if (subtitleElement) subtitleElement.style.display = 'block';
         
         // ИСПРАВЛЕНИЕ: Передаем правильные данные
         if (data.homework && data.homework.length > 0) {
