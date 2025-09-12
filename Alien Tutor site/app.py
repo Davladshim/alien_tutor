@@ -373,7 +373,7 @@ def verify_admin_token(token):
 @app.route('/about-teacher')
 def about_teacher():
     """Страница о преподавателе"""
-    return "<h1>Страница о преподавателе</h1><p>Здесь будет информация о методике обучения</p>"
+    return render_template('about.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

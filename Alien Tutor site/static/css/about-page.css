@@ -1,0 +1,919 @@
+/* ===== ЛЭНДИНГ "О ПРЕПОДАВАТЕЛЕ" ===== */
+
+/* ===== ОСНОВНЫЕ ПЕРЕМЕННЫЕ ===== */
+:root {
+    --landing-section-height: 100vh;
+    --landing-nav-height: 80px;
+    --landing-transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    --text-primary: #D9F6F4;
+    --text-accent: #5ED9D7;
+    --text-secondary: rgba(217, 246, 244, 0.8);
+    --glass-bg: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(217, 246, 244, 0.2);
+}
+
+/* Переменные для светлой темы */
+.theme-light {
+    --text-primary: #2C3E50;
+    --text-accent: #2C3E50;
+    --text-secondary: rgba(44, 62, 80, 0.8);
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(44, 62, 80, 0.2);
+}
+
+/* ===== НАВИГАЦИЯ ПО БЛОКАМ ===== */
+.landing-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--landing-nav-height);
+    background: rgba(21, 26, 33, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    z-index: 1000;
+    transition: var(--landing-transition);
+}
+
+.theme-light .landing-nav {
+    background: rgba(135, 206, 235, 0.95);
+}
+
+.nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 2rem;
+}
+
+.nav-items {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.nav-item {
+    padding: 0.8rem 1.5rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: var(--landing-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-item:hover {
+    background: rgba(94, 217, 215, 0.2);
+    border-color: rgba(94, 217, 215, 0.5);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.nav-item.active {
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.3) 0%, rgba(94, 217, 215, 0.5) 100%);
+    border-color: rgba(94, 217, 215, 0.8);
+    color: var(--text-primary);
+    box-shadow: 0 0 20px rgba(94, 217, 215, 0.4);
+}
+
+/* ===== ОСНОВНОЙ КОНТЕЙНЕР ===== */
+.landing-main {
+    margin-top: var(--landing-nav-height);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ===== БАЗОВЫЕ СТИЛИ СЕКЦИЙ ===== */
+.landing-section {
+    height: var(--landing-section-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    transform: translateY(50px);
+    transition: var(--landing-transition);
+    overflow: hidden;
+}
+
+.landing-section.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.section-container {
+    max-width: 1400px;
+    width: 100%;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.section-title {
+    font-size: 3rem;
+    color: var(--text-accent);
+    margin-bottom: 1rem;
+    text-shadow: 0 0 20px rgba(94, 217, 215, 0.5);
+}
+
+.section-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+}
+
+/* ===== 1. ГЛАВНЫЙ ЭКРАН ===== */
+#hero .section-container {
+    flex-direction: row;
+    align-items: center;
+    gap: 4rem;
+}
+
+.hero-content {
+    flex: 1;
+    max-width: 600px;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    line-height: 1.2;
+    color: var(--text-accent);
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 30px rgba(94, 217, 215, 0.6);
+}
+
+.hero-subtitle {
+    display: block;
+    font-size: 1.8rem;
+    color: var(--text-secondary);
+    margin-top: 1rem;
+    font-weight: 400;
+}
+
+.hero-description {
+    font-size: 1.4rem;
+    color: var(--text-secondary);
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.cta-button {
+    padding: 1.2rem 2.5rem;
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.8) 0%, rgba(94, 217, 215, 1) 100%);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--landing-transition);
+    box-shadow: 0 8px 25px rgba(94, 217, 215, 0.4);
+}
+
+.cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(94, 217, 215, 0.6);
+}
+
+.hero-visual {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-animation-placeholder {
+    width: 400px;
+    height: 400px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--glass-border);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+}
+
+/* ===== 2. О СЕБЕ ===== */
+.about-content {
+    display: flex;
+    align-items: center;
+    gap: 4rem;
+}
+
+.about-text {
+    flex: 2;
+}
+
+.about-intro {
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+}
+
+.about-description {
+    font-size: 1.4rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.about-philosophy {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-style: italic;
+}
+
+.about-visual {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.teacher-photo-placeholder {
+    width: 300px;
+    height: 400px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--glass-border);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}
+
+/* ===== 3. МЕТОДИКА ОБУЧЕНИЯ ===== */
+.teaching-content {
+    display: flex;
+    align-items: center;
+    gap: 4rem;
+}
+
+.teaching-text {
+    flex: 1;
+}
+
+.teaching-description {
+    font-size: 1.4rem;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.teaching-example {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.teaching-visual {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.gas-model-placeholder {
+    width: 350px;
+    height: 350px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--glass-border);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}
+
+/* ===== 4. ЛИЧНЫЙ КАБИНЕТ ===== */
+.cabinet-content {
+    display: flex;
+    align-items: center;
+    gap: 4rem;
+}
+
+.cabinet-text {
+    flex: 1;
+}
+
+.cabinet-description {
+    font-size: 1.4rem;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.cabinet-benefits {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.7;
+}
+
+.cabinet-features {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.feature-item {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    padding: 0.8rem 1.2rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    transition: var(--landing-transition);
+}
+
+.feature-item:hover {
+    background: rgba(94, 217, 215, 0.1);
+    border-color: rgba(94, 217, 215, 0.3);
+}
+
+.cabinet-visual {
+    flex: 1;
+}
+
+.screenshots-gallery {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.screenshot-placeholder {
+    height: 200px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--glass-border);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    transition: var(--landing-transition);
+}
+
+.screenshot-placeholder:hover {
+    transform: scale(1.05);
+    border-color: rgba(94, 217, 215, 0.5);
+}
+
+.screenshot-placeholder:first-child {
+    grid-column: 1 / -1;
+    height: 150px;
+}
+
+/* ===== 5. ПРОГРЕСС ===== */
+.progress-content {
+    display: flex;
+    align-items: center;
+    gap: 4rem;
+}
+
+.progress-text {
+    flex: 1;
+}
+
+.progress-description {
+    font-size: 1.4rem;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.progress-example {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+    padding: 1rem 1.5rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+}
+
+.progress-motivation {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-style: italic;
+}
+
+.progress-visual {
+    flex: 1;
+}
+
+.charts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.chart-placeholder {
+    height: 200px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--glass-border);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    transition: var(--landing-transition);
+}
+
+.chart-placeholder:hover {
+    border-color: rgba(94, 217, 215, 0.5);
+    transform: translateY(-3px);
+}
+
+/* ===== 6. ТАРИФЫ ===== */
+.pricing-content {
+    width: 100%;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.pricing-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    border: 2px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    transition: var(--landing-transition);
+    overflow: hidden;
+}
+
+.pricing-card:hover:not(.locked) {
+    transform: translateY(-10px);
+    border-color: rgba(94, 217, 215, 0.6);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.pricing-card.popular {
+    border-color: rgba(94, 217, 215, 0.8);
+    box-shadow: 0 0 30px rgba(94, 217, 215, 0.3);
+}
+
+.popular-badge {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.8) 0%, rgba(94, 217, 215, 1) 100%);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.pricing-card.locked {
+    opacity: 0.6;
+    filter: grayscale(50%);
+}
+
+.card-header {
+    margin-bottom: 2rem;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    color: var(--text-accent);
+    margin-bottom: 1rem;
+}
+
+.card-price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.card-price span {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.card-features {
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.feature {
+    padding: 0.8rem 0;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.5;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feature:last-child {
+    border-bottom: none;
+}
+
+.card-button {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: var(--glass-bg);
+    border: 2px solid var(--glass-border);
+    color: var(--text-primary);
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--landing-transition);
+}
+
+.card-button.primary {
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.8) 0%, rgba(94, 217, 215, 1) 100%);
+    color: white;
+    border-color: rgba(94, 217, 215, 0.8);
+}
+
+.card-button:hover:not(.disabled) {
+    transform: translateY(-2px);
+    border-color: rgba(94, 217, 215, 0.6);
+}
+
+.card-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== 7. ОТЗЫВЫ ===== */
+.reviews-content {
+    width: 100%;
+}
+
+.reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.review-placeholder {
+    height: 300px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--glass-border);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    transition: var(--landing-transition);
+}
+
+.review-placeholder:hover {
+    transform: translateY(-5px);
+    border-color: rgba(94, 217, 215, 0.5);
+}
+
+/* ===== 8. КОНТАКТЫ ===== */
+.contacts-content {
+    width: 100%;
+}
+
+.contacts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--glass-border);
+    border-radius: 15px;
+    transition: var(--landing-transition);
+}
+
+.contact-item:hover {
+    transform: translateY(-3px);
+    border-color: rgba(94, 217, 215, 0.5);
+}
+
+.contact-icon {
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(94, 217, 215, 0.2);
+    border-radius: 15px;
+}
+
+.contact-info {
+    flex: 1;
+}
+
+.contact-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.contact-value {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* ===== 9. ФОРМА ЗАПИСИ ===== */
+.booking-content {
+    display: flex;
+    gap: 4rem;
+    align-items: flex-start;
+}
+
+.booking-form {
+    flex: 1;
+    max-width: 500px;
+}
+
+.contact-form {
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    border: 2px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 2.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    font-size: 1rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: var(--landing-transition);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: rgba(94, 217, 215, 0.6);
+    box-shadow: 0 0 20px rgba(94, 217, 215, 0.3);
+}
+
+.submit-button {
+    width: 100%;
+    padding: 1.2rem;
+    background: linear-gradient(135deg, rgba(94, 217, 215, 0.8) 0%, rgba(94, 217, 215, 1) 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--landing-transition);
+    box-shadow: 0 8px 25px rgba(94, 217, 215, 0.4);
+}
+
+.submit-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(94, 217, 215, 0.6);
+}
+
+.booking-schedule {
+    flex: 1;
+}
+
+.schedule-placeholder {
+    height: 400px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--glass-border);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+
+/* Планшеты (768px - 1024px) */
+@media (max-width: 1024px) {
+    .nav-items {
+        gap: 0.5rem;
+    }
+    
+    .nav-item {
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .section-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-title {
+        font-size: 2.8rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.4rem;
+    }
+    
+    #hero .section-container,
+    .about-content,
+    .teaching-content,
+    .cabinet-content,
+    .progress-content {
+        flex-direction: column;
+        gap: 3rem;
+        text-align: center;
+    }
+    
+    .pricing-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .contacts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .booking-content {
+        flex-direction: column;
+        gap: 3rem;
+    }
+}
+
+/* Телефоны (до 768px) */
+@media (max-width: 768px) {
+    :root {
+        --landing-nav-height: 60px;
+    }
+    
+    .nav-container {
+        padding: 0 1rem;
+    }
+    
+    .nav-items {
+        flex-wrap: wrap;
+        gap: 0.3rem;
+    }
+    
+    .nav-item {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.75rem;
+    }
+    
+    .section-container {
+        padding: 1rem;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .hero-title {
+        font-size: 2.2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.2rem;
+    }
+    
+    .hero-description {
+        font-size: 1.1rem;
+    }
+    
+    .about-intro {
+        font-size: 1.4rem;
+    }
+    
+    .about-description {
+        font-size: 1.1rem;
+    }
+    
+    .pricing-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .reviews-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .screenshots-gallery {
+        grid-template-columns: 1fr;
+    }
+    
+    .hero-animation-placeholder,
+    .teacher-photo-placeholder,
+    .gas-model-placeholder {
+        width: 250px;
+        height: 250px;
+    }
+}
+
+/* Маленькие телефоны (до 480px) */
+@media (max-width: 480px) {
+    .section-container {
+        padding: 0.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .nav-items {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.2rem;
+        width: 100%;
+    }
+    
+    .nav-item {
+        padding: 0.4rem 0.5rem;
+        font-size: 0.7rem;
+        text-align: center;
+    }
+    
+    .hero-animation-placeholder,
+    .teacher-photo-placeholder,
+    .gas-model-placeholder {
+        width: 200px;
+        height: 200px;
+    }
+}

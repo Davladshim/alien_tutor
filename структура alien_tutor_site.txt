@@ -39,12 +39,14 @@ Alien_Tutor_site/
 │   ├── css/
 │   │   ├── base_animation.css
 │   │   ├── game.css
+│   │   ├── about-page.css
 │   │   └── components.css         # Дополнительные стили для компонентов (пустой файл)
 │   ├── js/
 │   │   ├── animations.js          # Анимации звезд/облаков (пустой файл)
 │   │   ├── dashboard.js           # Логика вкладок и интерактивности
 │   │   ├── background_animation.js (пустой файл)
 │   │   ├── game.js
+│   │   ├── landing.js
 │   │   └── admin.js               # Скрипты для админ-панели
 │   └── images/                    # Изображения (если понадобятся)
 │       ├── logo_dark_theme.png    # Логотип для темной темы

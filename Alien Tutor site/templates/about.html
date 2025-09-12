@@ -3,640 +3,339 @@
 {% block title %}О преподавателе - Alien Tutor{% endblock %}
 
 {% block styles %}
-<style>
-    /* ===== СТИЛИ ДЛЯ ЛЕНДИНГА "О ПРЕПОДАВАТЕЛЕ" ===== */
-    
-    /* Герой-секция */
-    .hero-section {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 2rem;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .hero-content {
-        max-width: 1000px;
-        margin: 0 auto;
-        z-index: 2;
-        position: relative;
-    }
-
-    .hero-title {
-        font-size: 4rem;
-        font-weight: 800;
-        margin-bottom: 1.5rem;
-        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 50%, #7c3aed 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        text-shadow: 0 0 30px rgba(94, 217, 215, 0.3);
-        animation: titleGlow 3s ease-in-out infinite alternate;
-    }
-
-    @keyframes titleGlow {
-        from { filter: brightness(1); }
-        to { filter: brightness(1.2); }
-    }
-
-    .hero-subtitle {
-        font-size: 1.8rem;
-        margin-bottom: 2rem;
-        opacity: 0.9;
-        font-weight: 300;
-    }
-
-    .hero-description {
-        font-size: 1.2rem;
-        line-height: 1.8;
-        margin-bottom: 3rem;
-        opacity: 0.8;
-        max-width: 700px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .cta-button {
-        display: inline-block;
-        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
-        color: white;
-        padding: 1.2rem 3rem;
-        border-radius: 50px;
-        font-size: 1.2rem;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.4s ease;
-        box-shadow: 0 10px 30px rgba(94, 217, 215, 0.4);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .cta-button::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        transition: left 0.6s ease;
-    }
-
-    .cta-button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(94, 217, 215, 0.6);
-    }
-
-    .cta-button:hover::before {
-        left: 100%;
-    }
-
-    /* Секция преимуществ */
-    .features-section {
-        padding: 5rem 2rem;
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(10px);
-        position: relative;
-    }
-
-    .section-title {
-        font-size: 3rem;
-        text-align: center;
-        margin-bottom: 4rem;
-        background: linear-gradient(135deg, #5ED9D7 0%, #7c3aed 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    .feature-card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        padding: 2.5rem;
-        text-align: center;
-        transition: all 0.4s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .theme-dark .feature-card {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(217, 246, 244, 0.15);
-    }
-
-    .theme-light .feature-card {
-        background: rgba(255, 255, 255, 0.4);
-        border: 1px solid rgba(44, 62, 80, 0.15);
-    }
-
-    .feature-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #5ED9D7, #00d4ff, #7c3aed);
-        transform: scaleX(0);
-        transition: transform 0.4s ease;
-    }
-
-    .feature-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(94, 217, 215, 0.3);
-        border-color: rgba(94, 217, 215, 0.5);
-    }
-
-    .feature-card:hover::before {
-        transform: scaleX(1);
-    }
-
-    .feature-icon {
-        font-size: 3rem;
-        margin-bottom: 1.5rem;
-        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .feature-title {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-        color: #5ED9D7;
-    }
-
-    .feature-description {
-        font-size: 1.1rem;
-        line-height: 1.6;
-        opacity: 0.8;
-    }
-
-    /* Секция "Обо мне" */
-    .about-section {
-        padding: 5rem 2rem;
-        position: relative;
-    }
-
-    .about-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: 1fr 2fr;
-        gap: 4rem;
-        align-items: center;
-    }
-
-    .about-image {
-        position: relative;
-        overflow: hidden;
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-    }
-
-    .about-image::before {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        background: linear-gradient(135deg, #5ED9D7, #00d4ff, #7c3aed);
-        border-radius: 20px;
-        z-index: -1;
-        animation: borderRotate 4s linear infinite;
-    }
-
-    @keyframes borderRotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-
-    .about-image img {
-        width: 100%;
-        height: auto;
-        display: block;
-        border-radius: 18px;
-    }
-
-    .about-content h2 {
-        font-size: 2.5rem;
-        margin-bottom: 1.5rem;
-        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .about-content p {
-        font-size: 1.2rem;
-        line-height: 1.8;
-        margin-bottom: 1.5rem;
-        opacity: 0.9;
-    }
-
-    .achievements-list {
-        list-style: none;
-        padding: 0;
-        margin-top: 2rem;
-    }
-
-    .achievements-list li {
-        padding: 1rem 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        font-size: 1.1rem;
-    }
-
-    .achievements-list li::before {
-        content: '✓';
-        display: inline-block;
-        width: 30px;
-        height: 30px;
-        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
-        color: white;
-        border-radius: 50%;
-        text-align: center;
-        line-height: 30px;
-        font-weight: bold;
-        flex-shrink: 0;
-    }
-</style>
-{% endblock %}
-
-<style>
-    /* Секция методики */
-    .methodology-section {
-        padding: 5rem 2rem;
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(10px);
-    }
-
-    .methodology-container {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    .methodology-steps {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
-        margin-top: 3rem;
-    }
-
-    .step-card {
-        text-align: center;
-        padding: 2rem;
-        position: relative;
-    }
-
-    .step-number {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin: 0 auto 1.5rem;
-        box-shadow: 0 10px 30px rgba(94, 217, 215, 0.4);
-    }
-
-    .step-title {
-        font-size: 1.3rem;
-        margin-bottom: 1rem;
-        color: #5ED9D7;
-    }
-
-    .step-description {
-        font-size: 1rem;
-        line-height: 1.6;
-        opacity: 0.8;
-    }
-
-    /* Соединительные линии между шагами */
-    .step-card:not(:last-child)::after {
-        content: '';
-        position: absolute;
-        top: 30px;
-        right: -1rem;
-        width: 2rem;
-        height: 2px;
-        background: linear-gradient(90deg, #5ED9D7, transparent);
-        opacity: 0.5;
-    }
-
-    /* Секция отзывов */
-    .testimonials-section {
-        padding: 5rem 2rem;
-        position: relative;
-    }
-
-    .testimonials-container {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    .testimonials-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 2rem;
-        margin-top: 3rem;
-    }
-
-    .testimonial-card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        padding: 2rem;
-        position: relative;
-        transition: all 0.4s ease;
-    }
-
-    .theme-dark .testimonial-card {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(217, 246, 244, 0.15);
-    }
-
-    .theme-light .testimonial-card {
-        background: rgba(255, 255, 255, 0.4);
-        border: 1px solid rgba(44, 62, 80, 0.15);
-    }
-
-    .testimonial-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(94, 217, 215, 0.3);
-    }
-
-    .testimonial-text {
-        font-size: 1.1rem;
-        line-height: 1.8;
-        margin-bottom: 1.5rem;
-        font-style: italic;
-        opacity: 0.9;
-    }
-
-    .testimonial-author {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .author-avatar {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: 1.2rem;
-    }
-
-    .author-info {
-        flex: 1;
-    }
-
-    .author-name {
-        font-weight: 600;
-        margin-bottom: 0.2rem;
-        color: #5ED9D7;
-    }
-
-    .author-role {
-        font-size: 0.9rem;
-        opacity: 0.7;
-    }
-
-    /* Секция тарифов */
-    .pricing-section {
-        padding: 5rem 2rem;
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(10px);
-    }
-
-    .pricing-container {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    .pricing-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        margin-top: 3rem;
-    }
-
-    .pricing-card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        padding: 2.5rem;
-        text-align: center;
-        position: relative;
-        transition: all 0.4s ease;
-    }
-
-    .theme-dark .pricing-card {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(217, 246, 244, 0.15);
-    }
-
-    .theme-light .pricing-card {
-        background: rgba(255, 255, 255, 0.4);
-        border: 1px solid rgba(44, 62, 80, 0.15);
-    }
-
-    .pricing-card.featured {
-        border: 2px solid #5ED9D7;
-        transform: scale(1.05);
-        box-shadow: 0 20px 40px rgba(94, 217, 215, 0.3);
-    }
-
-    .pricing-card.featured::before {
-        content: 'Популярный';
-        position: absolute;
-        top: -15px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
-        color: white;
-        padding: 0.5rem 1.5rem;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        font-weight: 600;
-    }
-
-    .pricing-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(94, 217, 215, 0.4);
-    }
-
-    .pricing-card.featured:hover {
-        transform: scale(1.05) translateY(-10px);
-    }
-
-    .pricing-title {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-        color: #5ED9D7;
-    }
-
-    .pricing-price {
-        font-size: 3rem;
-        font-weight: 800;
-        margin-bottom: 0.5rem;
-        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .pricing-period {
-        font-size: 1rem;
-        opacity: 0.7;
-        margin-bottom: 2rem;
-    }
-
-    .pricing-features {
-        list-style: none;
-        padding: 0;
-        margin-bottom: 2rem;
-    }
-
-    .pricing-features li {
-        padding: 0.8rem 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        font-size: 1rem;
-    }
-
-    .pricing-button {
-        display: inline-block;
-        width: 100%;
-        padding: 1rem 2rem;
-        background: linear-gradient(135deg, #5ED9D7 0%, #00d4ff 100%);
-        color: white;
-        border-radius: 10px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
-
-    .pricing-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(94, 217, 215, 0.4);
-    }
-
-    /* Секция контактов */
-    .contact-section {
-        padding: 5rem 2rem;
-        position: relative;
-    }
-
-    .contact-container {
-        max-width: 800px;
-        margin: 0 auto;
-        text-align: center;
-    }
-
-    .contact-info {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 2rem;
-        margin-top: 3rem;
-    }
-
-    .contact-item {
-        padding: 2rem;
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 15px;
-        transition: all 0.3s ease;
-    }
-
-    .contact-item:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(94, 217, 215, 0.3);
-    }
-
-    .contact-icon {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-        color: #5ED9D7;
-    }
-
-    .contact-label {
-        font-size: 0.9rem;
-        opacity: 0.7;
-        margin-bottom: 0.5rem;
-    }
-
-    .contact-value {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #5ED9D7;
-    }
-
-    /* Адаптивность */
-    @media (max-width: 768px) {
-        .hero-title {
-            font-size: 2.5rem;
-        }
-        
-        .hero-subtitle {
-            font-size: 1.3rem;
-        }
-        
-        .about-container {
-            grid-template-columns: 1fr;
-            gap: 2rem;
-        }
-        
-        .methodology-steps {
-            grid-template-columns: 1fr;
-        }
-        
-        .step-card::after {
-            display: none;
-        }
-        
-        .testimonials-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .pricing-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .pricing-card.featured {
-            transform: scale(1);
-        }
-    }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/about-page.css') }}">
 {% endblock %}
 
 {% block content %}
+<!-- Навигация по блокам лэндинга -->
+<nav class="landing-nav">
+    <div class="nav-container">
+        <div class="nav-items">
+            <a href="#hero" class="nav-item active" data-section="hero">Главная</a>
+            <a href="#about" class="nav-item" data-section="about">О себе</a>
+            <a href="#teaching" class="nav-item" data-section="teaching">Методика</a>
+            <a href="#cabinet" class="nav-item" data-section="cabinet">Кабинет</a>
+            <a href="#progress" class="nav-item" data-section="progress">Прогресс</a>
+            <a href="#pricing" class="nav-item" data-section="pricing">Тарифы</a>
+            <a href="#reviews" class="nav-item" data-section="reviews">Отзывы</a>
+            <a href="#contacts" class="nav-item" data-section="contacts">Контакты</a>
+            <a href="#booking" class="nav-item" data-section="booking">Запись</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Основной контент лэндинга -->
+<main class="landing-main">
+
+    <!-- 1. Главный экран -->
+    <section id="hero" class="landing-section active">
+        <div class="section-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Репетитор по математике, физике и химии
+                    <span class="hero-subtitle">с личными кабинетами для учеников и родителей</span>
+                </h1>
+                <p class="hero-description">
+                    Прозрачность для родителей. Прогресс для учеников. Удобство для всех.
+                </p>
+                <div class="hero-actions">
+                    <button class="cta-button primary" onclick="scrollToSection('booking')">
+                        Записаться на пробный урок
+                    </button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <!-- Здесь будет космическая анимация или изображение -->
+                <div class="hero-animation-placeholder">
+                    🚀 Место для визуала
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. О себе -->
+    <section id="about" class="landing-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Кто я</h2>
+            </div>
+            <div class="about-content">
+                <div class="about-text">
+                    <p class="about-intro">
+                        Меня зовут <strong>Дарья</strong>, я инженер и репетитор по математике, физике и химии.
+                    </p>
+                    <p class="about-description">
+                        За последние <strong>8 лет</strong> я помогла <strong>200 ученикам</strong> успешно подготовиться к ОГЭ и ЕГЭ.
+                    </p>
+                    <p class="about-philosophy">
+                        Я знаю, как объяснять сложное простым языком, и показываю, что наука — это не сухие формулы, 
+                        а инструмент для понимания мира.
+                    </p>
+                </div>
+                <div class="about-visual">
+                    <!-- Здесь будет фото преподавателя -->
+                    <div class="teacher-photo-placeholder">
+                        📸 Место для фото
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Методика обучения -->
+    <section id="teaching" class="landing-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Учёба должна быть понятной</h2>
+            </div>
+            <div class="teaching-content">
+                <div class="teaching-text">
+                    <p class="teaching-description">
+                        На моих уроках важна <strong>наглядность</strong>. Я всегда ищу примеры и сравнения, 
+                        чтобы даже сложные формулы стали простыми и «живыми».
+                    </p>
+                    <p class="teaching-example">
+                        Например, посмотрите, как всего за 5 минут можно объяснить, 
+                        что происходит с газом под давлением:
+                    </p>
+                </div>
+                <div class="teaching-visual">
+                    <!-- Здесь будет интерактивная модель или видео -->
+                    <div class="gas-model-placeholder">
+                        ⚗️ Место для модели сосуда с газом
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Личный кабинет (демо) -->
+    <section id="cabinet" class="landing-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Личный кабинет для родителей и учеников</h2>
+            </div>
+            <div class="cabinet-content">
+                <div class="cabinet-text">
+                    <p class="cabinet-description">
+                        Каждый урок фиксируется в системе: отчёты, домашние задания, статистика по темам.
+                    </p>
+                    <p class="cabinet-benefits">
+                        Родители видят прогресс, а ученики понимают, что делают шаг за шагом.
+                    </p>
+                    <div class="cabinet-features">
+                        <div class="feature-item">✅ Отчеты по каждому уроку</div>
+                        <div class="feature-item">✅ Статистика успеваемости</div>
+                        <div class="feature-item">✅ Домашние задания</div>
+                        <div class="feature-item">✅ Расписание занятий</div>
+                    </div>
+                </div>
+                <div class="cabinet-visual">
+                    <!-- Здесь будет галерея скриншотов -->
+                    <div class="screenshots-gallery">
+                        <div class="screenshot-placeholder">🖥️ Скрин 1</div>
+                        <div class="screenshot-placeholder">📱 Скрин 2</div>
+                        <div class="screenshot-placeholder">📊 Скрин 3</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Прогресс в реальном времени -->
+    <section id="progress" class="landing-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Прогресс в реальном времени</h2>
+            </div>
+            <div class="progress-content">
+                <div class="progress-text">
+                    <p class="progress-description">
+                        Я показываю, как растут знания каждого ученика.
+                    </p>
+                    <p class="progress-example">
+                        <strong>Например:</strong> Андрей за месяц поднялся с 60 до 70 баллов на пробниках.
+                    </p>
+                    <p class="progress-motivation">
+                        Такая статистика мотивирует и детей, и родителей.
+                    </p>
+                </div>
+                <div class="progress-visual">
+                    <!-- Здесь будут два больших графика -->
+                    <div class="charts-container">
+                        <div class="chart-placeholder">📈 График прогресса</div>
+                        <div class="chart-placeholder">📊 Статистика по темам</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Тарифы -->
+    <section id="pricing" class="landing-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Тарифы</h2>
+            </div>
+            <div class="pricing-content">
+                <div class="pricing-grid">
+                    <!-- Базовый тариф -->
+                    <div class="pricing-card basic">
+                        <div class="card-header">
+                            <h3 class="card-title">Базовый</h3>
+                            <div class="card-price">2500 ₽<span>/месяц</span></div>
+                        </div>
+                        <div class="card-features">
+                            <div class="feature">✔︎ Уроки без личного кабинета и отчётов</div>
+                        </div>
+                        <button class="card-button">Выбрать тариф</button>
+                    </div>
+
+                    <!-- Основной тариф -->
+                    <div class="pricing-card popular">
+                        <div class="popular-badge">Популярный</div>
+                        <div class="card-header">
+                            <h3 class="card-title">Основной</h3>
+                            <div class="card-price">3000 ₽<span>/месяц</span></div>
+                        </div>
+                        <div class="card-features">
+                            <div class="feature">✔︎ Уроки</div>
+                            <div class="feature">✔︎ Личный кабинет</div>
+                            <div class="feature">✔︎ Отчёты и статистика</div>
+                        </div>
+                        <button class="card-button primary">Выбрать тариф</button>
+                    </div>
+
+                    <!-- Тариф 3 (в разработке) -->
+                    <div class="pricing-card locked">
+                        <div class="card-header">
+                            <h3 class="card-title">Интерактивный</h3>
+                            <div class="card-price">Скоро</div>
+                        </div>
+                        <div class="card-features">
+                            <div class="feature">🔒 Добавятся мини-игры и интерактив</div>
+                        </div>
+                        <button class="card-button disabled">В разработке</button>
+                    </div>
+
+                    <!-- Тариф 4 (в разработке) -->
+                    <div class="pricing-card locked">
+                        <div class="card-header">
+                            <h3 class="card-title">Премиум</h3>
+                            <div class="card-price">Скоро</div>
+                        </div>
+                        <div class="card-features">
+                            <div class="feature">🔒 Добавятся подарки и бонусы для учеников</div>
+                        </div>
+                        <button class="card-button disabled">В разработке</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. Отзывы -->
+    <section id="reviews" class="landing-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Отзывы родителей и учеников</h2>
+                <p class="section-subtitle">Я горжусь доверием учеников и родителей ❤️</p>
+            </div>
+            <div class="reviews-content">
+                <div class="reviews-grid">
+                    <!-- Здесь будут скрины переписок -->
+                    <div class="review-placeholder">💬 Отзыв 1</div>
+                    <div class="review-placeholder">💬 Отзыв 2</div>
+                    <div class="review-placeholder">💬 Отзыв 3</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. Контакты -->
+    <section id="contacts" class="landing-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Связаться со мной</h2>
+            </div>
+            <div class="contacts-content">
+                <div class="contacts-grid">
+                    <div class="contact-item">
+                        <div class="contact-icon">📩</div>
+                        <div class="contact-info">
+                            <div class="contact-label">Почта</div>
+                            <div class="contact-value">example@mail.com</div>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">📱</div>
+                        <div class="contact-info">
+                            <div class="contact-label">Телеграм</div>
+                            <div class="contact-value">@username</div>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">📘</div>
+                        <div class="contact-info">
+                            <div class="contact-label">ВКонтакте</div>
+                            <div class="contact-value">vk.com/username</div>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">🎥</div>
+                        <div class="contact-info">
+                            <div class="contact-label">TikTok / YouTube</div>
+                            <div class="contact-value">@username</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. Форма записи и расписание -->
+    <section id="booking" class="landing-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Запишитесь на пробный урок</h2>
+            </div>
+            <div class="booking-content">
+                <div class="booking-form">
+                    <form class="contact-form">
+                        <div class="form-group">
+                            <label for="student-name">Имя ученика</label>
+                            <input type="text" id="student-name" name="student_name" placeholder="Введите имя">
+                        </div>
+                        <div class="form-group">
+                            <label for="contact-method">Удобный способ связи</label>
+                            <select id="contact-method" name="contact_method">
+                                <option value="">Выберите способ связи</option>
+                                <option value="phone">Телефон</option>
+                                <option value="telegram">Телеграм</option>
+                                <option value="whatsapp">WhatsApp</option>
+                                <option value="email">Email</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="contact-info">Контактные данные</label>
+                            <input type="text" id="contact-info" name="contact_info" placeholder="Телефон, email или никнейм">
+                        </div>
+                        <button type="submit" class="submit-button">Записаться на урок</button>
+                    </form>
+                </div>
+                <div class="booking-schedule">
+                    <!-- Здесь будет недельная сетка расписания -->
+                    <div class="schedule-placeholder">
+                        📅 Место для недельной сетки расписания
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/landing.js') }}"></script>
+{% endblock %}
